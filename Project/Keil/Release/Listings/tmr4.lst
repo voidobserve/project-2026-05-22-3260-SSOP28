@@ -1,0 +1,92 @@
+C51 COMPILER V9.60.7.0   TMR4                                                              12/06/2024 13:57:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR4
+OBJECT MODULE PLACED IN .\Release\Objects\tmr4.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\Hardware\tmr4.c LARGE OPTIMIZE(8,SIZE) BROWSE INTVECTOR(0X000C) IN
+                    -CDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Li
+                    -stings\tmr4.lst) OBJECT(.\Release\Objects\tmr4.obj)
+
+line level    source
+
+   1          #include "tmr4.h"
+   2          
+   3          // 周期值=系统时钟/分频/频率 - 1
+   4          // 1KHz == 1ms计数一次
+   5          #define TMR4_PEROID_VAL (SYSCLK / 1 / 1000 - 1)
+   6          
+   7          volatile u32 tmr4_cnt = 0; //
+   8          
+   9          // void tmr4_pwm_config(void)
+  10          // {
+  11          //     // 配置TIMER4的PWM端口：P21--TMR4_PWM
+  12          //     P2_MD0 &= ~GPIO_P21_MODE_SEL(0x03);
+  13          //     P2_MD0 |= GPIO_P21_MODE_SEL(0x01);
+  14          //     FOUT_S21 = GPIO_FOUT_TMR4_PWMOUT; // 选择tmr4_pwm_o
+  15          
+  16          // #define PEROID_VAL (SYSCLK / 1 / 1000 - 1) // 周期值=系统时钟/分频/频率 - 1
+  17          //     // TIMER4配置1kHz频率PWM
+  18          //     __EnableIRQ(TMR4_IRQn);                                      // 打开TIMER4模块中断
+  19          //     TMR_ALLCON = TMR4_CNT_CLR(0x1);                              // Timer4 计数清零
+  20          //     TMR4_CAP10 = TMR4_PRD_VAL_L((PEROID_VAL >> 0) & 0xFF);       // 周期低八位寄存器
+  21          //     TMR4_CAP11 = TMR4_PRD_VAL_H((PEROID_VAL >> 8) & 0xFF);       // 周期高八位寄存器
+  22          //     TMR4_CAP20 = TMR4_PWM_VAL_L(((PEROID_VAL / 2) >> 0) & 0xFF); // 比较值高八位寄存器
+  23          //     TMR4_CAP21 = TMR4_PWM_VAL_H(((PEROID_VAL / 2) >> 8) & 0xFF); // 比较值低八位寄存器
+  24          //     TMR4_CON0 = TMR4_PRESCALE_SEL(0x0) |                         // 不分频
+  25          //                 TMR4_SOURCE_SEL(0x7) |                           // 计数源选择系统时钟
+  26          //                 TMR4_MODE_SEL(0x1);                              // PWM输出模式
+  27          //     TMR4_EN = TMR4_EN(0x1);                                      // 使能定时器
+  28          
+  29          //     IE_EA = 1; // 使能总中断
+  30          // }
+  31          
+  32          // 定时器计数(计时)配置
+  33          void tmr4_cnt_config(void)
+  34          {
+  35   1          // TIMER4配置频率为1kHz的中断
+  36   1          __EnableIRQ(TMR4_IRQn);                                     // 打开TIMER4模块中断
+  37   1          TMR_ALLCON = TMR4_CNT_CLR(0x1);                             // Timer4 计数清零
+  38   1          TMR4_CAP10 = TMR4_PRD_VAL_L((TMR4_PEROID_VAL >> 0) & 0xFF); // 周期低八位寄存器
+  39   1          TMR4_CAP11 = TMR4_PRD_VAL_H((TMR4_PEROID_VAL >> 8) & 0xFF); // 周期高八位寄存器
+  40   1          TMR4_CON0 = TMR4_PRESCALE_SEL(0x0) |                        // 不分频
+  41   1                      TMR4_SOURCE_SEL(0x7) |                          // 计数源选择系统时钟
+  42   1                      TMR4_MODE_SEL(0x0);                             // 计数模式
+  43   1          TMR4_IE0 = TMR4_PRD_IRQ_EN(0x1);                            // 使能计数值等于周期值中断
+  44   1          TMR4_EN = TMR4_EN(0x1);                                     // 使能定时器
+  45   1      
+  46   1          IE_EA = 1; // 使能总中断
+  47   1      }
+  48          
+  49          void TMR4_IRQHandler(void) interrupt TMR4_IRQn
+  50          {
+  51   1          // 进入中断设置IP，不可删除
+  52   1          __IRQnIPnPush(TMR4_IRQn);
+  53   1      
+C51 COMPILER V9.60.7.0   TMR4                                                              12/06/2024 13:57:44 PAGE 2   
+
+  54   1          // ---------------- 用户函数处理 -------------------
+  55   1      
+  56   1          // 计数值等于周期值中断
+  57   1          if (TMR4_FLAG0 & TMR4_PRD_FLAG(0x1))
+  58   1          {
+  59   2              TMR4_CLR0 |= TMR4_PRD_FLG_CLR(0x1);
+  60   2              tmr4_cnt++;
+  61   2          }
+  62   1      
+  63   1          // 退出中断设置IP，不可删除
+  64   1          __IRQnIPnPop(TMR4_IRQn);
+  65   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    101    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

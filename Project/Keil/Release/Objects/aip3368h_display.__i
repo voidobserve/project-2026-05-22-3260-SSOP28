@@ -1,0 +1,1 @@
+"..\..\User\aip3368h_display.c" LARGE OPTIMIZE (9,SIZE) BROWSE ORDER INTVECTOR(0x000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) interval(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listings\aip3368h_display.lst) OBJECT(.\Release\Objects\aip3368h_display.obj)

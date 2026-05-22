@@ -1,0 +1,206 @@
+C51 COMPILER V9.60.7.0   RF_SCAN                                                           05/21/2024 13:47:23 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE RF_SCAN
+OBJECT MODULE PLACED IN .\Release\Objects\rf_scan.obj
+COMPILER INVOKED BY: D:\AppData\keil-C51\C51\BIN\C51.EXE ..\..\User\rf_scan.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR(0
+                    -X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listings
+                    -\rf_scan.lst) OBJECT(.\Release\Objects\rf_scan.obj)
+
+line level    source
+
+   1          // 扫描RF信号的源文件
+   2          #include "rf_scan.h"
+   3          
+   4          #include "tmr3.h"     // 用来判断按键是短按、长按还是持续的定时器
+   5          #include "rf_learn.h" // 使用到了学习得到的、保存在flash中的地址
+*** ERROR C129 IN LINE 62 OF ..\..\User\rf_learn.h: missing ';' before 'addr_info'
+   6          #include "rf_recv.h"  // RF信号接收
+   7          #include "send_key.h" // 发送带有键值的信号
+   8          
+   9          #include "key_conversion.h" // 将键值转换成功能值（功能值唯一）
+  10          
+  11          // 对RF信号接收引脚进行一次扫描，如果有信号，则进行相应的处理
+  12          void rf_scan(void)
+  13          {
+  14              static u8 press_flag = 0;                // 按键状态标志位，0--未按下，1--短按，2--长按，3--持续
+  15              static volatile u32 timer_total_cnt = 0; // 总计时值，用来判定短按、长按和持续
+  16          
+  17              // static u16 send_data = 0; // 存放待发送的数据（测试用/旧版程序使用）
+  18          
+  19              static u8 key; // 存放接收到的键值
+  20          
+  21          #if 0  // 测试能否接收和发送一个数据帧
+                      if (recv_rf_flag)
+                      {
+                          recv_rf_flag = 0;        // 清除标志位
+                          keyval = rf_data & 0x0F; // 记录键值
+              
+                          send_data = rf_data & 0x0F;
+                          send_data |= KEY_PRESS_CONTINUE << 5;
+                          send_keyval(send_data);
+                          return;
+                      }
+              #endif // end 测试能否接收和发送一个数据帧
+  33          
+  34              if (recv_rf_flag && 0 == timer_total_cnt && 0 == press_flag)
+  35              {
+  36                  // 如果未按下，记录本次按下的时间
+  37                  recv_rf_flag = 0; // 清除标志位
+  38          
+  39                  if (1 == rf_addr_isMatch())
+  40                  {
+  41                      press_flag = 1; // 假设是短按
+  42          
+  43          #ifdef DEVELOPMENT_BOARD // 开发板上最后只需要发送遥控器对应的键值
+  44          
+  45                      // 记录一次键值
+  46                      key = rf_data & 0x3F;
+  47          
+  48          #endif // end ifdef DEVELOPMENT_BOARD
+  49          
+  50          #ifdef CIRCUIT_BOARD // 目标电路板上需要将遥控器的键值转换成自定义的功能值
+              
+                          // 记录一次键值（实际上是自定义的功能值）
+C51 COMPILER V9.60.7.0   RF_SCAN                                                           05/21/2024 13:47:23 PAGE 2   
+
+                          key = key_to_funval(rf_data >> 8, rf_data & 0x3F);
+              
+              #endif // end ifdef CIRCUIT_BOARD
+  56          
+  57                      tmr3_enable(); // 打开定时器，开始计数
+  58                  }
+  59              }
+  60              else if (timer_total_cnt < 75)
+  61              {
+  62                  // 如果是短按的判定时间内（这里假设按下并松开了按键的时间是0~750ms之内）
+  63                  if (recv_rf_flag && tmr3_cnt <= 12)
+  64                  {
+  65                      // 如果收到了信号，并且两次信号的时间不超过120ms
+  66                      // （哪怕是短按，也会收到若干个信号，这些信号的间隔在13ms左右，
+  67                      // 一个信号持续时间是40ms左右，这里放宽了判断条件）
+  68                      recv_rf_flag = 0;
+  69          
+  70                      if (1 == rf_addr_isMatch())
+  71                      {
+  72          #ifdef DEVELOPMENT_BOARD // 开发板上最后只需要发送遥控器对应的键值
+  73          
+  74                          // 记录一次键值
+  75                          key = rf_data & 0x3F;
+  76          
+  77          #endif // end ifdef DEVELOPMENT_BOARD
+  78          
+  79          #ifdef CIRCUIT_BOARD // 目标电路板上需要将遥控器的键值转换成自定义的功能值
+              
+                              // 记录一次键值（实际上是自定义的功能值）
+                              key = key_to_funval(rf_data >> 8, rf_data & 0x3F);
+              
+              #endif // end ifdef CIRCUIT_BOARD
+  85          
+  86                          timer_total_cnt += tmr3_cnt; // 累计计数时间
+  87                          tmr3_cnt = 0;                // 清空计数值
+  88                      }
+  89                  }
+  90                  else if (tmr3_cnt > 12 && press_flag)
+  91                  {
+  92                      // 如果在120ms范围外，没有收到信号，说明此时已经松开手了，是短按
+  93                      press_flag = 0;
+  94                      timer_total_cnt = 0;
+  95          
+  96                      tmr3_disable();
+  97                      tmr3_cnt = 0;
+  98          
+  99                      send_status_keyval(KEY_PRESS_SHORT, key); // 发送带有短按信息的键值
+ 100                      key = 0;
+ 101          
+ 102                      return;
+ 103                  }
+ 104              }
+ 105              else
+ 106              {
+ 107                  // 长按和持续的处理
+ 108          
+ 109                  if (1 == press_flag && timer_total_cnt >= 75 && timer_total_cnt < 90)
+ 110                  {
+ 111                      // 如果进入到这里，说明按下按键至少有750ms了
+ 112                      // 发送一次带有长按标志的信号
+ 113                      press_flag = 2;
+ 114          
+C51 COMPILER V9.60.7.0   RF_SCAN                                                           05/21/2024 13:47:23 PAGE 3   
+
+ 115          #ifdef DEVELOPMENT_BOARD // 开发板上最后只需要发送遥控器对应的键值
+ 116          
+ 117                      key = rf_data & 0x3F;
+ 118          
+ 119          #endif // end ifdef DEVELOPMENT_BOARD
+ 120          
+ 121          #ifdef CIRCUIT_BOARD // 目标电路板上需要将遥控器的键值转换成自定义的功能值
+              
+                          // 记录一次键值（实际上是自定义的功能值）
+                          key = key_to_funval(rf_data >> 8, rf_data & 0x3F);
+              
+              #endif // end ifdef CIRCUIT_BOARD
+ 127          
+ 128                      send_status_keyval(KEY_PRESS_LONG, key); // 发送带有长按信息的键值
+ 129          
+ 130                      press_flag = 3;
+ 131                  }
+ 132          
+ 133                  if (3 == press_flag && recv_rf_flag && tmr3_cnt <= 12)
+ 134                  {
+ 135                      // 如果收到了信号，并且两次信号的时间不超过120ms
+ 136                      // （哪怕是短按，也会收到若干个信号，这些信号的间隔在13ms左右，
+ 137                      // 一个信号持续时间是40ms左右，这里放宽了判断条件）
+ 138                      recv_rf_flag = 0;
+ 139          
+ 140                      if (1 == rf_addr_isMatch())
+ 141                      {
+ 142          #ifdef DEVELOPMENT_BOARD // 开发板上最后只需要发送遥控器对应的键值
+ 143          
+ 144                          key = rf_data & 0x3F; // 记录键值
+ 145          
+ 146          #endif // end ifdef DEVELOPMENT_BOARD
+ 147          
+ 148          #ifdef CIRCUIT_BOARD // 目标电路板上需要将遥控器的键值转换成自定义的功能值
+              
+                              // 记录一次键值（实际上是自定义的功能值）
+                              key = key_to_funval(rf_data >> 8, rf_data & 0x3F);
+              
+              #endif // end ifdef CIRCUIT_BOARD
+ 154          
+ 155                          timer_total_cnt += tmr3_cnt; // 累计计数时间
+ 156                          tmr3_cnt = 0;                // 清空计数值
+ 157          
+ 158                          // 这里的时间间隔是以每个信号的周期为准，因为判断recv_rf_flag的时候，
+ 159                          // 就是要有信号接收完成这个标志位才会置一，代码才能进入这里
+ 160                          if (timer_total_cnt >= 90)
+ 161                          {
+ 162                              // 清空累计计数时间，发送一次带有持续标志和按键键值的信号
+ 163                              // 接下来每到一定的时间就发送一次带有持续标志和按键键值的信号
+ 164                              send_status_keyval(KEY_PRESS_CONTINUE, key); // 发送带有持续按下消息的16位键值
+ 165                              timer_total_cnt = 75;
+ 166                          }
+ 167                      }
+ 168                  }
+ 169                  else if (tmr3_cnt > 12 && press_flag)
+ 170                  {
+ 171                      // 如果在120ms范围外，没有收到信号，说明此时已经松开手了
+ 172                      // 这里可以发送一次长按后松开的信号
+ 173                      send_status_keyval(KEY_PRESS_LOOSE, key); // 发送长按后松开按键的信号
+ 174          
+ 175                      // 清除标志位和计数值
+ 176                      press_flag = 0;
+C51 COMPILER V9.60.7.0   RF_SCAN                                                           05/21/2024 13:47:23 PAGE 4   
+
+ 177                      timer_total_cnt = 0;
+ 178          
+ 179                      tmr3_disable();
+ 180                      tmr3_cnt = 0;
+ 181          
+ 182                      key = 0;
+ 183                      return;
+ 184                  }
+ 185              }
+ 186          }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)

@@ -1,0 +1,167 @@
+C51 COMPILER V9.60.7.0   RECV_CHECK                                                        05/23/2024 17:08:45 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE RECV_CHECK
+OBJECT MODULE PLACED IN .\Release\Objects\recv_check.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\User\recv_check.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR(0X000C)
+                    - INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release
+                    -\Listings\recv_check.lst) TABS(2) OBJECT(.\Release\Objects\recv_check.obj)
+
+line level    source
+
+   1          #include "recv_check.h"
+   2          
+   3          u8 get_all_status = 0;   // 获取所有状态
+   4          u8 get_gear = 0;        // 获取挡位状态
+   5          u8 get_battery = 0;     // 获取电池状态（电池电量，单位：百分比）
+   6          u8 get_brake = 0;       // 获取刹车状态
+   7          u8 get_left_turn = 0;    // 获取左转向灯状态
+   8          u8 get_right_turn = 0;   // 获取右转向灯状态
+   9          u8 get_high_beam = 0;    // 获取远光灯状态
+  10          u8 get_engine_speed = 0; // 获取发动机转速
+  11          u8 get_speed = 0;       // 获取时速
+  12          u8 getFuel = 0;        // 获取油量（单位：百分比）
+  13          u8 getWaterTemp = 0;   // 获取水温
+  14          
+  15          // 检查接收是否正确的函数，如果接收正确，
+  16          // 根据接收到的数据中的指令，给对应的指令的标志位置一
+  17          void recv_check(void)
+  18          {
+  19   1          u8 isHandle = 0;     // 标志位，是否要处理接收到的数据，0--不处理，1--处理
+  20   1          int32 checksum = -1; // 校验和
+  21   1      
+  22   1          if (tmr0_cnt > 10)
+  23   1          {
+  24   2              // 如果超时
+  25   2              uart0_sendstr("Time out!\n");
+  26   2              isHandle = 1; // 准备处理数据
+  27   2      
+  28   2              tmr0_disable(); // 关闭定时器
+  29   2              tmr0_cnt = 0;   // 清空定时器计数值
+  30   2          }
+  31   1          else if (uart0_recv_flag)
+  32   1          {
+  33   2              // 如果完整地接收了一次数据
+  34   2              uart0_recv_flag = 0; // 清空标志位
+  35   2              isHandle = 1;
+  36   2          }
+  37   1      
+  38   1          if (0 == isHandle)
+  39   1          {
+  40   2              // 如果没有接收到数据，函数返回
+  41   2              return;
+  42   2          }
+  43   1      
+  44   1          // 计算数据长度是否正确
+  45   1          uart0_sendstr("len: ");
+  46   1          uart0_sendbyte(uart0_recv_cnt + '0'); // 整数转换成字符型再发送
+  47   1          uart0_sendbyte('\n');
+  48   1          uart0_sendbytes(uart0_recv_buf, uart0_recv_cnt);
+  49   1          uart0_sendbyte('\n');
+  50   1      
+  51   1          if (uart0_recv_buf[1] != uart0_recv_cnt)
+  52   1          {
+  53   2              // 如果数据长度不正确
+C51 COMPILER V9.60.7.0   RECV_CHECK                                                        05/23/2024 17:08:45 PAGE 2   
+
+  54   2              uart0_sendstr("len is incorrect!\n");
+  55   2              uart0_recv_cnt = 0;  // 清除接收的计数值，准备下一次接收
+  56   2              uart0_recv_flag = 0; // 清空标志位
+  57   2              return;              // 退出函数
+  58   2          }
+  59   1      
+  60   1          isHandle = 0;
+  61   1      
+  62   1          // 计算校验和是否正确
+  63   1          if (4 == uart0_recv_cnt)
+  64   1          {
+  65   2              // 如果是四个字节的数据
+  66   2              checksum = (uart0_recv_buf[0] + uart0_recv_buf[1] + uart0_recv_buf[2]) & 0x0F;
+  67   2      
+  68   2              if (checksum != uart0_recv_buf[3])
+  69   2              {
+  70   3                  // 如果计算得出的校验和与数据帧中的校验和不一致
+  71   3                  // 说明传输的数据有误
+  72   3                  uart0_sendstr("checknum err_4Bytes\n");
+  73   3              }
+  74   2              else
+  75   2              {
+  76   3                  // 如果校验和验算通过，开始处理数据
+  77   3                  isHandle = 1;
+  78   3              }
+  79   2          }
+  80   1          else if (5 == uart0_recv_cnt)
+  81   1          {
+  82   2              // 如果是五个字节的数据
+  83   2              checksum = (uart0_recv_buf[0] + uart0_recv_buf[1] + uart0_recv_buf[2] + uart0_recv_buf[3]) & 0x0F;
+  84   2      
+  85   2              if (checksum != uart0_recv_buf[4])
+  86   2              {
+  87   3                  // 如果计算得出的校验和与数据帧中的校验和不一致
+  88   3                  // 说明传输的数据有误
+  89   3                  uart0_sendstr("checknum err_5Bytes\n");
+  90   3              }
+  91   2              else
+  92   2              {
+  93   3                  // 如果校验和验算通过，开始处理数据
+  94   3                  isHandle = 1;
+  95   3              }
+  96   2          }
+  97   1          else if (6 == uart0_recv_cnt)
+  98   1          {
+  99   2              // 如果是六个字节的数据
+ 100   2              checksum = (uart0_recv_buf[0] + uart0_recv_buf[1] + uart0_recv_buf[2] + uart0_recv_buf[3] + uart0_
+             -recv_buf[4]) & 0x0F;
+ 101   2      
+ 102   2              if (checksum != uart0_recv_buf[5])
+ 103   2              {
+ 104   3                  // 如果计算得出的校验和与数据帧中的校验和不一致
+ 105   3                  // 说明传输的数据有误
+ 106   3                  uart0_sendstr("checknum err_6Bytes\n");
+ 107   3              }
+ 108   2              else
+ 109   2              {
+ 110   3                  // 如果校验和验算通过，开始处理数据
+ 111   3                  isHandle = 1;
+ 112   3              }
+ 113   2          }
+ 114   1          else
+C51 COMPILER V9.60.7.0   RECV_CHECK                                                        05/23/2024 17:08:45 PAGE 3   
+
+ 115   1          {
+ 116   2              // 如果不是四、五或者六个字节的数据，说明接收有误，直接抛弃这一帧数据
+ 117   2              uart0_sendstr("recv cnt err\n");
+ 118   2          }
+ 119   1      
+ 120   1          if (0 == isHandle)
+ 121   1          {
+ 122   2              // 如果校验和不通过，函数返回
+ 123   2              uart0_recv_cnt = 0;  // 清除接收的计数值，准备下一次接收
+ 124   2              uart0_recv_flag = 0; // 清空标志位
+ 125   2              return;
+ 126   2          }
+ 127   1      
+ 128   1          uart0_sendstr("checknum correct\n");
+ 129   1      
+ 130   1          // 根据接收到数据中的指令，给对应的指令的标志位置一
+ 131   1          if (4 == uart0_recv_cnt)
+ 132   1          {
+ 133   2              switch (uart0_recv_buf[2]) // 根据不同的指令来给对应的标志位置一
+ 134   2              {
+ 135   3              case:
+*** ERROR C141 IN LINE 135 OF ..\..\User\recv_check.c: syntax error near ':', expected 'sizeof'
+ 136   3      
+ 137   3                  break;
+ 138   3      
+ 139   3              case:
+*** ERROR C141 IN LINE 139 OF ..\..\User\recv_check.c: syntax error near ':', expected 'sizeof'
+ 140   3      
+ 141   3                  break;
+ 142   3              }
+ 143   2          }
+ 144   1      
+ 145   1          uart0_recv_cnt = 0;
+ 146   1          uart0_recv_flag = 0; // 清空接收完成标志位
+ 147   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)

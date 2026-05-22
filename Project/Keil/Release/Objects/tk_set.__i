@@ -1,0 +1,1 @@
+"..\..\User\lib\tk_set.c" LARGE OPTIMIZE (9,SIZE) BROWSE ORDER INTVECTOR(0x000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) interval(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listings\tk_set.lst) OBJECT(.\Release\Objects\tk_set.obj)

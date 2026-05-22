@@ -1,0 +1,299 @@
+C51 COMPILER V9.60.7.0   SEND_KEY                                                          05/21/2024 13:47:19 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SEND_KEY
+OBJECT MODULE PLACED IN .\Release\Objects\send_key.obj
+COMPILER INVOKED BY: D:\AppData\keil-C51\C51\BIN\C51.EXE ..\..\User\send_key.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR(
+                    -0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listing
+                    -s\send_key.lst) OBJECT(.\Release\Objects\send_key.obj)
+
+line level    source
+
+   1          // 用于发送键值的源程序，使用到了定时器TMR1
+   2          #include "send_key.h"
+   3          #include "tmr2.h" // 定时器TMR2可用于发送格式头的延时和每次发送间隔的延时
+   4          
+   5          volatile char send_keyval_flag = 0; // 是否要发送键值的标志位，0--不发送，1--发送
+   6          
+   7          static volatile unsigned short key_val = 0; // 要发送的16位数据，高位先行MSB
+   8          
+   9          // 发送键值信号引脚的初始化函数
+  10          // 引脚的默认状态为低电平
+  11          void send_keyval_pin_init(void)
+  12          {
+  13   1      #ifdef DEVELOPMENT_BOARD
+  14   1      
+  15   1          P1_MD0 &= ~(GPIO_P11_MODE_SEL(0x1)); // 对应的寄存器先清零
+  16   1          P1_MD0 |= GPIO_P11_MODE_SEL(0x1);    // P1_1配置为输出模式
+  17   1      
+  18   1          P1_PU |= GPIO_P11_PULL_UP(0x01); // 内部的上拉电阻
+  19   1      
+  20   1          FOUT_S11 = GPIO_FOUT_AF_FUNC; // 选择AF功能输出（看手册上是数字复用功能输出，是输出逻辑高低电平用的）
+  21   1      
+  22   1          // 位操作，让p1_1输出高电平（默认让引脚处于空闲状态，空闲状态为高电平）
+  23   1          P11 = 1;
+  24   1      
+  25   1      #endif // end of #ifdef DEVELOPMENT_BOARD
+  26   1      
+  27   1      #ifdef CIRCUIT_BOARD
+              
+                  P2_MD0 &= ~(GPIO_P21_MODE_SEL(0x1)); // 对应的寄存器先清零
+                  P2_MD0 |= GPIO_P21_MODE_SEL(0x1);    // P2_1配置为输出模式
+              
+                  P2_PU |= GPIO_P21_PULL_UP(0x01); // 内部的上拉电阻
+              
+                  FOUT_S21 = GPIO_FOUT_AF_FUNC; // 选择AF功能输出（看手册上是数字复用功能输出，是输出逻辑高低电平用的）
+              
+                  // 位操作，让p2_1输出高电平（默认让引脚处于空闲状态，空闲状态为高电平）
+                  P21 = 1;
+              
+              #endif // end of #ifdef CIRCUIT_BOARD
+  40   1      }
+  41          
+  42          // 发送键值信号的引脚使用的定时器的初始化
+  43          // 这里使用TMR1，默认禁用中断，需要时再开启
+  44          void send_keyval_timer_init(void)
+  45          {
+  46   1          // 配置定时器，用来控制输出键值的引脚输出
+  47   1          __SetIRQnIP(TMR1_IRQn, TMR1_IQn_CFG); // 设置中断优先级（TMR1）
+  48   1      
+  49   1          TMR1_CONL &= ~TMR_PRESCALE_SEL(0x03); // 清除TMR1的预分频配置寄存器
+  50   1          TMR1_CONL |= TMR_PRESCALE_SEL(0x05);  // 配置TMR1的预分频，为16分频，即21MHz / 32 = 0.65625MHz，约0.65
+             -625us计数一次
+  51   1          TMR1_CONL &= ~TMR_MODE_SEL(0x03);     // 清除TMR1的模式配置寄存器
+  52   1          TMR1_CONL |= TMR_MODE_SEL(0x01);      // 配置TMR1的模式为计数器模式，最后对HIRC的脉冲进行计数
+C51 COMPILER V9.60.7.0   SEND_KEY                                                          05/21/2024 13:47:19 PAGE 2   
+
+  53   1      
+  54   1          TMR1_CONH &= ~TMR_PRD_PND(0x01); // 清除TMR1的计数标志位，表示未完成计数
+  55   1          TMR1_CONH |= TMR_PRD_IRQ_EN(1);  // 使能TMR1的计数中断
+  56   1      
+  57   1          // 配置TMR1的计数周期
+  58   1          TMR1_PRL = TMR1_CNT_TIME % 255;
+  59   1          TMR1_PRH = TMR1_CNT_TIME / 255;
+  60   1      
+  61   1          // 清除TMR1的计数值
+  62   1          TMR1_CNTL = 0;
+  63   1          TMR1_CNTH = 0;
+  64   1      
+  65   1          TMR1_CONL &= ~(TMR_SOURCE_SEL(0x07)); // 清除TMR1的时钟源配置寄存器
+  66   1          // TMR1_CONL |= TMR_SOURCE_SEL(0x07); // 配置TMR1的时钟源，使用系统时钟
+  67   1          TMR1_CONL |= TMR_SOURCE_SEL(0x05); // 配置TMR1的时钟源，不用任何时钟
+  68   1                                             // __EnableIRQ(TMR1_IRQn);                          // 使能中断
+  69   1      
+  70   1          __DisableIRQ(TMR1_IRQn); // 禁用中断
+  71   1          // __EnableIRQ(TMR1_IRQn);
+  72   1          // IE_EA = 1; // 使能总中断
+  73   1      }
+  74          
+  75          // 开启定时器TMR1，开始计时
+  76          void tmr1_enable(void)
+  77          {
+  78   1          // 重新给TMR1配置时钟
+  79   1          TMR1_CONL &= ~(TMR_SOURCE_SEL(0x07)); // 清除定时器的时钟源配置寄存器
+  80   1          TMR1_CONL |= TMR_SOURCE_SEL(0x06);    // 配置定时器的时钟源，使用系统时钟
+  81   1      
+  82   1          __EnableIRQ(TMR1_IRQn); // 使能中断
+  83   1      }
+  84          
+  85          // 关闭定时器1，清空计数值
+  86          void tmr1_disable(void)
+  87          {
+  88   1          // 不给定时器提供时钟，让它停止计数
+  89   1          TMR1_CONL &= ~(TMR_SOURCE_SEL(0x07)); // 清除定时器的时钟源配置寄存器
+  90   1          TMR1_CONL |= TMR_SOURCE_SEL(0x05);    // 配置定时器的时钟源，不用任何时钟
+  91   1      
+  92   1          // 清除定时器的计数值
+  93   1          TMR1_CNTL = 0;
+  94   1          TMR1_CNTH = 0;
+  95   1      
+  96   1          __DisableIRQ(TMR1_IRQn); // 关闭中断（不使能中断）
+  97   1      }
+  98          
+  99          // 定时器TMR1中断服务函数
+ 100          void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
+ 101          {
+ 102   1          // 每个要发送的二进制数据用定时器触发中断的四个周期来发送
+ 103   1          // 这里用3个周期的高电平+1个周期的低电平表示"1"
+ 104   1          // 用1个周期的高电平+3个周期的低电平表示"0"
+ 105   1          static volatile unsigned char cur_period = 0; // 当前周期
+ 106   1      
+ 107   1          static volatile unsigned char cur_bit = 0; // 当前要发送的第几位二进制数
+ 108   1      
+ 109   1          static volatile unsigned char last_period = 0; // 标志位，是否到了最后一个位的最后一个周期
+ 110   1      
+ 111   1          // 进入中断设置IP，不可删除
+ 112   1          __IRQnIPnPush(TMR1_IRQn);
+ 113   1      
+ 114   1          // ---------------- 用户函数处理 -------------------
+C51 COMPILER V9.60.7.0   SEND_KEY                                                          05/21/2024 13:47:19 PAGE 3   
+
+ 115   1          // 周期中断
+ 116   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
+ 117   1          {
+ 118   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
+ 119   2      
+ 120   2              // SEND_KEY_VAL_PIN = ~SEND_KEY_VAL_PIN; // 测试用，观察是不是能触发中断，以及每次中断触发的时间间
+             -隔
+ 121   2      
+ 122   2              if (send_keyval_flag == 1)
+ 123   2              {
+ 124   3                  // 发送键值
+ 125   3      
+ 126   3                  // 先判断当前要发送的是低几位二进制数，对应的逻辑值是多少
+ 127   3                  if (key_val & (0x01 << (15 - cur_bit)))
+ 128   3                  {
+ 129   4                      // 如果当前要发送的是"1"
+ 130   4      
+ 131   4                      // 判断当前要发送第几个周期了
+ 132   4                      switch (cur_period)
+ 133   4                      {
+ 134   5                      case 0:
+ 135   5                          SEND_KEY_VAL_PIN = 1;
+ 136   5                          break;
+ 137   5      
+ 138   5                      case 1:
+ 139   5                          SEND_KEY_VAL_PIN = 1;
+ 140   5                          break;
+ 141   5      
+ 142   5                      case 2:
+ 143   5                          SEND_KEY_VAL_PIN = 1;
+ 144   5                          break;
+ 145   5      
+ 146   5                      case 3:
+ 147   5                          SEND_KEY_VAL_PIN = 0;
+ 148   5                          break;
+ 149   5                      }
+ 150   4                  }
+ 151   3                  else
+ 152   3                  {
+ 153   4                      // 如果当前要发送的是"0"
+ 154   4      
+ 155   4                      // 判断当前要发送第几个周期了
+ 156   4                      switch (cur_period)
+ 157   4                      {
+ 158   5                      case 0:
+ 159   5                          SEND_KEY_VAL_PIN = 1;
+ 160   5                          break;
+ 161   5      
+ 162   5                      case 1:
+ 163   5                          SEND_KEY_VAL_PIN = 0;
+ 164   5                          break;
+ 165   5      
+ 166   5                      case 2:
+ 167   5                          SEND_KEY_VAL_PIN = 0;
+ 168   5                          break;
+ 169   5      
+ 170   5                      case 3:
+ 171   5                          SEND_KEY_VAL_PIN = 0;
+ 172   5                          break;
+ 173   5                      }
+ 174   4                  }
+ 175   3      
+C51 COMPILER V9.60.7.0   SEND_KEY                                                          05/21/2024 13:47:19 PAGE 4   
+
+ 176   3                  // 发送完一个周期后，对应的计数值加一
+ 177   3                  cur_period++;
+ 178   3                  if (cur_period >= 4)
+ 179   3                  {
+ 180   4                      // 如果计数周期大于等于4了，说明发送完了1位二进制数
+ 181   4                      cur_bit++;
+ 182   4      
+ 183   4                      cur_period = 0; // 从下一位二进制数的第0个周期开始，准备下一次发送
+ 184   4                  }
+ 185   3      
+ 186   3                  if (cur_bit >= 16 && 0 == last_period)
+ 187   3                  {
+ 188   4                      // 如果发送到了第15位（0~15）二进制数的第四个周期（第4的周期还未完成）
+ 189   4                      last_period = 1;
+ 190   4                      cur_bit--;
+ 191   4                      cur_period = 3;
+ 192   4                  }
+ 193   3                  else if (cur_bit >= 16 && 1 == last_period) // 如果发送完了16位二进制数
+ 194   3                  {
+ 195   4                      // 清空计数值，准备下一次发送
+ 196   4                      cur_bit = 0;
+ 197   4                      cur_period = 0;
+ 198   4                      last_period = 0;
+ 199   4      
+ 200   4                      send_keyval_flag = 0; // 清空对应的标志位，准备下一次键值的发送
+ 201   4                      SEND_KEY_VAL_PIN = 1; // 输出键值的引脚设置为空闲状态，空前状态保持高电平
+ 202   4                  }
+ 203   3              }
+ 204   2          }
+ 205   1      
+ 206   1          // 退出中断设置IP，不可删除
+ 207   1          __IRQnIPnPop(TMR1_IRQn);
+ 208   1      }
+ 209          
+ 210          // 发送一次按键键值(总共16bit)
+ 211          void send_keyval(unsigned short send_data)
+ 212          {
+ 213   1          key_val = send_data; // 存放要发送的键值，定时器的中断服务函数会读取key_val中的值，然后发送出去
+ 214   1      
+ 215   1          // 先发送协议头（引脚空闲状态是高电平，用低电平作为协议头）
+ 216   1          SEND_KEY_VAL_PIN = 0;
+ 217   1      
+ 218   1          // delay_ms(5);
+ 219   1          tmr2_enable();       // 打开定时器TMR2，下面开始用定时器来实现延时5ms
+ 220   1          while (tmr2_cnt < 1) // TMR2开启5ms后才会将这个计数值加一
+ 221   1          {
+ 222   2              WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗
+ 223   2          }
+ 224   1          tmr2_disable(); // 关闭定时器TMR2，函数内部会把它硬件的计数值清零
+ 225   1          tmr2_flag = 0;  // 清除标志位
+ 226   1          tmr2_cnt = 0;   // tmr2_cnt = 0; // 清除定时器的计数值
+ 227   1      
+ 228   1          tmr1_enable(); // 打开定时器，发送键值数据
+ 229   1          send_keyval_flag = 1;
+ 230   1          while (send_keyval_flag != 0) // 等待发送完成
+ 231   1              ;
+ 232   1          tmr1_disable(); // 关闭定时器
+ 233   1      
+ 234   1          delay_ms(10); // 每个键值至少间隔10ms（要求是5~10ms）
+ 235   1      
+ 236   1      #if 0
+                  tmr2_enable();       // 打开定时器TMR2，这里通过复用定时器来实现延时10ms
+C51 COMPILER V9.60.7.0   SEND_KEY                                                          05/21/2024 13:47:19 PAGE 5   
+
+                  while (tmr2_cnt < 2) // TMR2开启5ms后才会将这个计数值加一
+                  {
+                      WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗
+                  }
+                  tmr2_disable(); // 关闭定时器TMR2，函数内部会把它硬件的计数值清零
+                  tmr2_flag = 0;  // 清除标志位
+                  tmr2_cnt = 0;   // tmr2_cnt = 0; // 清除定时器的计数值
+              #endif
+ 246   1      }
+ 247          
+ 248          // 发送带有按键状态信息的16位数据
+ 249          // 前三位信息表示短按、长按、持续和长按后松开（相关定义在rf_scan.h中）
+ 250          // 后五位信息表示键值
+ 251          void send_status_keyval(u8 status, u8 key)
+ 252          {
+ 253   1          u16 send_data = 0;
+ 254   1      
+ 255   1          // if (0 == key)
+ 256   1          // {
+ 257   1          //     return; // 不发送空的键值
+ 258   1          // }
+ 259   1      
+ 260   1          send_data = status << (5 + 8);  // 长短按信息（3bits）
+ 261   1          send_data |= (key & 0x1F) << 8; // 存放5位的键值
+ 262   1          send_data |= (~send_data >> 8); // 低8位存放反码
+ 263   1          send_keyval(send_data);
+ 264   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    470    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

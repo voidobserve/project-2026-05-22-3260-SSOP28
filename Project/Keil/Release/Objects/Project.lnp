@@ -1,0 +1,25 @@
+".\Release\Objects\STARTUP.obj",
+".\Release\Objects\system.obj",
+"..\..\User\lib\tk_simplify_algorithm_V1.0.0.LIB",
+".\Release\Objects\tk_set.obj",
+".\Release\Objects\tmr1.obj",
+".\Release\Objects\tmr2.obj",
+".\Release\Objects\uart0.obj",
+".\Release\Objects\adc.obj",
+".\Release\Objects\key_driver.obj",
+".\Release\Objects\user_flash.obj",
+".\Release\Objects\aip3368.obj",
+".\Release\Objects\main.obj",
+".\Release\Objects\pin_level_scan.obj",
+".\Release\Objects\speed_scan.obj",
+".\Release\Objects\engine_speed_scan.obj",
+".\Release\Objects\mileage.obj",
+".\Release\Objects\fuel_capacity.obj",
+".\Release\Objects\battery.obj",
+".\Release\Objects\instrument.obj",
+".\Release\Objects\aip3368h_display.obj",
+".\Release\Objects\io_key.obj" 
+TO ".\Release\Objects\Project" 
+PRINT(".\Release\Listings\Project.m51") RAMSIZE(256) 
+CODE( 0X0000-0X3EEF )
+XDATA( 0X6000-0X66FF )

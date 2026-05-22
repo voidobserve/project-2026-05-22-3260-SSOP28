@@ -1,0 +1,49 @@
+C51 COMPILER V9.60.7.0   PIN_LEVEL_SCAN                                                    05/22/2026 18:06:42 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PIN_LEVEL_SCAN
+OBJECT MODULE PLACED IN .\Release\Objects\pin_level_scan.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\User\pin_level_scan.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTO
+                    -R(0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(
+                    -.\Release\Listings\pin_level_scan.lst) OBJECT(.\Release\Objects\pin_level_scan.obj)
+
+line level    source
+
+   1          #include "pin_level_scan.h"
+   2          
+   3          #if PIN_LEVEL_SCAN_ENABLE
+   4          void pin_level_scan_config(void)
+   5          {
+   6   1          // 检测 故障 的引脚:
+   7   1          P2_PU |= GPIO_P20_PULL_UP(0x01);      // 上拉
+   8   1          P2_MD0 &= ~(GPIO_P20_MODE_SEL(0x03)); // 输入模式    
+   9   1      }
+  10          
+  11          // 引脚电平扫描
+  12          void pin_level_scan(void)
+  13          {
+  14   1          if (0 == PIN_DETECT_BREAKDOWN)
+  15   1          {
+  16   2              aip3368h_display_err_icon(1);
+  17   2          }
+  18   1          else
+  19   1          {
+  20   2              aip3368h_display_err_icon(0);
+  21   2          }
+  22   1      }
+  23          
+  24          #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     26    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "include.h": "c",
+        "tx8t326x_led.h": "c",
+        "my_gpio.h": "c",
+        "rf_record.h": "c",
+        "tx8t326x_timer.h": "c",
+        "tk_set.h": "c",
+        "intrins.h": "c",
+        "INTRINS.H": "cpp",
+        "system.h": "c",
+        "send_key.h": "c",
+        "tk_user.h": "c"
+    },
+    "files.encoding": "gb2312",
+    "files.autoGuessEncoding": true
+}

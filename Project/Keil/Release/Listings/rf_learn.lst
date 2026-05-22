@@ -1,0 +1,394 @@
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE RF_LEARN
+OBJECT MODULE PLACED IN .\Release\Objects\rf_learn.obj
+COMPILER INVOKED BY: D:\AppData\keil-C51\C51\BIN\C51.EXE ..\..\User\rf_learn.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR(
+                    -0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listing
+                    -s\rf_learn.lst) OBJECT(.\Release\Objects\rf_learn.obj)
+
+line level    source
+
+   1          // Ñ§Ï°¹¦ÄÜ£¨±£´æÆ÷¼şµØÖ·Ïà¹Ø£©µÄÔ´ÎÄ¼ş
+   2          #include "rf_learn.h" //
+*** ERROR C129 IN LINE 62 OF ..\..\User\rf_learn.h: missing ';' before 'addr_info'
+   3          #include "flash.h"    // °üº¬µ¥Æ¬»úµÄflashÏà¹Ø²Ù×÷
+   4          #include "rf_recv.h"  // rf½âÂëÏà¹Ø²Ù×÷
+   5          #include "send_key.h" // ·¢ËÍ¼üÖµ£¬²âÊÔÊ±ÓÃ
+   6          #include "tmr2.h" // Ê¹ÓÃ¶¨Ê±Æ÷TMR2À´ÊµÏÖ5sÑÓÊ±
+   7          
+   8          #include <stdlib.h> // Ê¹ÓÃÁËNULL
+   9          
+  10          addr_info_t addr_info = {0}; // ´æ·Å´ÓflashÖĞ¶Á³öµÄÆ÷¼şµØÖ·
+  11          
+  12          #ifdef LEARN_BY_QUANTITY // ±£´æn¸öÆ÷¼şµØÖ·
+              /**
+               * @brief RFÑ§Ï°¹¦ÄÜ£¬5sÄÚ¼ì²âµ½ÓĞ°´¼ü³¤°´£¬Ôò½«Õâ¸öÒ£¿ØÆ÷µÄÆ÷¼şµØÖ·Ğ´Èëµ½flashÖĞ£¨Ò»°ã·ÅÔÚÉÏµçµÄ5sÖĞÊ¹ÓÃ£
+             -©
+               *          Èç¹û my_config.hÎÄ¼şÖĞµÄUSE_RF_UNPAIRÎª1£¬ÄÇÃ´µ±ÊÕµ½ÓĞÓëflashÖĞÏàÍ¬µÄÆ÷¼şµØÖ·´«À´µÄĞÅºÅÊ±£¬
+               *          »á´ÓflashÖĞÉ¾³ı¸ÃµØÖ·Êı¾İ£¬ÊµÏÖÈ¡ÏûÅä¶Ô
+               */
+              void rf_learn(void)
+              {
+                  u32 appear_themost_ele = 0; // RF½ÓÊÕÊı×éÖĞ³öÏÖ×î¶à´ÎÊıµÄÔªËØ
+              
+                  u32 i = 0; // Ñ­»·¼ÆÊıÖµ
+                  u32 j = 0; // Ñ­»·¼ÆÊıÖµ
+              
+                  u8 isSpare = 0; // ±êÖ¾Î»£¬flashÖĞÊÇ·ñÓĞ¿ÕÏĞÎ»ÖÃÀ´´æ´¢¿ÕµÄµØÖ·
+              
+                  u32 temp = 0;             // ÁÙÊ±±äÁ¿£¬´æ·ÅÁÙÊ±Öµ
+                  u32 the_oldest_index = 0; // ×î¾ÉµÄÆ÷¼şµØÖ·¶ÔÓ¦µÄÊı×éÏÂ±ê
+              
+                  // ´ò¿ª¶¨Ê±Æ÷
+                  tmr2_enable();
+              
+                  while (tmr2_flag != 1)
+                  {
+                      WDT_KEY = WDT_KEY_VAL(0xAA); // Î¹¹·
+                      rf_recv_databuf();           // Ã¿´ÎÑ­»·£¬ÊÔ×Å¶ÁÈ¡Ò»´ÎÊı¾İ
+                  }
+              
+                  // 5sºó£¬¹Ø±Õ¶¨Ê±Æ÷£¬Çå¿ÕËüÓ²¼şµÄ¼ÆÊıÖµ
+                  tmr2_disable();
+                  tmr2_flag = 0; // Çå³ı±êÖ¾Î»
+                  tmr2_cnt = 0;  // Çå³ı¶¨Ê±Æ÷µÄ¼ÆÊıÖµ
+              
+                  // ´ÓflashÖĞ¶ÁÈ¡Æ÷¼şµØÖ·
+                  flash_read(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+              
+                  // Èç¹ûÕâ¶ÎÊ±¼äÄÚ¼ì²âµ½ÓĞ°´¼ü³¤°´£¬Ê¹µÃ±êÖ¾Î»ÖÃÒ»£¬½øĞĞÏà¹ØµÄ´¦Àí
+                  if (rf_data_buf_overflow)
+                  {
+                      rf_data_buf_overflow = 0;
+                      // ÕÒ³öÊı×éÖĞ³öÏÖ´ÎÊı×î¶àµÄÔªËØ
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 2   
+
+                      appear_themost(rf_data_buf, sizeof(rf_data_buf) / sizeof(rf_data_buf[0]), &appear_themost_ele, NUL
+             -L);
+              
+                      // Èç¹û²»ÊÇµçÔ´°´¼ü£¬º¯ÊıÍË³ö£¨´ı²¹³ä£©
+              
+                      // Èç¹ûÊÇµçÔ´°´¼ü
+                      // ½«Æ÷¼şµØÖ·Ğ´Èëµ½µ¥Æ¬»úµÄflashÖĞ
+                      // |--Èç¹ûÃ»ÓĞÔòÖ±½ÓĞ´Èë£¬Èç¹ûÓĞÔò¸²¸Ç×î¾ÉµÄÆ÷¼şµØÖ·£¬ÔÙÒ»´ÎĞÔĞ´Èë
+              
+                      // Í¨¹ıÑ­»·ÅĞ¶ÏflashÖĞÊÇ·ñÒÑ¾­ÓĞ¶ÔÓ¦µÄµØÖ·
+                      for (i = 0; i < ADDR_MAX_NUM; i++)
+                      {
+                          if (addr_info.addr_buf[i] == (appear_themost_ele >> 8))
+                          {
+              #if USE_RF_UNPAIR // Èç¹û¿ªÆô È¡ÏûÅä¶Ô
+              
+                              // ÈôÆ÷¼şµØÖ·ÏàÍ¬£¬Çå³ı¶ÔÓ¦µÄÊı¾İ
+                              addr_info.addr_buf[i] = 0;
+                              addr_info.weighted_val_buf[i] = 0; // Çå³ıÈ¨Öµ
+              
+                              // ½«Æ÷¼şµØÖ·Ğ´»Øflash
+                              flash_erase_sector(FLASH_DEVICE_START_ADDR);
+                              flash_write(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+              
+                              return; // Ğ´ÈëÍê³É£¬º¯ÊıÖ±½Ó·µ»Ø
+              
+              #else // Èç¹ûÃ»ÓĞ¿ªÆô È¡ÏûÅä¶Ô
+              
+                              return; // º¯ÊıÖ±½Ó·µ»Ø£¬²»ÓÃÔÙ±£´æÒÑÓĞµÄµØÖ·
+              
+              #endif // end if USE_RF_UNPAIR
+                          }
+                      }
+              
+                      // Èç¹ûÒª±£´æµÄµØÖ·ÔÚflashÖĞ²¢Ã»ÓĞÖØ¸´
+                      // |---ÕÒÒ»´¦¿ÕµÄµØ·½±£´æ£¬Èç¹ûÃ»ÓĞ£¬Ôò¸²¸Ç×î¾ÉµÄÆ÷¼şµØÖ·
+                      for (i = 0; i < ADDR_MAX_NUM; i++)
+                      {
+                          if ((addr_info.weighted_val_buf[i] == 0) && (addr_info.addr_buf[i] == 0))
+                          {
+                              // Èç¹ûÓĞ¿ÕµÄµØ·½£¬Ö±½Ó±£´æ
+                              addr_info.weighted_val_buf[i] = 0;
+                              addr_info.addr_buf[i] = (appear_themost_ele >> 8);
+              
+                              // Ôö¼ÓÆäËûµØÖ·µÄÈ¨Öµ£¨²»Ôö¼Ó¿ÕµÄµØÖ·µÄÈ¨Öµ£©
+                              for (j = 0; j < ADDR_MAX_NUM; j++)
+                              {
+                                  if ((j != i) && (addr_info.addr_buf[j] != 0))
+                                  {
+                                      addr_info.weighted_val_buf[j]++;
+                                  }
+                              }
+              
+                              isSpare = 1;
+                              break;
+                          }
+                      }
+              
+                      // Èç¹ûÃ»ÓĞ¿ÕÓàµÄµØ·½£¬Ôò¸²¸Ç×î¾ÉµÄÆ÷¼şµØÖ·
+                      if (0 == isSpare)
+                      {
+                          // Í¨¹ıÑ­»·ÕÒµ½×î¾ÉµÄµØÖ·ËùÔÚµÄÊı×éÏÂ±ê
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 3   
+
+                          for (i = 0; i < ADDR_MAX_NUM; i++)
+                          {
+                              if (addr_info.weighted_val_buf[i] > temp)
+                              {
+                                  temp = addr_info.weighted_val_buf[i];
+                                  the_oldest_index = i;
+                              }
+                          }
+              
+                          addr_info.addr_buf[the_oldest_index] = (appear_themost_ele >> 8); // ±£´æÆ÷¼şµØÖ·
+                          addr_info.weighted_val_buf[the_oldest_index] = 0;                 // È¨ÖµÉèÖÃÎª0
+              
+                          // Ôö¼ÓÆäËûµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£¨ÕâÀïÒª¿¼ÂÇ²»Ôö¼Ó¿ÕµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£©
+                          for (j = 0; j < ADDR_MAX_NUM; j++)
+                          {
+                              if ((j != the_oldest_index) && (addr_info.addr_buf[j] != 0))
+                              {
+                                  addr_info.weighted_val_buf[j]++;
+                              }
+                          }
+                      }
+              
+                      // ×îºó£¬½«Æ÷¼şµØÖ·Ğ´»Øflash
+                      flash_erase_sector(FLASH_DEVICE_START_ADDR);
+                      flash_write(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+                  }
+              }
+              
+              // ÅĞ¶Ïµ±Ç°½ÓÊÕµÄÊı¾İµÄµØÖ·ÊÇ·ñÓëflashÖĞ±£´æµÄµØÖ·Æ¥Åä
+              // ĞèÒªÏÈÑ§Ï°£¬´ÓflashÖĞ¶Á³öÊı¾İ
+              // ·µ»Ø£º 0--²»Æ¥Åä£¬1--Æ¥Åä
+              u8 rf_addr_isMatch(void)
+              {
+                  u8 i = 0;
+                  for (i = 0; i < ADDR_MAX_NUM; i++)
+                  {
+                      if (addr_info.addr_buf[i] == (rf_data >> 8))
+                      {
+                          return 1;
+                      }
+                  }
+              
+                  return 0;
+              }
+              
+              
+              // ²âÊÔº¯Êı£¬²é¿´flashÖĞ°´²»Í¬µØÖ·À´±£´æµÄËùÓĞÆ÷¼şµØÖ·
+              void show_addr_info_save_by_nums(void)
+              {
+                  u32 i;
+              
+                  for (i = 0; i < ADDR_MAX_NUM; i++)
+                  {
+                      send_keyval(addr_info.weighted_val_buf[i]);
+                      send_keyval(addr_info.addr_buf[i]);
+                  }
+              }
+              
+              #endif // end of #ifdef LEARN_BY_QUANTITY
+ 172          
+ 173          
+ 174          #ifdef LEARN_BY_TYPE
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 4   
+
+              /**
+               * @brief RFÑ§Ï°¹¦ÄÜ£¬5sÄÚ¼ì²âµ½ÓĞ°´¼ü³¤°´£¬Ôò½«Õâ¸öÒ£¿ØÆ÷µÄÆ÷¼şµØÖ·Ğ´Èëµ½flashÖĞ£¨Ò»°ã·ÅÔÚÉÏµçµÄ5sÖĞÊ¹ÓÃ£
+             -©
+               *          Èç¹û my_config.hÎÄ¼şÖĞµÄUSE_RF_UNPAIRÎª1£¬ÄÇÃ´µ±ÊÕµ½ÓĞÓëflashÖĞÏàÍ¬µÄÆ÷¼şµØÖ·´«À´µÄĞÅºÅÊ±£¬
+               *          »á´ÓflashÖĞÉ¾³ı¸ÃµØÖ·Êı¾İ£¬ÊµÏÖÈ¡ÏûÅä¶Ô
+               */
+              void rf_learn(void)
+              {
+                  u32 appear_themost_ele = 0; // RF½ÓÊÕÊı×éÖĞ³öÏÖ×î¶à´ÎÊıµÄÔªËØ
+              
+                  int32 i = 0; // Ñ­»·¼ÆÊıÖµ
+                  int32 j = 0; // Ñ­»·¼ÆÊıÖµ
+              
+                  u8 isExist = 0; // ±êÖ¾Î»£¬µØÖ·ÊÇ·ñÒÑ¾­ÔÚflash±£´æ
+                  u8 isSpare = 0; // ±êÖ¾Î»£¬±êÖ¾´æ·ÅµØÖ·µÄÈİÆ÷ÖĞÊÇ·ñÓĞ¿ÕµÄµØ·½
+              
+                  u32 temp = 0;             // ´æ·ÅÁÙÊ±Öµ
+                  u32 the_oldest_index = 0; // ×î¾ÉµÄÆ÷¼şµØÖ·¶ÔÓ¦µÄÊı×éÏÂ±ê
+              
+                  // ´ò¿ª¶¨Ê±Æ÷
+                  tmr2_enable();
+              
+                  while (tmr2_flag != 1)
+                  {
+                      WDT_KEY = WDT_KEY_VAL(0xAA); // Î¹¹·
+                      rf_recv_databuf();           // Ã¿´ÎÑ­»·£¬ÊÔ×Å¶ÁÈ¡Ò»´ÎÊı¾İ
+                  }
+              
+                  // 5sºó£¬¹Ø±Õ¶¨Ê±Æ÷£¬Çå¿ÕËüÓ²¼şµÄ¼ÆÊıÖµ
+                  tmr2_disable();
+                  tmr2_flag = 0; // Çå³ı±êÖ¾Î»
+                  tmr2_cnt = 0;  // Çå³ı¶¨Ê±Æ÷µÄ¼ÆÊıÖµ
+              
+                  // ´ÓflashÖĞ¶ÁÈ¡Æ÷¼şµØÖ·
+                  flash_read(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+              
+                  // Èç¹ûÕâ¶ÎÊ±¼äÄÚ£¨5sÄÚ£©¼ì²âµ½ÓĞ°´¼ü³¤°´£¬Ê¹µÃ±êÖ¾Î»ÖÃÒ»£¬½øĞĞÏà¹ØµÄ´¦Àí
+                  if (rf_data_buf_overflow)
+                  {
+                      rf_data_buf_overflow = 0;
+                      // ÕÒ³öÊı×éÖĞ³öÏÖ´ÎÊı×î¶àµÄÔªËØ
+                      appear_themost(rf_data_buf, sizeof(rf_data_buf) / sizeof(rf_data_buf[0]), &appear_themost_ele, NUL
+             -L);
+              
+                      // Èç¹û²»ÊÇµçÔ´°´¼ü£¬º¯ÊıÍË³ö£¨´ı²¹³ä£©
+              
+                      // Èç¹ûÊÇµçÔ´°´¼ü
+                      // ½«Æ÷¼şµØÖ·Ğ´Èëµ½µ¥Æ¬»úµÄflashÖĞ
+                      // |--Èç¹ûÃ»ÓĞÔòÖ±½ÓĞ´Èë£¬Èç¹ûÓĞÔò¸²¸Ç×î¾ÉµÄÆ÷¼şµØÖ·£¬ÔÙÒ»´ÎĞÔĞ´Èë
+                      for (i = 0; i < ADDR_MAX_TYPE_NUM; i++)
+                      {
+                          if (addr_info.type_buf[i] == (appear_themost_ele & 0xFF))
+                          {
+                              // Èç¹ûflashÖĞÒÑ¾­ÓĞ¶ÔÓ¦ÀàĞÍµÄÆ÷¼şµØÖ·
+                              isExist = 1;
+                              break;
+                          }
+                      }
+              
+                      if (isExist)
+                      {
+                          // Èç¹ûflashÖĞÒÑ¾­ÓĞ¶ÔÓ¦ÀàĞÍµÄÆ÷¼şµØÖ·
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 5   
+
+                          // ÅĞ¶ÏÆ÷¼şµØÖ·ÊÇ·ñÏàÍ¬
+                          if (addr_info.addr_buf[i] == (appear_themost_ele >> 8))
+                          {
+              #if USE_RF_UNPAIR // Èç¹ûÊ¹ÓÃÁËÈ¡ÏûÅä¶Ô
+              
+                              // ÈôÆ÷¼şµØÖ·ÏàÍ¬£¬Çå³ı¶ÔÓ¦µÄÊı¾İ
+                              addr_info.addr_buf[i] = 0;
+                              addr_info.type_buf[i] = 0;
+                              addr_info.weighted_val_buf[i] = 0;
+              
+                              // ½«Æ÷¼şµØÖ·Ğ´»Øflash
+                              flash_erase_sector(FLASH_DEVICE_START_ADDR);
+                              flash_write(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+              
+                              return; // Ğ´ÈëÍê³Éºó£¬º¯Êı¿ÉÒÔÖ±½Ó·µ»ØÁË
+              
+              #else // Èç¹û²»Ê¹ÓÃÈ¡ÏûÅä¶Ô
+              
+                              // ÈôÆ÷¼şµØÖ·ÏàÍ¬Ôò²»ÓÃ¸²¸Ç£¬Ö±½ÓÍË³ö
+                              return;
+              
+              #endif // end if USE_RF_UNPAIR
+                          }
+              
+                          addr_info.addr_buf[i] = (appear_themost_ele >> 8); // ¸²¸ÇÆ÷¼şµØÖ·
+                          addr_info.weighted_val_buf[i] = 0;                 // È¨ÖµÉèÖÃÎª0£¬±íÊ¾ËüÊÇ×îĞÂĞ´ÈëµÄ
+              
+                          // Ôö¼ÓÆäËûÀàĞÍµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£¨ÕâÀïÒª¿¼ÂÇ²»Ôö¼Ó¿ÕµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£©
+                          for (j = 0; j < ADDR_MAX_TYPE_NUM; j++)
+                          {
+                              if ((j != i) && (addr_info.addr_buf[j] != 0))
+                              {
+                                  addr_info.weighted_val_buf[j]++;
+                              }
+                          }
+                      }
+                      else
+                      {
+                          // Èç¹ûflashÖĞÃ»ÓĞ¶ÔÓ¦ÀàĞÍµÄÆ÷¼şµØÖ·£¬ÔòÕÒÒ»´¦¿ÕµÄµØ·½£¬±£´æ
+                          // Èç¹ûÃ»ÓĞ¿ÕµÄµØ·½£¬¸²¸Ç×î¾ÉµÄÀàĞÍºÍÆ÷¼şµØÖ·
+              
+                          for (i = 0; i < ADDR_MAX_TYPE_NUM; i++)
+                          {
+                              if ((addr_info.type_buf[i] == 0) && (addr_info.addr_buf[i] == 0) && (addr_info.weighted_va
+             -l_buf[i] == 0))
+                              {
+                                  // Èç¹ûÓĞ¿ÕµÄµØ·½
+                                  addr_info.type_buf[i] = (appear_themost_ele & 0xFF); // ¼üÖµ×÷ÎªÆ÷¼şÀàĞÍ£¬±£´æÆğÀ´
+                                  addr_info.addr_buf[i] = (appear_themost_ele >> 8);   // ±£´æÆ÷¼şµØÖ·
+                                  addr_info.weighted_val_buf[i] = 0;                   // È¨ÖµÉèÖÃÎª0£¬±íÊ¾ËüÊÇ×îĞÂĞ´Èëµ
+             -Ä
+              
+                                  // Ôö¼ÓÆäËûÀàĞÍµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£¨ÕâÀïÒª¿¼ÂÇ²»Ôö¼Ó¿ÕµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£©
+                                  for (j = 0; j < ADDR_MAX_TYPE_NUM; j++)
+                                  {
+                                      if ((j != i) && (addr_info.addr_buf[j] != 0))
+                                      {
+                                          addr_info.weighted_val_buf[j]++;
+                                      }
+                                  }
+                                  isSpare = 1; // ÓĞ¿ÕÓàµÄµØ·½£¬²¢ÇÒÒÑ¾­Íê³É±£´æ
+                                  break;
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 6   
+
+                              }
+                          }
+              
+                          // Èç¹ûÃ»ÓĞ¿ÕÓàµÄµØ·½£¬Ôò¸²¸Ç×î¾ÉµÄÀàĞÍºÍÆ÷¼şµØÖ·
+                          if (0 == isSpare)
+                          {
+                              // Í¨¹ıÑ­»·ÕÒµ½×î¾ÉµÄÀàĞÍËùÔÚµÄÊı×éÏÂ±ê
+                              for (i = 0; i < ADDR_MAX_TYPE_NUM; i++)
+                              {
+                                  if (addr_info.weighted_val_buf[i] > temp)
+                                  {
+                                      temp = addr_info.weighted_val_buf[i];
+                                      the_oldest_index = i;
+                                  }
+                              }
+              
+                              addr_info.type_buf[the_oldest_index] = (appear_themost_ele & 0xFF); // ¼üÖµ×÷ÎªÆ÷¼şÀàĞÍ
+                              addr_info.addr_buf[the_oldest_index] = (appear_themost_ele >> 8);   // ±£´æÆ÷¼şµØÖ·
+                              addr_info.weighted_val_buf[the_oldest_index] = 0;
+              
+                              // Ôö¼ÓÆäËûÀàĞÍµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£¨ÕâÀïÒª¿¼ÂÇ²»Ôö¼Ó¿ÕµÄÆ÷¼şµØÖ·µÄÈ¨Öµ£©
+                              for (j = 0; j < ADDR_MAX_TYPE_NUM; j++)
+                              {
+                                  if ((j != the_oldest_index) && (addr_info.addr_buf[j] != 0))
+                                  {
+                                      addr_info.weighted_val_buf[j]++;
+                                  }
+                              }
+                          }
+                      }
+              
+                      // ½«Æ÷¼şµØÖ·Ğ´»Øflash
+                      flash_erase_sector(FLASH_DEVICE_START_ADDR);
+                      flash_write(FLASH_DEVICE_START_ADDR, (unsigned char *)(&addr_info), sizeof(addr_info));
+                  }
+              }
+              
+              // ÅĞ¶Ïµ±Ç°½ÓÊÕµÄÊı¾İµÄµØÖ·ÊÇ·ñÓëflashÖĞ±£´æµÄµØÖ·Æ¥Åä
+              // ĞèÒªÏÈÑ§Ï°£¬´ÓflashÖĞ¶Á³öÊı¾İ
+              // ·µ»Ø£º 0--²»Æ¥Åä£¬1--Æ¥Åä
+              u8 rf_addr_isMatch(void)
+              {
+                  u32 i = 0;
+                  for (i = 0; i < ADDR_MAX_TYPE_NUM; i++)
+                  {
+                      if (addr_info.addr_buf[i] == (rf_data >> 8))
+                      {
+                          return 1;
+                      }
+                  }
+              
+                  return 0;
+              }
+              
+              // ²âÊÔº¯Êı£¬²é¿´flashÖĞ°´Æ÷¼şÀàĞÍÀ´±£´æµÄÆ÷¼şµØÖ·
+              void show_addr_info_save_by_type(void)
+              {
+                  u32 i;
+              
+                  for (i = 0; i < ADDR_MAX_TYPE_NUM; i++)
+                  {
+                      send_keyval(addr_info.weighted_val_buf[i]);
+C51 COMPILER V9.60.7.0   RF_LEARN                                                          05/21/2024 13:47:20 PAGE 7   
+
+                      send_keyval(addr_info.type_buf[i]);
+                      send_keyval(addr_info.addr_buf[i]);
+                  }
+              }
+              
+              #endif // end ifdef LEARN_BY_TYPE
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)

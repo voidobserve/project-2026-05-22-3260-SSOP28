@@ -1,0 +1,29 @@
+C51 COMPILER V9.60.7.0   INSTRUCTION_SCAN                                                  10/28/2024 08:59:11 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE INSTRUCTION_SCAN
+OBJECT MODULE PLACED IN .\Release\Objects\instruction_scan.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\User\instruction_scan.c LARGE OPTIMIZE(8,SIZE) BROWSE INTVECTOR(0X
+                    -000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Re
+                    -lease\Listings\instruction_scan.lst) OBJECT(.\Release\Objects\instruction_scan.obj)
+
+line level    source
+
+   1          // 扫描是否有指令，并根据指令发送对应的数据，
+   2          // 或者是当某一个功能的状态有更新，发送对应的数据
+   3          #include "instruction_scan.h"
+   4          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

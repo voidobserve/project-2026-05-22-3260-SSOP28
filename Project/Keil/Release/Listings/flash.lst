@@ -1,0 +1,75 @@
+C51 COMPILER V9.60.7.0   FLASH                                                             12/03/2025 11:16:54 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE FLASH
+OBJECT MODULE PLACED IN .\Release\Objects\flash.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\Hardware\flash.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTOR(0X0
+                    -00C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Rel
+                    -ease\Listings\flash.lst) OBJECT(.\Release\Objects\flash.obj)
+
+line level    source
+
+   1          #include "flash.h"
+   2          
+   3          /**
+   4           * @brief  flash erase sector
+   5           * @param  addr : sector address in flash
+   6           * @retval None
+   7           */
+   8          void flash_erase_sector(u8 addr)
+   9          {
+  10   1          FLASH_ADDR = 0x3F;
+  11   1          FLASH_ADDR = addr;
+  12   1          FLASH_PASSWORD = FLASH_PASSWORD(0xB9); // 写入操作密码
+*** ERROR C211 IN LINE 12 OF ..\..\Hardware\flash.c: call not to a function
+*** ERROR C208 IN LINE 12 OF ..\..\Hardware\flash.c: 'function': too many actual parameters
+  13   1          FLASH_CON = FLASH_SER_TRG(0x1);        // 触发扇区擦除
+  14   1      
+  15   1          while (!(FLASH_STA & FLASH_SER_FLG(0x1)))
+  16   1              ; // 等待扇区擦除空闲
+  17   1      }
+  18          
+  19          /**
+  20           * @brief  flash program
+  21           * @param  addr   : Write data address in flash
+  22           * @param  p_data : Write data to flash
+  23           * @param  len    : Data length
+  24           * @retval None
+  25           */
+  26          void flash_program(u8 addr, u8 *p_data, u8 len)
+  27          {
+  28   1          FLASH_ADDR = 0x3F;
+  29   1          FLASH_ADDR = addr;
+  30   1      
+  31   1          while (len >= 1)
+  32   1          {
+  33   2              while (!(FLASH_STA & FLASH_PROG_FLG(0x1)))
+  34   2                  ; // 等待烧录空闲
+  35   2              FLASH_DATA = *(p_data++);
+  36   2              FLASH_PASSWORD = FLASH_PASSWORD(0xB9); // 写入操作密码
+  37   2              FLASH_CON = FLASH_PROG_TRG(0x1);       // 触发烧录
+  38   2      
+  39   2              len -= 1;
+  40   2          }
+  41   1      }
+  42          
+  43          /**
+  44           * @brief  flash program
+  45           * @param  addr   : Read data address in flash
+  46           * @param  p_data : Read data to flash
+  47           * @param  len    : Data length
+  48           * @retval None
+  49           */
+  50          void flash_read(u8 addr, u8 *p_data, u8 len)
+  51          {
+C51 COMPILER V9.60.7.0   FLASH                                                             12/03/2025 11:16:54 PAGE 2   
+
+  52   1          while (len != 0)
+  53   1          {
+  54   2              *(p_data++) = *((u8 code *)(0x3F00 + addr++));
+  55   2              len--;
+  56   2          }
+  57   1      }
+  58          
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)

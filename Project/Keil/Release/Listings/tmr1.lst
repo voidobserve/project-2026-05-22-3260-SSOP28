@@ -1,0 +1,127 @@
+C51 COMPILER V9.60.7.0   TMR1                                                              05/22/2026 18:13:29 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR1
+OBJECT MODULE PLACED IN .\Release\Objects\tmr1.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\Hardware\tmr1.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTOR(0X00
+                    -0C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Rele
+                    -ase\Listings\tmr1.lst) OBJECT(.\Release\Objects\tmr1.obj)
+
+line level    source
+
+   1          #include "tmr1.h"
+   2          
+   3          // 定时器定时周期 (单位:Hz)
+   4          // 周期值 = 系统时钟 / 定时器分频 / 频率 - 1
+   5          #define TMR1_PERIOD (SYSCLK / 128 / 1000 - 1) // 1000Hz,1ms
+   6          
+   7          /**
+   8           * @brief 配置定时器TMR1，配置完成后，定时器默认关闭
+   9           */
+  10          void tmr1_config(void)
+  11          {
+  12   1          __SetIRQnIP(TMR1_IRQn, TMR1_IQn_CFG); // 设置中断优先级（TMR1）
+  13   1          __DisableIRQ(TMR1_IRQn);              // 禁用中断
+  14   1          IE_EA = 1;                            // 打开总中断
+  15   1      
+  16   1          TMR_ALLCON = TMR1_CNT_CLR(0x1); // 清除计数值
+  17   1      
+  18   1          // USER_TO_DO 待优化
+  19   1          TMR1_CONL &= ~TMR_PRESCALE_SEL(0x07); // 清除TMR1的预分频配置寄存器
+  20   1          TMR1_CONL |= TMR_PRESCALE_SEL(0x07);  // 定时器预分频
+  21   1          TMR1_CONL &= ~TMR_MODE_SEL(0x03);     // 清除TMR1的模式配置寄存器
+  22   1          TMR1_CONL |= TMR_MODE_SEL(0x01);      // 配置TMR1的模式为计数器模式，最后对系统时钟
+             -的脉冲进行计数
+  23   1      
+  24   1          TMR1_CONH &= ~TMR_PRD_PND(0x01); // 清除TMR1的计数标志位，表示未完成计数
+  25   1          TMR1_CONH |= TMR_PRD_IRQ_EN(1);  // 使能TMR1的计数中断
+  26   1      
+  27   1          // 配置TMR1的计数周期
+  28   1          TMR1_PRH = TMR_PERIOD_VAL_H((TMR1_PERIOD >> 8) & 0xFF); // 周期值
+  29   1          TMR1_PRL = TMR_PERIOD_VAL_L((TMR1_PERIOD >> 0) & 0xFF);
+  30   1      
+  31   1          // TMR1_CONL &= ~(TMR_SOURCE_SEL(0x07)); // 清除TMR1的时钟源配置寄存器
+  32   1          // TMR1_CONL |= TMR_SOURCE_SEL(0x05);    // 配置TMR1的时钟源，不用任何时钟
+  33   1      
+  34   1          // 重新给TMR1配置时钟
+  35   1          TMR1_CONL &= ~(TMR_SOURCE_SEL(0x07)); // 清除定时器的时钟源配置寄存器
+  36   1          TMR1_CONL |= TMR_SOURCE_SEL(0x06);    // 配置定时器的时钟源，使用系统时钟
+  37   1      
+  38   1          __EnableIRQ(TMR1_IRQn); // 使能中断
+  39   1          // IE_EA = 1;              // 打开总中断
+  40   1      }
+  41          
+  42          // TMR1中断服务函数
+  43          void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
+  44          {
+  45   1          // 进入中断设置IP，不可删除
+  46   1          __IRQnIPnPush(TMR1_IRQn);
+  47   1      
+  48   1          // ---------------- 用户函数处理 -------------------
+  49   1      
+  50   1          // 周期中断
+  51   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
+  52   1          {
+C51 COMPILER V9.60.7.0   TMR1                                                              05/22/2026 18:13:29 PAGE 2   
+
+  53   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
+  54   2      
+  55   2              if (mileage_save_time_cnt < 65535)
+  56   2              {
+  57   3                  mileage_save_time_cnt++;
+  58   3              }
+  59   2      
+  60   2              if (io_key_para.cur_scan_times < 255)
+  61   2              {
+  62   3                  io_key_para.cur_scan_times++;
+  63   3              }
+  64   2      
+  65   2      #if FUEL_CAPACITY_SCAN_ENABLE
+  66   2              fuel_capacity_scan_time_add();
+  67   2              fuel_lev_update_time_add();
+  68   2      #endif
+  69   2      
+  70   2              // if (mileage_update_time_cnt < 65535)
+  71   2              {
+  72   3                  mileage_update_time_cnt++;
+  73   3              }
+  74   2      
+  75   2      #if BATTERY_SCAN_ENABLE
+  76   2              // bat_scan_time_add();
+  77   2      #endif // BATTERY_SCAN_ENABLE
+  78   2      
+  79   2              // adc_channel_switch_by_isr();
+  80   2              
+  81   2              aip3368h_refresh_time_add();
+  82   2              // aip3368h_display_speed_refresh_time_add();
+  83   2              // aip3368h_display_engine_speed_refresh_time_add();
+  84   2              // aip3368h_display_err_handle_time_add();
+  85   2      
+  86   2              // 修改显存的操作放到了主循环，这里仅用作计时
+  87   2              aip3368h_display_boot_animation_time_add();
+  88   2      
+  89   2              // USER_TO_DO 只在测试时只用： 
+  90   2              // aip3368h_display_test_engine_speed_scale_bar_1ms_isr();
+  91   2              // aip3368h_display_test_fuel_level_1ms_isr();
+  92   2              // aip3368h_display_test_mileage_1ms_isr();
+  93   2              // aip3368h_display_test_speed_1ms_isr();
+  94   2              // aip3368h_display_test_speed_scale_bar_1ms_isr();
+  95   2          }
+  96   1       
+  97   1          // 退出中断设置IP，不可删除
+  98   1          __IRQnIPnPop(TMR1_IRQn);
+  99   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    197    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,69 @@
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        05/22/2026 18:06:43 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE INSTRUMENT
+OBJECT MODULE PLACED IN .\Release\Objects\instrument.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\User\instrument.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTOR(0X
+                    -000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Re
+                    -lease\Listings\instrument.lst) OBJECT(.\Release\Objects\instrument.obj)
+
+line level    source
+
+   1          #include "instrument.h"
+   2          #include <string.h> // memset()
+   3          
+   4          volatile instrument_t instrument = {0};
+   5          
+   6          void instrument_info_init(void)
+   7          {
+   8   1          save_info_t save_info;
+   9   1          // 从flash中读出数据
+  10   1          flash_read(FLASH_START_ADDR,
+  11   1                     (u8 *)&save_info,
+  12   1                     sizeof(save_info_t));
+  13   1          if (USER_FLASH_DATA_VALID_VAL == save_info.is_save_data_valid)
+  14   1          {
+  15   2              // 如果保存在flash中的数据有效
+  16   2              instrument.save_info.total_mileage = save_info.total_mileage;
+  17   2              instrument.save_info.subtotal_mileage = save_info.subtotal_mileage;
+  18   2              instrument.save_info.is_display_total_mileage = save_info.is_display_total_mileage;
+  19   2          }
+  20   1          else
+  21   1          {
+  22   2              // 如果保存在flash中的数据无效，全局变量 instrument 中的元素 默认全部为0
+  23   2      
+  24   2              instrument.save_info.is_display_total_mileage = 1; // 默认显示大计里程
+  25   2              instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL;
+  26   2              instrument_info_save(); // 将数据写回flash
+  27   2          }
+  28   1      }
+  29          
+  30          void instrument_info_save(void)
+  31          {
+  32   1      #if USE_INTERNAL_FLASH_SAVE_DATA
+  33   1      
+  34   1          instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL; // 表示数据有效，让下一
+             -次上电读出数据时，验证该标志位
+  35   1          // 先擦除扇区再写入
+  36   1          flash_erase_sector(FLASH_START_ADDR);
+  37   1          flash_program(FLASH_START_ADDR,
+  38   1                        (u8 *)&instrument.save_info,
+  39   1                        sizeof(save_info_t));
+  40   1      #endif
+  41   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     99    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     19      10
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        05/22/2026 18:06:43 PAGE 2   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

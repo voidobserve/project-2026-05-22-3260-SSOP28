@@ -1,0 +1,162 @@
+C51 COMPILER V9.60.7.0   KEY_SCAN                                                          05/08/2024 15:00:09 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY_SCAN
+OBJECT MODULE PLACED IN .\Release\Objects\key_scan.obj
+COMPILER INVOKED BY: D:\AppData\keil-C51\C51\BIN\C51.EXE ..\..\User\key_scan.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR(
+                    -0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listing
+                    -s\key_scan.lst) OBJECT(.\Release\Objects\key_scan.obj)
+
+line level    source
+
+   1          #include "key_scan.h"
+   2          
+   3          #include "tmr3.h"     // 用来判断按键是短按、长按还是持续的定时器
+   4          #include "rf_learn.h" // 使用到了学习得到的、保存在flash中的地址
+   5          #include "rf_recv.h"  // RF信号接收
+   6          #include "send_key.h"
+   7          
+   8          // 对RF信号接收引脚进行一次扫描，如果有信号，则进行相应的处理
+   9          void rf_scan(void)
+  10          {
+  11   1          static u8 press_flag = 0; // 0--未按下，1--短按，2--长按，3--持续
+  12   1          static u32 timer_total_cnt = 0;
+  13   1      
+  14   1          static u16 send_data = 0; // 存放待发送的数据
+  15   1      
+  16   1      #if 0 // 测试能否接收和发送一个数据帧
+                      if (recv_rf_flag)
+                      {
+                          recv_rf_flag = 0;        // 清除标志位
+                          keyval = rf_data & 0x0F; // 记录键值
+              
+                          send_data = rf_data & 0x0F;
+                          send_data |= KEY_PRESS_CONTINUE << 6;
+                          send_keyval(send_data);
+                          return;
+                      }
+              #endif
+  28   1      
+  29   1      #if 1
+  30   1          if (recv_rf_flag && 0 == timer_total_cnt && 0 == press_flag)
+  31   1          {
+  32   2              // 如果未按下，记录本次按下的时间
+  33   2              recv_rf_flag = 0; // 清除标志位
+  34   2              press_flag = 1;   // 假设是短按
+  35   2      
+  36   2              // 记录一次数据帧（高8位存放原码）
+  37   2              send_data = (rf_data & 0x0F) << 8;
+  38   2              send_data |= KEY_PRESS_SHORT << (6 + 8);
+  39   2              tmr3_enable(); // 打开定时器，开始计数
+  40   2          }
+  41   1          else if (timer_total_cnt < 75)
+  42   1          {
+  43   2              // 如果是短按的判定时间内（这里假设按下并松开了按键的时间是0~750ms之内）
+  44   2              if (recv_rf_flag && tmr3_cnt <= 12)
+  45   2              {
+  46   3                  // 如果收到了信号，并且两次信号的时间不超过120ms
+  47   3                  // （哪怕是短按，也会收到若干个信号，这些信号的间隔在13ms左右，
+  48   3                  // 一个信号持续时间是40ms左右，这里放宽了判断条件）
+  49   3                  recv_rf_flag = 0;
+  50   3                  // 记录一次数据帧
+  51   3                  send_data = (rf_data & 0x0F) << 8;
+  52   3                  send_data |= KEY_PRESS_SHORT << (6 + 8);
+  53   3      
+C51 COMPILER V9.60.7.0   KEY_SCAN                                                          05/08/2024 15:00:09 PAGE 2   
+
+  54   3                  timer_total_cnt += tmr3_cnt; // 累计计数时间
+  55   3                  tmr3_cnt = 0;                // 清空计数值
+  56   3              }
+  57   2              else if (tmr3_cnt > 12 && press_flag)
+  58   2              {
+  59   3                  // 如果在120ms范围外，没有收到信号，说明此时已经松开手了，是短按
+  60   3                  press_flag = 0;
+  61   3                  timer_total_cnt = 0;
+  62   3      
+  63   3                  tmr3_disable();
+  64   3                  tmr3_cnt = 0;
+  65   3      
+  66   3                  send_data |= (~send_data >> 8); // 低8位存放反码
+  67   3                  send_keyval(send_data); // 发送已经准备好的数据
+  68   3                  send_data = 0;
+  69   3                  return;
+  70   3              }
+  71   2          }
+  72   1          else
+  73   1          {
+  74   2              // 长按和持续的处理
+  75   2      
+  76   2              if (1 == press_flag && timer_total_cnt > 75 && timer_total_cnt < 90)
+  77   2              {
+  78   3                  // 如果进入到这里，说明按下按键至少有750ms了
+  79   3                  // 发送一次带有长按标志的信号
+  80   3                  press_flag = 2;
+  81   3      
+  82   3                  send_data = (rf_data & 0x0F) << 8;
+  83   3                  send_data |= KEY_PRESS_LONG << (6 + 8);
+  84   3      
+  85   3                  send_data |= (~send_data >> 8); // 低8位存放反码
+  86   3                  send_keyval(send_data); // 发送已经准备好的数据
+  87   3                  send_data = 0;
+  88   3      
+  89   3                  press_flag = 3;
+  90   3              }
+  91   2      
+  92   2              if (3 == press_flag && recv_rf_flag && tmr3_cnt <= 12)
+  93   2              {
+  94   3                  // 如果收到了信号，并且两次信号的时间不超过120ms
+  95   3                  // （哪怕是短按，也会收到若干个信号，这些信号的间隔在13ms左右，
+  96   3                  // 一个信号持续时间是40ms左右，这里放宽了判断条件）
+  97   3                  recv_rf_flag = 0;
+  98   3                  // 记录一次数据帧
+  99   3                  send_data = (rf_data & 0x0F) << 8;
+ 100   3      
+ 101   3                  timer_total_cnt += tmr3_cnt; // 累计计数时间
+ 102   3                  tmr3_cnt = 0;                // 清空计数值
+ 103   3      
+ 104   3                  if (timer_total_cnt >= 90)
+ 105   3                  {
+ 106   4                      // 清空累计计数时间，发送一次带有持续标志和按键键值的信号
+ 107   4                      // 接下来每到一定的时间就发送一次带有持续标志和按键键值的信号
+ 108   4                      timer_total_cnt = 75;
+ 109   4      
+ 110   4                      send_data |= KEY_PRESS_CONTINUE << (6 + 8);
+ 111   4                      send_data |= (~send_data >> 8); // 低8位存放反码
+ 112   4      
+ 113   4                      send_keyval(send_data); // 发送已经准备好的数据
+ 114   4                      send_data = 0;
+ 115   4                  }
+C51 COMPILER V9.60.7.0   KEY_SCAN                                                          05/08/2024 15:00:09 PAGE 3   
+
+ 116   3              }
+ 117   2              else if (tmr3_cnt > 12 && press_flag)
+ 118   2              {
+ 119   3                  // 如果在120ms范围外，没有收到信号，说明此时已经松开手了
+ 120   3                  // 这里可以发送一次长按后松开的信号（还未添加）
+ 121   3                  press_flag = 0;
+ 122   3                  timer_total_cnt = 0;
+ 123   3      
+ 124   3                  tmr3_disable();
+ 125   3                  tmr3_cnt = 0;
+ 126   3      
+ 127   3                  send_data = 0;
+ 128   3                  return;
+ 129   3              }
+ 130   2          }
+ 131   1      
+ 132   1      #endif
+ 133   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    726    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      7    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,208 @@
+C51 COMPILER V9.60.7.0   ADC                                                               05/22/2026 18:06:42 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE ADC
+OBJECT MODULE PLACED IN .\Release\Objects\adc.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\Hardware\adc.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTOR(0X000
+                    -C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Relea
+                    -se\Listings\adc.lst) OBJECT(.\Release\Objects\adc.obj)
+
+line level    source
+
+   1          #include "adc.h"
+   2          
+   3          #if (BATTERY_SCAN_ENABLE || FUEL_CAPACITY_SCAN_ENABLE)
+   4          
+   5          volatile u16 adc_val; // adc值，0~4095
+   6          // 控制切换adc通道的状态机：
+   7          static volatile u8 adc_channel_status = ADC_CHANNEL_STATUS_NONE;
+   8          
+   9          // adc配置，使用adc时还需要切换到对应的引脚通道
+  10          void adc_config(void)
+  11          {
+  12   1      #if BATTERY_SCAN_ENABLE
+  13   1          // P04--测量电池电压的引脚
+  14   1          P0_MD1 |= GPIO_P04_MODE_SEL(0x3); // 模拟模式
+  15   1      #endif
+  16   1      
+  17   1      #if FUEL_CAPACITY_SCAN_ENABLE
+  18   1          // 检测油量的引脚：
+  19   1          P0_MD0 |= GPIO_P01_MODE_SEL(0x3); // 模拟模式
+  20   1      #endif
+  21   1      
+  22   1          ADC_CFG1 |= (0x0F << 3) | // ADC时钟分频为16分频，为系统时钟/16
+  23   1                      (0x01 << 0);  // adc0中断使能
+  24   1          ADC_CFG2 = 0xFF;          // 通道0采样时间配置为256个采样时钟周期
+  25   1      
+  26   1          ADC_ACON0 = ADC_CMP_EN(0x1) |  // 打开ADC中的CMP使能信号
+  27   1                      ADC_BIAS_EN(0x1) | // 打开ADC偏置电流能使信号
+  28   1                      ADC_BIAS_SEL(0x1); // 偏置电流选择：1x
+  29   1      
+  30   1          ADC_TRGS0 |= (0x07 << 4); // 通道 0DLY 的 ADC 时钟个数选择，配置为 4n+1，4 * 29 + 1
+  31   1          ADC_CHS0 |= (0x01 << 6);  // 使能 通道 0DLY 功能
+  32   1          __EnableIRQ(ADC_IRQn);    // 使能ADC中断
+  33   1          IE_EA = 1;                // 使能总中断
+  34   1      }
+  35          
+  36          // 设置adc通道
+  37          void adc_channel_set(adc_channel_t adc_channel)
+  38          {
+  39   1          ADC_CHS0 &= ~((0x01 << 4) |
+  40   1                        (0x01 << 3) |
+  41   1                        (0x01 << 2) |
+  42   1                        (0x01 << 1) |
+  43   1                        (0x01 << 0)); // 清空选择的adc0通路
+  44   1      
+  45   1          switch (adc_channel)
+  46   1          {
+  47   2      #if BATTERY_SCAN_ENABLE
+  48   2              // 检测电池电量
+  49   2          case ADC_CHANNEL_BATTERY:
+  50   2              ADC_ACON1 &= ~((0x01 << 5) |       // 关闭ADC外部参考选择信号
+  51   2                             (0x07 << 0));       // 清空ADC内部参考电压的选择配置
+  52   2              ADC_ACON1 |= (0x01 << 6) |         // 使能ADC内部参考信号
+  53   2                           (0x03 << 3) |         // 关闭测试信号
+C51 COMPILER V9.60.7.0   ADC                                                               05/22/2026 18:06:42 PAGE 2   
+
+  54   2                           (0x01 << 0);          // 内部参考电压选择 2.0 V
+  55   2              ADC_CHS0 |= ADC_ANALOG_CHAN(0x04); // P04通路
+  56   2              break;
+  57   2      
+  58   2      #endif
+  59   2      
+  60   2      #if FUEL_CAPACITY_SCAN_ENABLE
+  61   2              // 检测油量
+  62   2          case ADC_CHANNEL_FUEL:
+  63   2              ADC_ACON1 &= ~((0x01 << 5) |       // 关闭ADC外部参考选择信号
+  64   2                             (0x07 << 0));       // 清空ADC内部参考电压的选择配置
+  65   2              ADC_ACON1 |= (0x01 << 6) |         // 使能ADC内部参考信号
+  66   2                           (0x03 << 3) |         // 关闭测试信号
+  67   2                           (0x01 << 0);          // 内部参考电压选择 2.0 V
+  68   2              ADC_CHS0 |= ADC_ANALOG_CHAN(0x01); // P01通路
+  69   2              break;
+  70   2      
+  71   2      #endif
+  72   2          }
+  73   1      
+  74   1          ADC_CFG0 |= ADC_CHAN0_EN(0x1) | // 使能通道0转换
+  75   1                      ADC_EN(0x1);        // 使能A/D转换
+  76   1          // 切换完通道后，需要等待ADC模块配置稳定，至少20us以上
+  77   1      }
+  78          
+  79          #if 0
+              // 获取adc值，存放到变量adc_val中(adc单次转换)
+              u16 adc_single_convert(void)
+              {
+                  ADC_CFG0 |= ADC_CHAN0_TRG(0x1); // 触发ADC0转换
+                  while (!(ADC_STA & ADC_CHAN0_DONE(0x1)))
+                      ;                                           // 等待转换完成
+                  ADC_STA = ADC_CHAN0_DONE(0x1);                  // 清除ADC0转换完成标志位
+                  return ((ADC_DATAH0 << 4) | (ADC_DATAL0 >> 4)); // 读取ADC0的值
+              }
+              
+              // adc采集+滤波
+              u16 adc_getval(void)
+              {
+                  u16 adc_val_tmp = 0;     // 存放单次采集到的ad值
+                  u32 adc_val_sum = 0;     // 存放所有采集到的ad值的累加
+                  u16 get_adcmax = 0;      // 存放采集到的最大的ad值
+                  u16 get_adcmin = 0xFFFF; // 存放采集到的最小的ad值(初始值为最大值)
+                  u8 i = 0;
+              
+                  for (i = 0; i < 20; i++)
+                  {
+                      adc_val_tmp = adc_single_convert(); // 获取一次ad值
+                      if (i < 2)
+                          continue; // 丢弃前两次采样的
+                      if (adc_val_tmp > get_adcmax)
+                          get_adcmax = adc_val_tmp; // 更新当前采集到的最大值
+                      if (adc_val_tmp < get_adcmin)
+                          get_adcmin = adc_val_tmp; // 更新当前采集到的最小值
+                      adc_val_sum += adc_val_tmp;
+                  }
+              
+                  adc_val_sum -= get_adcmax;        // 去掉一个最大
+                  adc_val_sum -= get_adcmin;        // 去掉一个最小
+                  adc_val_tmp = (adc_val_sum >> 4); // 除以16，取平均值
+              
+                  return adc_val_tmp;
+C51 COMPILER V9.60.7.0   ADC                                                               05/22/2026 18:06:42 PAGE 3   
+
+              }
+              #endif
+ 118          
+ 119          // 由定时器调用，adc通道切换
+ 120          void adc_channel_switch_by_isr(void)
+ 121          {
+ 122   1          switch (adc_channel_status)
+ 123   1          {
+ 124   2          case ADC_CHANNEL_STATUS_NONE:
+ 125   2          case ADC_CHANNEL_STATUS_SEL_FUEL_END:
+ 126   2              // 默认状态或者是已经采集完油量对应的ad值，转换到下一个通道
+ 127   2              adc_channel_set(ADC_CHANNEL_BATTERY);
+ 128   2              adc_channel_status = ADC_CHANNEL_STATUS_SEL_BATTERY_BEGIN;
+ 129   2              break;
+ 130   2          case ADC_CHANNEL_STATUS_SEL_BATTERY_BEGIN:
+ 131   2              ADC_CFG0 |= ADC_CHAN0_TRG(0x1); // 触发ADC0转换
+ 132   2              adc_channel_status = ADC_CHANNEL_STATUS_SEL_BATTERY_END;
+ 133   2              break;
+ 134   2          case ADC_CHANNEL_STATUS_SEL_BATTERY_END:
+ 135   2              adc_channel_set(ADC_CHANNEL_FUEL);
+ 136   2              adc_channel_status = ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN;
+ 137   2              break;
+ 138   2          case ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN:
+ 139   2              ADC_CFG0 |= ADC_CHAN0_TRG(0x1); // 触发ADC0转换
+ 140   2              adc_channel_status = ADC_CHANNEL_STATUS_SEL_FUEL_END;
+ 141   2              break;
+ 142   2      
+ 143   2          default:
+ 144   2              break;
+ 145   2          }
+ 146   1      }
+ 147          
+ 148          void ADC_IRQHandler(void) interrupt ADC_IRQn
+ 149          {
+ 150   1          u16 adc_val; // 由后续赋值
+ 151   1      
+ 152   1          // 进入中断设置IP，不可删除
+ 153   1          __IRQnIPnPush(ADC_IRQn);
+ 154   1      
+ 155   1          // ---------------- 用户函数处理 -------------------
+ 156   1          if (ADC_STA & ADC_CHAN0_DONE(0x01))
+ 157   1          {
+ 158   2              ADC_STA |= ADC_CHAN0_DONE(0x01);                 // 清除ADC0转换完成标志位
+ 159   2              adc_val = (ADC_DATAH0 << 4) | (ADC_DATAL0 >> 4); // 读取ADC0的值
+ 160   2      
+ 161   2              switch (adc_channel_status)
+ 162   2              {
+ 163   3              case ADC_CHANNEL_STATUS_SEL_BATTERY_END:
+ 164   3                  bat_adc_val_samples_update(adc_val);
+ 165   3                  break;
+ 166   3      
+ 167   3              case ADC_CHANNEL_STATUS_SEL_FUEL_END:
+ 168   3                  fuel_capacity_adc_val_samples_update(adc_val);
+ 169   3                  break;
+ 170   3              }
+ 171   2          }
+ 172   1      
+ 173   1          // 退出中断设置IP，不可删除
+ 174   1          __IRQnIPnPop(ADC_IRQn);
+ 175   1      }
+ 176          
+ 177          #endif
+C51 COMPILER V9.60.7.0   ADC                                                               05/22/2026 18:06:42 PAGE 4   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    278    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      3       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

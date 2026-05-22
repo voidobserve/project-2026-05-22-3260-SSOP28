@@ -1,0 +1,311 @@
+C51 COMPILER V9.60.7.0   RF_RECORD                                                         05/06/2024 16:56:06 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE RF_RECORD
+OBJECT MODULE PLACED IN .\Release\Objects\RF_Record.obj
+COMPILER INVOKED BY: D:\AppData\keil-C51\C51\BIN\C51.EXE ..\..\User\RF_Record.c LARGE OPTIMIZE(8,SPEED) BROWSE INTVECTOR
+                    -(0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listin
+                    -gs\RF_Record.lst) OBJECT(.\Release\Objects\RF_Record.obj)
+
+line level    source
+
+   1          // RF-315MHz½âÂëÔ´³ÌÐò
+   2          #include "RF_Record.h"
+   3          #include "my_gpio.h"
+   4          #include "send_key.h"
+   5          #include "flash.h" // µ¥Æ¬»úÉÏµÄflashÏà¹Ø²Ù×÷
+   6          
+   7          #define FLASH_DEVICE_START_ADDR 0x00 // µ¥Æ¬»úµÄflashÖÐ£¬´æ·ÅrfÉè±¸µØÖ·µÄÆðÊ¼µØÖ·
+   8          unsigned int device_addr[10] = {0};      // ´æ·Årf·¢ËÍÉè±¸µÄÆ÷¼þµØÖ·
+   9          unsigned char device_num = 0;            // ¼ÇÂ¼ÒÑ¾­´æ·ÅµÄÆ÷¼þµØÖ·µÄ¸öÊý£¨ÓÐ¶àÉÙ¸öÉè±¸£©
+  10          
+  11          static volatile int high_level_flag = 0; // ÊÇ·ñÍêÕû½ÓÊÕµ½Ò»´Î¸ßµçÆ½ÐÅºÅµÄ±êÖ¾Î»
+  12          static volatile int tmr0_cnt = 0;                // ¶¨Ê±Æ÷ÖÐ¶Ï·þÎñº¯ÊýÖÐ£¬Ê¹ÓÃµ½µÄ¼ÆÊýÖµ
+  13          static volatile int high_level_time = 0; // ÓÃÀ´µ¥¶À±£´æ¶¨Ê±Æ÷µÄ¼ÆÊýÖµ£¨¶¨Ê±Ê±¼ä£©£¬·ÀÖ¹¶¨Ê±Æ÷ÖØ¸´¶¨Ê±£¬Ôì
+             -³Étmr0_cntµÄÊý¾Ý¸²¸Ç
+  14          
+  15          volatile unsigned int rf_data = 0; // ÓÃÓÚ´æ·Å½ÓÊÕµ½µÄ24Î»Êý¾Ý
+  16          
+  17          volatile int recv_rf_flag = 0; // ÊÇ·ñ½ÓÊÕµ½rfÐÅºÅµÄ±êÖ¾Î»
+  18          
+  19          // RFINÒý½Å³õÊ¼»¯£¨RF½ÓÊÕÒý½Å³õÊ¼»¯£©
+  20          // ÕâÀïÒ²Ê¹ÓÃµ½ÁË¶¨Ê±Æ÷TMR0£¬ÅäÖÃ³ÉÃ¿100us×óÓÒ²úÉúÒ»´ÎÖÐ¶Ï£¨Îó²î20us£©£¬²»¹ý¸Ãº¯Êýµ÷ÓÃÍêºó£¬¶¨Ê±Æ÷TMR0ÊÇ¹Ø
+             -±ÕµÄ
+  21          void RFIN_Init(void)
+  22          {
+  23   1              // int tmr0_cnt_time = 100 / 3; // ÁÙÊ±´æ·ÅTMR0µÄ¼ÆÊýÖÜÆÚ£¬ÈÃËü100us×óÓÒ²úÉúÒ»´ÎÖÐ¶Ï
+  24   1              short tmr0_cnt_time = 1000 / 3; // ÁÙÊ±´æ·ÅTMR0µÄ¼ÆÊýÖÜÆÚ£¬ÈÃËü100us×óÓÒ²úÉúÒ»´ÎÖÐ¶Ï£¨ÖÐ¶ÏµÄÎó²îÓÐ40us£¬Õ
+             -â¸öÊý×ÖÊÇµ÷ÊÔ³öÀ´µÄ£¬¶øÇÒÕâ¸ö±äÁ¿²»ÄÜÊÇunsigned short£©
+  25   1      
+  26   1              // ÅäÖÃP0_2ÎªÊäÈëÄ£Ê½
+  27   1              P0_MD0 &= ~GPIO_P02_MODE_SEL(0x01);
+  28   1              // ÅäÖÃP0_2ÎªÉÏÀ­
+  29   1              P0_PU |= GPIO_P02_PULL_UP(0x01);
+  30   1              // ÅäÖÃP0_2ÎªÏÂÀ­£¬×îÖÕÈÃËüÊµÏÖ¸¡¿Õ£¨²»¸¡¿Õ¶ÁÈ¡²»µ½¸ß¡¢µÍµçÆ½£©
+  31   1              P0_PD |= GPIO_P02_PULL_PD(0x01);
+  32   1      
+  33   1              __SetIRQnIP(P0_IRQn, P0_IQn_CFG);       // ÉèÖÃÖÐ¶ÏÓÅÏÈ¼¶
+  34   1              __EnableIRQ(P0_IRQn);                           // Ê¹ÄÜÖÐ¶Ï
+  35   1              IE_EA = 1;                                                      // Ê¹ÄÜ×Ü¿ª¹Ø
+  36   1              P0_IMK |= GPIO_P02_IRQ_MASK(0x01);      // ´ò¿ªP02µÄÖÐ¶Ï
+  37   1              P0_TRG0 &= ~GPIO_P02_TRG_SEL(0x03); // ÅäÖÃP02ÎªË«±ßÑØ´¥·¢
+  38   1      
+  39   1              // ÅäÖÃ¶¨Ê±Æ÷£¬ÓÃÀ´¼ÇÂ¼RF½ÓÊÕµ½µÄ¸ßµçÆ½³ÖÐøÊ±¼ä
+  40   1              __SetIRQnIP(TMR0_IRQn, TMR0_IQn_CFG); // ÉèÖÃÖÐ¶ÏÓÅÏÈ¼¶£¨TMR0£©
+  41   1      
+  42   1              TMR0_CONL &= ~TMR_PRESCALE_SEL(0x03); // Çå³ýTMR0µÄÔ¤·ÖÆµÅäÖÃ¼Ä´æÆ÷
+  43   1              TMR0_CONL |= TMR_PRESCALE_SEL(0x04);  // ÅäÖÃTMR0µÄÔ¤·ÖÆµ£¬Îª16·ÖÆµ£¬¼´48MHz / 16 = 3MHz£¬Ô¼3us¼ÆÊýÒ»´Î
+  44   1              TMR0_CONL &= ~TMR_MODE_SEL(0x03);         // Çå³ýTMR0µÄÄ£Ê½ÅäÖÃ¼Ä´æÆ÷
+  45   1              TMR0_CONL |= TMR_MODE_SEL(0x01);          // ÅäÖÃTMR0µÄÄ£Ê½Îª¼ÆÊýÆ÷Ä£Ê½£¬×îºó¶ÔHIRCµÄÂö³å½øÐÐ¼ÆÊý
+  46   1      
+  47   1              TMR0_CONH &= ~TMR_PRD_PND(0x01); // Çå³ýTMR0µÄ¼ÆÊý±êÖ¾Î»£¬±íÊ¾Î´Íê³É¼ÆÊý
+  48   1              TMR0_CONH |= TMR_PRD_IRQ_EN(1);  // Ê¹ÄÜTMR0µÄ¼ÆÊýÖÐ¶Ï
+  49   1      
+  50   1              // ÅäÖÃTMR0µÄ¼ÆÊýÖÜÆÚ
+C51 COMPILER V9.60.7.0   RF_RECORD                                                         05/06/2024 16:56:06 PAGE 2   
+
+  51   1              TMR0_PRL = tmr0_cnt_time % 255;
+  52   1              TMR0_PRH = tmr0_cnt_time / 255;
+  53   1      
+  54   1              // Çå³ýTMR0µÄ¼ÆÊýÖµ
+  55   1              TMR0_CNTL = 0;
+  56   1              TMR0_CNTH = 0;
+  57   1      
+  58   1              TMR0_CONL &= ~(TMR_SOURCE_SEL(0x07)); // Çå³ýTMR0µÄÊ±ÖÓÔ´ÅäÖÃ¼Ä´æÆ÷
+  59   1              // TMR0_CONL |= TMR_SOURCE_SEL(0x02);     // ÅäÖÃTMR0µÄÊ±ÖÓÔ´£¬Îª48MHzµÄHIRCµÄÉÏÉýÑØºÍÏÂ½µÑØ
+  60   1              // TMR0_CONL |= TMR_SOURCE_SEL(0x07); // ÅäÖÃTMR0µÄÊ±ÖÓÔ´£¬Ê¹ÓÃÏµÍ³Ê±ÖÓ
+  61   1              TMR0_CONL |= TMR_SOURCE_SEL(0x05); // ÅäÖÃTMR0µÄÊ±ÖÓÔ´£¬²»ÓÃÈÎºÎÊ±ÖÓ
+  62   1                                                                                 // __EnableIRQ(TMR0_IRQn);                      // Ê¹ÄÜÖÐ¶Ï
+  63   1      
+  64   1              __DisableIRQ(TMR0_IRQn); // ½ûÓÃÖÐ¶Ï
+  65   1      }
+  66          
+  67          // TMR0ÖÐ¶Ï·þÎñº¯Êý
+  68          void TIMR0_IRQHandler(void) interrupt TMR0_IRQn
+  69          {
+  70   1              // ½øÈëÖÐ¶ÏÉèÖÃIP£¬²»¿ÉÉ¾³ý
+  71   1              __IRQnIPnPush(TMR0_IRQn);
+  72   1      
+  73   1              // ---------------- ÓÃ»§º¯Êý´¦Àí -------------------
+  74   1      
+  75   1              // ÖÜÆÚÖÐ¶Ï
+  76   1              if (TMR0_CONH & TMR_PRD_PND(0x1))
+  77   1              {
+  78   2                      TMR0_CONH |= TMR_PRD_PND(0x1); // Çå³ýpending
+  79   2      
+  80   2                      // Çå³ýTMR0µÄ¼ÆÊýÖµ
+  81   2                      TMR0_CNTL = 0;
+  82   2                      TMR0_CNTH = 0;
+  83   2      
+  84   2                      tmr0_cnt++; // Ã¿80us»òÃ¿120us»á¼ÓÒ»´Î
+  85   2              }
+  86   1      
+  87   1              // ÍË³öÖÐ¶ÏÉèÖÃIP£¬²»¿ÉÉ¾³ý
+  88   1              __IRQnIPnPop(TMR0_IRQn);
+  89   1      }
+  90          
+  91          // P0ÖÐ¶Ï·þÎñº¯Êý
+  92          void P0_IRQHandler(void) interrupt P0_IRQn
+  93          {
+  94   1              // Px_PND¼Ä´æÆ÷Ð´ÈÎºÎÖµ¶¼»áÇå±êÖ¾Î»
+  95   1              u8 p0_pnd = P0_PND;
+  96   1      
+  97   1              static volatile int i = 0; // ¼ÆÊýÖµ£¬¼ÇÂ¼µ±Ç°½ÓÊÕµÄÊý¾ÝÎ»Êý
+  98   1      
+  99   1              // ½øÈëÖÐ¶ÏÉèÖÃIP£¬²»¿ÉÉ¾³ý
+ 100   1              __IRQnIPnPush(P0_IRQn);
+ 101   1              __DisableIRQ(P0_IRQn); // ½ûÓÃIO¿ÚÖÐ¶Ï
+ 102   1      
+ 103   1              // ---------------- ÓÃ»§º¯Êý´¦Àí -------------------
+ 104   1      
+ 105   1              if (p0_pnd & GPIO_P02_IRQ_PNG(0x1))
+ 106   1              {
+ 107   2                      // ÔÚÕâÀï±àÐ´ÖÐ¶Ï·þÎñº¯ÊýµÄ´úÂë
+ 108   2      
+ 109   2                      // ¸ù¾ÝÒý½Åµ±Ç°µÄµçÆ½À´´ò¿ª/¹Ø±Õ¶¨Ê±Æ÷TMR0£¬×îºó¼ÇÂ¼Ò»¸ö¸ßµçÆ½ÐÅºÅµÄ³ÖÐøÊ±¼ä
+ 110   2                      if (RFIN == 1)
+ 111   2                      {
+ 112   3                              // Èç¹û´ËÊ±Òý½ÅÊÇ¸ßµçÆ½£¬´ò¿ª¶¨Ê±Æ÷TMR0£¬¿ªÊ¼¼ÇÂ¼¸ßµçÆ½³ÖÐøÊ±¼ä
+C51 COMPILER V9.60.7.0   RF_RECORD                                                         05/06/2024 16:56:06 PAGE 3   
+
+ 113   3      
+ 114   3                              // Çå³ýTMR0µÄ¼ÆÊýÖµ
+ 115   3                              TMR0_CNTL = 0;
+ 116   3                              TMR0_CNTH = 0;
+ 117   3      
+ 118   3                              tmr0_cnt = 0; // Çå³ý¸ßµçÆ½¼ÆÊýÖµ
+ 119   3      
+ 120   3                              // ÖØÐÂ¸øTMR0ÅäÖÃÊ±ÖÓ
+ 121   3                              TMR0_CONL &= ~(TMR_SOURCE_SEL(0x07)); // Çå³ýTMR0µÄÊ±ÖÓÔ´ÅäÖÃ¼Ä´æÆ÷
+ 122   3                              TMR0_CONL |= TMR_SOURCE_SEL(0x07);        // ÅäÖÃTMR0µÄÊ±ÖÓÔ´£¬Ê¹ÓÃÏµÍ³Ê±ÖÓ
+ 123   3      
+ 124   3                              __EnableIRQ(TMR0_IRQn); // Ê¹ÄÜÖÐ¶Ï
+ 125   3                      }
+ 126   2                      else
+ 127   2                      {
+ 128   3                              // Èç¹û´ËÊ±Òý½ÅÊÇ¸ßµçÆ½£¬¹Ø±Õ¶¨Ê±Æ÷TMR0£¬¶Á³ö¸ßµçÆ½³ÖÐøÊ±¼ä
+ 129   3      
+ 130   3                              high_level_time = tmr0_cnt; // ¶Á³öÒ»´Î¸ßµçÆ½³ÖÐøÊ±¼ä
+ 131   3      
+ 132   3                              // ²»¸øTMR0Ìá¹©Ê±ÖÓ£¬ÈÃËüÍ£Ö¹¼ÆÊý
+ 133   3                              TMR0_CONL &= ~(TMR_SOURCE_SEL(0x07)); // Çå³ýTMR0µÄÊ±ÖÓÔ´ÅäÖÃ¼Ä´æÆ÷
+ 134   3                              TMR0_CONL |= TMR_SOURCE_SEL(0x05);        // ÅäÖÃTMR0µÄÊ±ÖÓÔ´£¬²»ÓÃÈÎºÎÊ±ÖÓ
+ 135   3      
+ 136   3                              // Çå³ýTMR0µÄ¼ÆÊýÖµ
+ 137   3                              TMR0_CNTL = 0;
+ 138   3                              TMR0_CNTH = 0;
+ 139   3                              tmr0_cnt = 0; // Çå³ý¸ßµçÆ½¼ÆÊýÖµ
+ 140   3      
+ 141   3                              __DisableIRQ(TMR0_IRQn); // ¹Ø±ÕTMR0ÖÐ¶Ï
+ 142   3      
+ 143   3                              high_level_flag = 1; // Ò»´Î¸ßµçÆ½Ê±¼ä¼ÇÂ¼Íê³É£¬¸ø¶ÔÓ¦µÄ±êÖ¾Î»ÖÃÒ»
+ 144   3                      }
+ 145   2      
+ 146   2                      // ÔÚÖÐ¶Ï·þÎñº¯ÊýÖÐ½øÐÐ½âÂë
+ 147   2                      if (high_level_flag)
+ 148   2                      {
+ 149   3                              // Èç¹ûÊÕµ½ÁËÒ»´ÎÍêÕûµÄ¸ßµçÆ½£¨960usµÄ"1"»ò320usµÄ"0"£©
+ 150   3                              high_level_flag = 0; // Çå³ý±êÖ¾Î»
+ 151   3      
+ 152   3                              /*
+ 153   3                              // ²»ÄÜÔÚÕâÀï×öÕâÁ½ÐÐ´úÂëµÄ²Ù×÷£¬ÎÈ¶¨ÐÔ»á±ä²î£¨¶à°´¼¸´Î°´¼ü£¬¾Í»á·¢ÏÖ¼üÖµ³öÏÖ´íÎó£©
+ 154   3                              // rf_data <<= 1; // ÓÃÓÚ´æ·Å½ÓÊÕ24Î»Êý¾ÝµÄ±äÁ¿ÏÈ×óÒÆÒ»Î»
+ 155   3                              // i++;
+ 156   3                              */
+ 157   3      
+ 158   3                              // ÅÐ¶Ï¸ßµçÆ½³ÖÐøÊ±¼ä£¬ÊÇ·ñ·ûºÏ·¶Î§
+ 159   3                              if (high_level_time < 2)
+ 160   3                              {
+ 161   4                                      // Èç¹û¸ßµçÆ½Ê±¼äÐ¡ÓÚ160us »ò Ð¡ÓÚ240us£¬ËµÃ÷ÊÕµ½ÁËÎÞÐ§ÐÅºÅ
+ 162   4                                      rf_data = 0;
+ 163   4                                      i = 0;
+ 164   4                              }
+ 165   3                              else if (high_level_time >= 2 && high_level_time <= 4)
+ 166   3                              {
+ 167   4                                      // Èç¹ûÊÕµ½ÁË"0"
+ 168   4                                      rf_data &= ~1;
+ 169   4                                      i++;
+ 170   4      
+ 171   4                                      if (i != 24)
+ 172   4                                      {
+ 173   5                                              rf_data <<= 1; // ÓÃÓÚ´æ·Å½ÓÊÕ24Î»Êý¾ÝµÄ±äÁ¿×óÒÆÒ»Î»
+ 174   5                                      }
+C51 COMPILER V9.60.7.0   RF_RECORD                                                         05/06/2024 16:56:06 PAGE 4   
+
+ 175   4                              }
+ 176   3                              else
+ 177   3                              {
+ 178   4                                      // Èç¹ûÊÕµ½ÁË"1"
+ 179   4                                      rf_data |= 1;
+ 180   4                                      i++;
+ 181   4                                      if (i != 24)
+ 182   4                                      {
+ 183   5                                              rf_data <<= 1; // ÓÃÓÚ´æ·Å½ÓÊÕ24Î»Êý¾ÝµÄ±äÁ¿×óÒÆÒ»Î»
+ 184   5                                      }
+ 185   4                              }
+ 186   3      
+ 187   3                              if (i >= 24)
+ 188   3                              {
+ 189   4                                      // Èç¹û½ÓÊÕÁË24Î»Êý¾Ý£¬ËµÃ÷Ò»´Î½ÓÊÕÍê³É
+ 190   4                                      recv_rf_flag = 1;
+ 191   4                                      i = 0;
+ 192   4      
+ 193   4                                      // Ò²²»ÄÜÔÚÏÈÇ°ÏÈ¶Ôrf_data×óÒÆ£¬×îºóÔÚÕâÀï¶Ôrf_data½øÐÐÓÒÒÆÀ´µ÷Õû£¬»á¶ªÊ§Êý¾Ý
+ 194   4                              }
+ 195   3                      }
+ 196   2              }
+ 197   1      
+ 198   1              P0_PND = p0_pnd; // ÇåP2ÖÐ¶Ï±êÖ¾Î»£¬Ð´ÈÎºÎÖµ¶¼»áÇå±êÖ¾Î»
+ 199   1      
+ 200   1              // -------------------------------------------------
+ 201   1              __EnableIRQ(P0_IRQn); // Ê¹ÄÜIO¿ÚÖÐ¶Ï
+ 202   1              // ÍË³öÖÐ¶ÏÉèÖÃIP£¬²»¿ÉÉ¾³ý
+ 203   1              __IRQnIPnPop(P0_IRQn);
+ 204   1      }
+ 205          
+ 206          // ¼ì²âÊÇ·ñ½ÓÊÕµ½ÁËRFÐÅºÅ£¬²¢¸ù¾ÝÏàÓ¦µÄÃüÁî½øÐÐ¿ØÖÆ
+ 207          void rf_recv(void)
+ 208          {
+ 209   1              if (recv_rf_flag)
+ 210   1              {
+ 211   2                      // Èç¹û³É¹¦½ÓÊÕÁË24Î»µÄÊý¾Ý
+ 212   2                      recv_rf_flag = 0;
+ 213   2      
+ 214   2                      // __DisableIRQ(P0_IRQn); // ½ûÓÃIO¿ÚÖÐ¶Ï
+ 215   2      
+ 216   2                      // send_keyval(rf_data & 0xFF);
+ 217   2      
+ 218   2      #if 0 // ²âÊÔÍ¨¹ýµÄ´úÂë
+                        // p11_send_data_8bit_msb(rf_data & 0x0F);
+              
+                              // ·¢ËÍÇ°ºó¶¼¼Ó¸ö1msµÄÐÅºÅ£¬·½±ã¹Û²ì
+                              P11 = 0;
+                              delay_ms(1);
+                              P11 = 1;
+                              delay_ms(1);
+                              // p11_send_data_8bit_msb(rf_data); // ²âÊÔÓÃ
+                              p11_send_data_16bit_msb(rf_data); // ²âÊÔÓÃ
+                              P11 = 1;
+                              delay_ms(1);
+                              P11 = 0;
+                              delay_ms(1);
+              
+                              rf_data = 0; // ·¢ËÍÍê³Éºó£¬Çå³ý½ÓÊÕµ½µÄÊý¾Ý
+                                                       // delay_ms(200); // ÕâÀï¼ÓÑÓÊ±Ö÷ÒªÊÇ·ÀÖ¹²»Í£µØ´¥·¢ÖÐ¶Ï£¬µ¼ÖÂºóÃæ½ÓÊÕµ½µÄÊý¾Ý²»×¼È·
+              #endif
+ 236   2      
+C51 COMPILER V9.60.7.0   RF_RECORD                                                         05/06/2024 16:56:06 PAGE 5   
+
+ 237   2      #if 1 // ²âÊÔÍ¨¹ýµÄ´úÂë
+ 238   2      
+ 239   2                      // ÏÈÅÐ¶ÏµØÖ·Âë¶Ô²»¶Ô
+ 240   2                      if ((rf_data & (~0x0F)) == (unsigned int)0xF0B480) // ÕâÀïµÄ±È½Ï±ØÐëÒª¼ÓÇ¿ÖÆ×ª»»
+ 241   2                      {
+ 242   3                              switch (rf_data & 0x0F) // ÅÐ¶Ï½ÓÊÕµ½µÄµÍËÄÎ»£¬µÍËÄÎ»ÊÇ¼üÖµ
+ 243   3                              {
+ 244   4                              case KEY_RF315_A: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üA
+ 245   4                                      send_keyval(KEY_RF315_A);
+ 246   4                                      break;
+ 247   4      
+ 248   4                              case KEY_RF315_B: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üB
+ 249   4                                      send_keyval(KEY_RF315_B);
+ 250   4                                      break;
+ 251   4      
+ 252   4                              case KEY_RF315_C: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üC
+ 253   4                                      send_keyval(KEY_RF315_C);
+ 254   4                                      break;
+ 255   4      
+ 256   4                              case KEY_RF315_D: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üD
+ 257   4                                      send_keyval(KEY_RF315_D);
+ 258   4                                      break;
+ 259   4      
+ 260   4                              case KEY_RF315_E: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üE
+ 261   4                                      send_keyval(KEY_RF315_E);
+ 262   4                                      break;
+ 263   4      
+ 264   4                              case KEY_RF315_F: // Èç¹ûÊÇÒ£¿ØÆ÷°´¼üF
+ 265   4                                      send_keyval(KEY_RF315_F);
+ 266   4                                      break;
+ 267   4                              }
+ 268   3                      }
+ 269   2      
+ 270   2      #endif
+ 271   2      
+ 272   2                      // __EnableIRQ(P0_IRQn); // Ê¹ÄÜIO¿ÚÖÐ¶Ï
+ 273   2              }
+ 274   1      }
+ 275          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    593    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     33    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

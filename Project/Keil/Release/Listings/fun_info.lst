@@ -1,0 +1,64 @@
+C51 COMPILER V9.60.7.0   FUN_INFO                                                          05/06/2026 15:47:22 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE FUN_INFO
+OBJECT MODULE PLACED IN .\Release\Objects\fun_info.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\User\fun_info.c LARGE OPTIMIZE(9,SIZE) BROWSE ORDER INTVECTOR(0X00
+                    -0C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\Rele
+                    -ase\Listings\fun_info.lst) OBJECT(.\Release\Objects\fun_info.obj)
+
+line level    source
+
+   1          #include "fun_info.h"
+   2          #include <string.h> // memset()
+   3          
+   4          volatile fun_info_t fun_info; // 存放所有功能状态的结构体变量
+   5          
+   6          volatile instrument_t instrument = {0};
+   7          
+   8          void instrument_info_init(void)
+   9          {
+  10   1          save_info_t save_info;
+  11   1          // 从flash中读出数据
+  12   1          flash_read(FLASH_START_ADDR,
+  13   1                     (u8 *)&save_info,
+  14   1                     sizeof(save_info_t));
+  15   1          if (USER_FLASH_DATA_VALID_VAL == save_info.is_save_data_valid)
+  16   1          {
+  17   2              // 如果保存在flash中的数据有效
+  18   2              instrument.save_info.total_mileage = save_info.total_mileage;
+  19   2              instrument.save_info.subtotal_mileage = save_info.subtotal_mileage;
+  20   2          }
+  21   1          else
+  22   1          {
+  23   2              // 如果保存在flash中的数据无效，全局变量 fun_info 默认全部为0
+  24   2          }
+  25   1      }
+  26          
+  27          void instrument_info_save(void)
+  28          {
+  29   1      #if USE_INTERNAL_FLASH_SAVE_DATA
+  30   1      
+  31   1          instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL; // 表示数据有效，让下一
+             -次上电读出数据时，验证该标志位
+  32   1          // 先擦除扇区再写入
+  33   1          flash_erase_sector(FLASH_START_ADDR);
+  34   1          flash_program(FLASH_START_ADDR,
+  35   1                        (u8 *)&instrument.save_info,
+  36   1                        sizeof(save_info_t));
+  37   1      #endif
+  38   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     77    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     44       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

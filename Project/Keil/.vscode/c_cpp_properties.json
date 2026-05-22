@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "name": "Target 1",
+            "includePath": [
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\Libraries\\Include",
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\User",
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\User\\lib",
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\Hardware",
+                "C:\\Keil_v5\\C51\\INC",
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\Libraries\\Startup",
+                "d:\\BaiduSyncdisk\\A_WorkSt\\Aworkst\\2025-05-20-project-2025-05-20-丰凡-摩托车仪表（检测部分，数据收发）-3260-SSOP28\\code\\project-2025-05-20-3260\\Libraries\\Source"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}

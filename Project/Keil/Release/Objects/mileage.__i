@@ -1,0 +1,1 @@
+"..\..\User\mileage.c" LARGE OPTIMIZE (9,SIZE) BROWSE ORDER INTVECTOR(0x000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) interval(3) DEBUG OBJECTEXTEND PRINT(.\Release\Listings\mileage.lst) OBJECT(.\Release\Objects\mileage.obj)

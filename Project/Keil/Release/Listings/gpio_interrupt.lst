@@ -1,0 +1,79 @@
+C51 COMPILER V9.60.7.0   GPIO_INTERRUPT                                                    12/03/2024 10:27:43 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE GPIO_INTERRUPT
+OBJECT MODULE PLACED IN .\Release\Objects\gpio_interrupt.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\..\Hardware\gpio_interrupt.c LARGE OPTIMIZE(8,SIZE) BROWSE INTVECTOR(
+                    -0X000C) INCDIR(..\..\Libraries\Include;..\..\User;..\..\User\lib;..\..\Hardware) INTERVAL(3) DEBUG OBJECTEXTEND PRINT(.\
+                    -Release\Listings\gpio_interrupt.lst) OBJECT(.\Release\Objects\gpio_interrupt.obj)
+
+line level    source
+
+   1          // encoding UTF-8
+   2          // gpio_interrupt.c -- 存放GPIO中断的服务函数
+   3          #include "include.h"   // 使用芯片官方提供的头文件
+   4          #include "my_config.h" // 包含自定义的头文件
+   5          
+   6          // P0中断服务函数
+   7          void P0_IRQHandler(void) interrupt P0_IRQn
+   8          {
+   9   1          // Px_PND寄存器写任何值都会清标志位
+  10   1          u8 p0_pnd = P0_PND;
+  11   1      
+  12   1          // 进入中断设置IP，不可删除
+  13   1          __IRQnIPnPush(P0_IRQn);
+  14   1          // ---------------- 用户函数处理 -------------------
+  15   1          // 如果是检测时速的引脚触发的中断
+  16   1          if (p0_pnd & GPIO_P02_IRQ_PNG(0x1))
+  17   1          {
+  18   2              if (detect_speed_pulse_cnt < 4294967295) // 防止计数溢出
+  19   2              {
+  20   3                  detect_speed_pulse_cnt++;
+  21   3              }
+  22   2          }
+  23   1          P0_PND = p0_pnd; // 清P0中断标志位
+  24   1          // -------------------------------------------------
+  25   1          // 退出中断设置IP，不可删除
+  26   1          __IRQnIPnPop(P0_IRQn);
+  27   1      }
+  28          
+  29          // P1中断服务函数
+  30          void P1_IRQHandler(void) interrupt P1_IRQn
+  31          {
+  32   1          // Px_PND寄存器写任何值都会清标志位
+  33   1          u8 p1_pnd = P1_PND;
+  34   1      
+  35   1          // 进入中断设置IP，不可删除
+  36   1          __IRQnIPnPush(P1_IRQn);
+  37   1          // ---------------- 用户函数处理 -------------------
+  38   1      
+  39   1          // 如果是检测发动机转速的引脚触发的中断
+  40   1          if (p1_pnd & GPIO_P15_IRQ_PNG(0x1))
+  41   1          {
+  42   2              if (detect_engine_pulse_cnt < 4294967295) // 防止计数溢出
+  43   2              {
+  44   3                  detect_engine_pulse_cnt++;
+  45   3              }
+  46   2          }
+  47   1          P1_PND = p1_pnd; // 清P1中断标志位
+  48   1      
+  49   1          // -------------------------------------------------
+  50   1          // 退出中断设置IP，不可删除
+  51   1          __IRQnIPnPop(P1_IRQn);
+  52   1      }
+
+C51 COMPILER V9.60.7.0   GPIO_INTERRUPT                                                    12/03/2024 10:27:43 PAGE 2   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    234    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
