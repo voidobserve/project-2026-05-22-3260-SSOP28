@@ -788,65 +788,6 @@ void __aip3368h_display_boot_animation_in_fuel_level__(void)
     }
 }
 
-// void aip3368h_display_boot_animation_1ms_isr(void)
-// {
-//     // static u8 level = 0; // Unused variable removed
-//     static u16 animation_time_cnt = 0;
-//     static u8 animation_initiated = 0;
-
-//     if (aip3368h_display_obj.is_in_boot_animiation == 0)
-//     {
-//         return;
-//     }
-
-//     if (0 == animation_initiated)
-//     {
-//         aip3368h_display_engine_speed_back_light(); // 点亮背光
-//         aip3368h_display_exclamation_point(1);      // 点亮感叹号
-
-//         aip3368h_display_mileage_km_icon(1); // 点亮公里的km字样图标
-//         aip3368h_display_speed_km_icon(1);   // 点亮速度的km字样图标
-//         // 点亮 ODO 、 TRIP 字样的图标
-//         aip3368h_display_buff[3] |= (0x01 << 15); // 大计里程 ODO 指示灯，第 0 格
-//         aip3368h_display_buff[3] |= (0x01 << 14); // 大计里程 ODO 指示灯，第 1 格
-//         aip3368h_display_buff[3] |= (0x01 << 1);  // 小计里程 TRIP 指示灯，第 0 格
-//         aip3368h_display_buff[4] |= (0x01 << 15); // 小计里程 TRIP 指示灯，第 1 格
-//         aip3368h_display_buff[5] |= (0x01 << 8);  // 里程 小数点 指示灯
-
-//         aip3368h_display_bat_err_icon(1);
-//         aip3368h_display_err_icon(1);
-
-//         // 显示时速第 0 位的 1：
-//         aip3368h_display_buff[2] |= (0x01 << 8);
-//         aip3368h_display_buff[7] |= (0x01 << 3);
-
-//         animation_initiated = 1;
-//     }
-
-//     animation_time_cnt++;
-
-//     __aip3368h_display_boot_animation_in_engine_speed_scale_bar__();
-//     __aip3368h_display_boot_animation_in_speed_scale_bar__();
-//     __aip3368h_display_boot_animation_in_speed_and_mileage__();
-//     __aip3368h_display_boot_animation_in_fuel_level__();
-
-//     // 4s的开机动画结束
-//     if (animation_time_cnt >= 4000)
-//     {
-//         aip3368h_display_obj.is_in_boot_animiation = 0;
-//         // 动画结束后清空显示
-
-//         // 后面添加了相关的检测和更新函数之后，下面的操作可以省略
-//         aip3368h_display_engine_speed_scale_bar(0); // 不显示发动机转速刻度条
-//         aip3368h_display_exclamation_point(0);      // 不显示感叹号
-
-//         aip3368h_display_bat_err_icon(0);
-//         aip3368h_display_err_icon(0);
-//         aip3368h_display_speed_scale_bar(16);
-//         // USER_TO_DO 需要根据记忆的 ODO、TRIP ，显示对应的图标
-//     }
-// }
-
 void aip3368h_display_boot_animation_time_add(void)
 {
     if (aip3368h_display_obj.is_in_boot_animiation == 1)
@@ -1222,175 +1163,192 @@ void aip3368h_display_test_speed_scale_bar_1ms_isr(void)
 void aip3368h_display_test(void)
 {
 #if 1
-    // aip3368h_display_buff[0] |= 0x01 << 0;  // 右转向灯
-    // aip3368h_display_buff[0] |= 0x01 << 1;  // 背光刻度条 第 26 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 2;  // 背光刻度条 第 25 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 3;  // 背光刻度条 第 24 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 4;  // NC 样板上没有对应的灯
-    // aip3368h_display_buff[0] |= 0x01 << 5; // "x1000r/min"字样 第 2 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 6; // "x1000r/min"字样 第 1 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 7;  // NC 样板上没有对应的灯
-    // aip3368h_display_buff[0] |= 0x01 << 8;  // "TRIP" 字样 指示灯（绿）
-    // aip3368h_display_buff[0] |= 0x01 << 9;  // "TOTAL" 字样 指示灯（绿）
-    // aip3368h_display_buff[0] |= 0x01 << 10; // "x1000r/min"字样 第 0 个灯（白）
-    // aip3368h_display_buff[0] |= 0x01 << 11; // 发动机转速 "12"字样 指示灯（红）
-    // aip3368h_display_buff[0] |= 0x01 << 12; // 背光刻度条 第 23 个灯（白）
-    aip3368h_display_buff[0] |= 0x01 << 13; // 背光刻度条 第 22 个灯（白）
-    aip3368h_display_buff[0] |= 0x01 << 14; // 
-    // aip3368h_display_buff[0] |= 0x01 << 15; //
+    // aip3368h_display_buff[0] |= 0x01 << 0;  // NC
+    // aip3368h_display_buff[0] |= 0x01 << 1;  // NC
+    // aip3368h_display_buff[0] |= 0x01 << 2;  // 背光刻度条 第 21 个灯（白）
+    // aip3368h_display_buff[0] |= 0x01 << 3;  // 背光刻度条 第 20 个灯（白）
+    // aip3368h_display_buff[0] |= 0x01 << 4;  // 发动机转速刻度条 第 23 个 指示灯（红）
+    // aip3368h_display_buff[0] |= 0x01 << 5;  // 背光刻度条 第 19 个灯（白）
+    // aip3368h_display_buff[0] |= 0x01 << 6;  // 发动机转速刻度条 第 22 个 指示灯（红）
+    // aip3368h_display_buff[0] |= 0x01 << 7;  // 发动机转速 "11" 字样 指示灯（红）
+    // aip3368h_display_buff[0] |= 0x01 << 8;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[0] |= 0x01 << 9;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[0] |= 0x01 << 10; // NC 样板上没有该指示灯
+    // aip3368h_display_buff[0] |= 0x01 << 11; // NC 样板上没有该指示灯
+    // aip3368h_display_buff[0] |= 0x01 << 12; // 小灯/近光灯（绿）
+    // aip3368h_display_buff[0] |= 0x01 << 13; // NC
+    // aip3368h_display_buff[0] |= 0x01 << 14; // NC
+    // aip3368h_display_buff[0] |= 0x01 << 15; // NC
 
-    // aip3368h_display_buff[1] |= 0x01 << 0;  //
-    // aip3368h_display_buff[1] |= 0x01 << 1;  //
-    // aip3368h_display_buff[1] |= 0x01 << 2;  //
-    // aip3368h_display_buff[1] |= 0x01 << 3;  //
-    // aip3368h_display_buff[1] |= 0x01 << 4;  //
-    // aip3368h_display_buff[1] |= 0x01 << 5;  //
-    // aip3368h_display_buff[1] |= 0x01 << 6;  //
-    // aip3368h_display_buff[1] |= 0x01 << 7;  //
-    // aip3368h_display_buff[1] |= 0x01 << 8;  //
-    // aip3368h_display_buff[1] |= 0x01 << 9;  //
-    // aip3368h_display_buff[1] |= 0x01 << 10; //
-    // aip3368h_display_buff[1] |= 0x01 << 11; //
-    // aip3368h_display_buff[1] |= 0x01 << 12; //
-    // aip3368h_display_buff[1] |= 0x01 << 13; //
-    // aip3368h_display_buff[1] |= 0x01 << 14; //
-    // aip3368h_display_buff[1] |= 0x01 << 15; //
+    // aip3368h_display_buff[1] |= 0x01 << 0;  // 右转向灯
+    // aip3368h_display_buff[1] |= 0x01 << 1;  // 背光刻度条 第 26 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 2;  // 背光刻度条 第 25 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 3;  // 背光刻度条 第 24 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 4;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[1] |= 0x01 << 5; // "x1000r/min"字样 第 2 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 6; // "x1000r/min"字样 第 1 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 7;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[1] |= 0x01 << 8;  // "TRIP" 字样 指示灯（绿）
+    // aip3368h_display_buff[1] |= 0x01 << 9;  // "TOTAL" 字样 指示灯（绿）
+    // aip3368h_display_buff[1] |= 0x01 << 10; // "x1000r/min"字样 第 0 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 11; // 发动机转速 "12"字样 指示灯（红）
+    // aip3368h_display_buff[1] |= 0x01 << 12; // 背光刻度条 第 23 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 13; // 背光刻度条 第 22 个灯（白）
+    // aip3368h_display_buff[1] |= 0x01 << 14; // 大灯（蓝）
+    // aip3368h_display_buff[1] |= 0x01 << 15; // NC
 
-    // aip3368h_display_buff[2] |= 0x01 << 0;  //
-    // aip3368h_display_buff[2] |= 0x01 << 1;  //
-    // aip3368h_display_buff[2] |= 0x01 << 2;  //
-    // aip3368h_display_buff[2] |= 0x01 << 3;  //
-    // aip3368h_display_buff[2] |= 0x01 << 4;  //
-    // aip3368h_display_buff[2] |= 0x01 << 5;  //
-    // aip3368h_display_buff[2] |= 0x01 << 6;  //
-    // aip3368h_display_buff[2] |= 0x01 << 7;  //
-    // aip3368h_display_buff[2] |= 0x01 << 8;  //
-    // aip3368h_display_buff[2] |= 0x01 << 9;  //
-    // aip3368h_display_buff[2] |= 0x01 << 10; //
-    // aip3368h_display_buff[2] |= 0x01 << 11; //
-    // aip3368h_display_buff[2] |= 0x01 << 12; //
-    // aip3368h_display_buff[2] |= 0x01 << 13; //
-    // aip3368h_display_buff[2] |= 0x01 << 14; //
-    // aip3368h_display_buff[2] |= 0x01 << 15; //
+    // aip3368h_display_buff[2] |= 0x01 << 0;  // 挡位 F 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 1;  // 挡位 G 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 2;  // 挡位 A 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 3;  // 挡位 B 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 4;  // 背光刻度条 第 27 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 5;  // "N" 字样指示灯（绿）
+    // aip3368h_display_buff[2] |= 0x01 << 6;  // 背光刻度条 第 29 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 7;  // 背光刻度条 第 28 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 8;  // 背光刻度条 第 30 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 9;  // 背光刻度条 第 31 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 10; // 背光刻度条 第 32 个灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 11; // "GEAR" 字样指示灯（白）
+    // aip3368h_display_buff[2] |= 0x01 << 12; // 挡位 C 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 13; // 里程 "mile" 字样指示灯（绿）
+    // aip3368h_display_buff[2] |= 0x01 << 14; // 挡位 D 段 指示灯（红）
+    // aip3368h_display_buff[2] |= 0x01 << 15; // 挡位 E 段 指示灯（红）
 
-    // aip3368h_display_buff[3] |= 0x01 << 0;  //
-    // aip3368h_display_buff[3] |= 0x01 << 1;  //
-    // aip3368h_display_buff[3] |= 0x01 << 2;  //
-    // aip3368h_display_buff[3] |= 0x01 << 3;  //
-    // aip3368h_display_buff[3] |= 0x01 << 4;  //
-    // aip3368h_display_buff[3] |= 0x01 << 5;  //
-    // aip3368h_display_buff[3] |= 0x01 << 6;  //
-    // aip3368h_display_buff[3] |= 0x01 << 7;  //
-    // aip3368h_display_buff[3] |= 0x01 << 8;  //
-    // aip3368h_display_buff[3] |= 0x01 << 9;  //
-    // aip3368h_display_buff[3] |= 0x01 << 10; //
-    // aip3368h_display_buff[3] |= 0x01 << 11; //
-    // aip3368h_display_buff[3] |= 0x01 << 12; //
-    // aip3368h_display_buff[3] |= 0x01 << 13; //
-    // aip3368h_display_buff[3] |= 0x01 << 14; //
-    // aip3368h_display_buff[3] |= 0x01 << 15; //
+    // aip3368h_display_buff[3] |= 0x01 << 0;  // 里程 第 5 位 A 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 1; // 里程 第 5 位 F 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 2; // 里程 第 5 位 B 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 3; // 里程 第 5 位 G 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 4;  // 里程 "km" 字样指示灯（绿）
+    // aip3368h_display_buff[3] |= 0x01 << 5;  // 里程 第 5 位 C 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 6;  // 里程 第 5 位 E 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 7;  // 里程 第 5 位 D 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 8;  // 里程 小数点 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 9;  // 里程 第 4 位 D 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 10; // 里程 第 4 位 E 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 11; // 里程 第 4 位 G 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 12; // 里程 第 4 位 C 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 13; // 里程 第 4 位 F 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 14; // 里程 第 4 位 B 段 指示灯（白）
+    // aip3368h_display_buff[3] |= 0x01 << 15; // 里程 第 4 位 A 段 指示灯（白）
 
-    // aip3368h_display_buff[4] |= 0x01 << 0;  //
-    // aip3368h_display_buff[4] |= 0x01 << 1;  //
-    // aip3368h_display_buff[4] |= 0x01 << 2;  //
-    // aip3368h_display_buff[4] |= 0x01 << 3;  //
-    // aip3368h_display_buff[4] |= 0x01 << 4;  //
-    // aip3368h_display_buff[4] |= 0x01 << 5;  //
-    // aip3368h_display_buff[4] |= 0x01 << 6;  //
-    // aip3368h_display_buff[4] |= 0x01 << 7;  //
-    // aip3368h_display_buff[4] |= 0x01 << 8;  //
-    // aip3368h_display_buff[4] |= 0x01 << 9;  //
-    // aip3368h_display_buff[4] |= 0x01 << 10; //
-    // aip3368h_display_buff[4] |= 0x01 << 11; //
-    // aip3368h_display_buff[4] |= 0x01 << 12; //
-    // aip3368h_display_buff[4] |= 0x01 << 13; //
-    // aip3368h_display_buff[4] |= 0x01 << 14; //
-    // aip3368h_display_buff[4] |= 0x01 << 15; //
+    // aip3368h_display_buff[4] |= 0x01 << 0;  // 里程 第 3 位 A 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 1;  // 里程 第 3 位 B 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 2;  // 里程 第 3 位 F 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 3;  // 里程 第 3 位 G 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 4;  // 里程 第 3 位 C 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 5;  // 里程 第 3 位 E 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 6;  // 里程 第 2 位 C 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 7;  // 里程 第 3 位 D 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 8;  // 里程 第 2 位 D 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 9;  // 里程 第 2 位 E 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 10; // 里程 第 2 位 G 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 11; // 里程 第 1 位 B 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 12; // 里程 第 1 位 A 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 13; // 里程 第 2 位 F 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 14; // 里程 第 2 位 B 段 指示灯（白）
+    // aip3368h_display_buff[4] |= 0x01 << 15; // 里程 第 2 位 A 段 指示灯（白）
 
-    // aip3368h_display_buff[5] |= 0x01 << 0;  //
-    // aip3368h_display_buff[5] |= 0x01 << 1;  //
-    // aip3368h_display_buff[5] |= 0x01 << 2;  //
-    // aip3368h_display_buff[5] |= 0x01 << 3;  //
-    // aip3368h_display_buff[5] |= 0x01 << 4;  //
-    // aip3368h_display_buff[5] |= 0x01 << 5;  //
-    // aip3368h_display_buff[5] |= 0x01 << 6;  //
-    // aip3368h_display_buff[5] |= 0x01 << 7;  //
-    // aip3368h_display_buff[5] |= 0x01 << 8;  //
-    // aip3368h_display_buff[5] |= 0x01 << 9;  //
-    // aip3368h_display_buff[5] |= 0x01 << 10; //
-    // aip3368h_display_buff[5] |= 0x01 << 11; //
-    // aip3368h_display_buff[5] |= 0x01 << 12; //
-    // aip3368h_display_buff[5] |= 0x01 << 13; //
-    // aip3368h_display_buff[5] |= 0x01 << 14; //
-    // aip3368h_display_buff[5] |= 0x01 << 15; //
+    // aip3368h_display_buff[5] |= 0x01 << 0;  // 里程 第 1 位 G 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 1;  // 里程 第 1 位 F 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 2;  // 里程 第 0 位 A 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 3;  // 里程 第 0 位 B 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 4;  // 里程 第 0 位 F 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 5;  // 里程 第 1 位 C 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 6;  // 里程 第 1 位 E 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 7;  // 里程 第 1 位 D 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 8;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[5] |= 0x01 << 9;  // 发动机转速 "0" 字样 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 10; // 时速 "km/h" 字样 指示灯（绿）
+    // aip3368h_display_buff[5] |= 0x01 << 11; // 时速 "mph" 字样 指示灯（绿）
+    // aip3368h_display_buff[5] |= 0x01 << 12; // 里程 第 0 位 D 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 13; // 里程 第 0 位 E 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 14; // 里程 第 0 位 C 段 指示灯（白）
+    // aip3368h_display_buff[5] |= 0x01 << 15; // 里程 第 0 位 G 段 指示灯（白）
 
-    // aip3368h_display_buff[6] |= 0x01 << 0;  //
-    // aip3368h_display_buff[6] |= 0x01 << 1;  //
-    // aip3368h_display_buff[6] |= 0x01 << 2;  //
-    // aip3368h_display_buff[6] |= 0x01 << 3;  //
-    // aip3368h_display_buff[6] |= 0x01 << 4;  //
-    // aip3368h_display_buff[6] |= 0x01 << 5;  //
-    // aip3368h_display_buff[6] |= 0x01 << 6;  //
-    // aip3368h_display_buff[6] |= 0x01 << 7;  //
-    // aip3368h_display_buff[6] |= 0x01 << 8;  //
-    // aip3368h_display_buff[6] |= 0x01 << 9;  //
-    // aip3368h_display_buff[6] |= 0x01 << 10; //
-    // aip3368h_display_buff[6] |= 0x01 << 11; //
-    // aip3368h_display_buff[6] |= 0x01 << 12; //
-    // aip3368h_display_buff[6] |= 0x01 << 13; //
-    // aip3368h_display_buff[6] |= 0x01 << 14; //
-    // aip3368h_display_buff[6] |= 0x01 << 15; //
+    // aip3368h_display_buff[6] |= 0x01 << 0;  // NC 样板上没有该指示灯
+    // aip3368h_display_buff[6] |= 0x01 << 1;  // 时速 第 2 位 指示灯 A 段（白）
+    // aip3368h_display_buff[6] |= 0x01 << 2;  // 发动机转速 "10" 字样 指示灯（红）
+    // aip3368h_display_buff[6] |= 0x01 << 3;  // 时速 第 1 位 指示灯 A 段（白）
+    // aip3368h_display_buff[6] |= 0x01 << 4;  // 发动机转速刻度条 第 17 个 指示灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 5;  // 发动机转速刻度条 第 18 个 指示灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 6;  // 发动机转速刻度条 第 19 个 指示灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 7;  // 发动机转速 "9" 字样 指示灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 8;  // 左转向灯（绿）
+    // aip3368h_display_buff[6] |= 0x01 << 9;  // 背光刻度条 第 16 个灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 10; // 背光刻度条 第 15 个灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 11; // 故障指示灯（红）
+    // aip3368h_display_buff[6] |= 0x01 << 12; // 发动机转速刻度条 第 20 个灯（红）
+    // aip3368h_display_buff[6] |= 0x01 << 13; // 背光刻度条 第 17 个灯（白）
+    // aip3368h_display_buff[6] |= 0x01 << 14; // 发动机转速刻度条 第 21 个灯（红）
+    // aip3368h_display_buff[6] |= 0x01 << 15; // 背光刻度条 第 18 个灯（白）
 
-    // aip3368h_display_buff[7] |= 0x01 << 0;  //
-    // aip3368h_display_buff[7] |= 0x01 << 1;  //
-    // aip3368h_display_buff[7] |= 0x01 << 2;  //
-    // aip3368h_display_buff[7] |= 0x01 << 3;  //
-    // aip3368h_display_buff[7] |= 0x01 << 4;  //
-    // aip3368h_display_buff[7] |= 0x01 << 5;  //
-    // aip3368h_display_buff[7] |= 0x01 << 6;  //
-    // aip3368h_display_buff[7] |= 0x01 << 7;  //
-    // aip3368h_display_buff[7] |= 0x01 << 8;  //
-    // aip3368h_display_buff[7] |= 0x01 << 9;  //
-    // aip3368h_display_buff[7] |= 0x01 << 10; //
-    // aip3368h_display_buff[7] |= 0x01 << 11; //
-    // aip3368h_display_buff[7] |= 0x01 << 12; //
-    // aip3368h_display_buff[7] |= 0x01 << 13; //
-    // aip3368h_display_buff[7] |= 0x01 << 14; //
-    // aip3368h_display_buff[7] |= 0x01 << 15; //
+    // aip3368h_display_buff[7] |= 0x01 << 0;  // 时速 第 2 位 指示灯 F 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 1;  // 时速 第 2 位 指示灯 E 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 2;  // 时速 第 2 位 指示灯 G 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 3; // 时速 第 2 位 指示灯 B 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 4; // 时速 第 2 位 指示灯 C 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 5;  // 时速 第 2 位 指示灯 D 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 6;  // 发动机转速 "1" 字样 指示灯（白）
+    // aip3368h_display_buff[7] |= 0x01 << 7; // 发动机转速 "2" 字样 指示灯（白）
+    // aip3368h_display_buff[7] |= 0x01 << 8; // 发动机转速 "3" 字样 指示灯（白）
+    // aip3368h_display_buff[7] |= 0x01 << 9;  // 时速 第 1 位 指示灯 D 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 10; // NC
+    // aip3368h_display_buff[7] |= 0x01 << 11; // 时速 第 1 位 指示灯 E 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 12; // 时速 第 1 位 指示灯 C 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 13; // 时速 第 1 位 指示灯 G 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 14; // 时速 第 1 位 指示灯 F 段（白）
+    // aip3368h_display_buff[7] |= 0x01 << 15; // 时速 第 1 位 指示灯 B 段（白）
 
-    // aip3368h_display_buff[8] |= 0x01 << 0;  //
-    // aip3368h_display_buff[8] |= 0x01 << 1;  //
-    // aip3368h_display_buff[8] |= 0x01 << 2;  //
-    // aip3368h_display_buff[8] |= 0x01 << 3;  //
-    // aip3368h_display_buff[8] |= 0x01 << 4;  //
-    // aip3368h_display_buff[8] |= 0x01 << 5;  //
-    // aip3368h_display_buff[8] |= 0x01 << 6;  //
-    // aip3368h_display_buff[8] |= 0x01 << 7;  //
-    // aip3368h_display_buff[8] |= 0x01 << 8;  //
-    // aip3368h_display_buff[8] |= 0x01 << 9;  //
-    // aip3368h_display_buff[8] |= 0x01 << 10; //
-    // aip3368h_display_buff[8] |= 0x01 << 11; //
-    // aip3368h_display_buff[8] |= 0x01 << 12; //
-    // aip3368h_display_buff[8] |= 0x01 << 13; //
-    // aip3368h_display_buff[8] |= 0x01 << 14; //
-    // aip3368h_display_buff[8] |= 0x01 << 15; //
+    // aip3368h_display_buff[8] |= 0x01 << 0;  // 发动机转速 "7" 字样 指示灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 1;  // 发动机转速刻度条 第 11 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 2;  // 背光刻度条 第 7 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 3;  // 发动机转速刻度条 第 12 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 4;  // 背光刻度条 第 8 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 5;  // 发动机转速刻度条 第 13 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 6;  // 背光刻度条 第 10 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 7;  // 背光刻度条 第 9 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 8;  // 发动机转速刻度条 第 14 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 9;  // 背光刻度条 第 11 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 10; // 背光刻度条 第 12 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 11; // 发动机转速刻度条 第 15 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 12; // 背光刻度条 第 13 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 13; // 背光刻度条 第 14 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 14; // 发动机转速刻度条 第 16 个灯（白）
+    // aip3368h_display_buff[8] |= 0x01 << 15; // 发动机转速 "8" 字样 指示灯（白）
 
-    // aip3368h_display_buff[9] |= 0x01 << 0;  //
-    // aip3368h_display_buff[9] |= 0x01 << 1;  //
-    // aip3368h_display_buff[9] |= 0x01 << 2;  //
-    // aip3368h_display_buff[9] |= 0x01 << 3;  //
-    // aip3368h_display_buff[9] |= 0x01 << 4;  //
-    // aip3368h_display_buff[9] |= 0x01 << 5;  //
-    // aip3368h_display_buff[9] |= 0x01 << 6;  //
-    // aip3368h_display_buff[9] |= 0x01 << 7;  //
-    // aip3368h_display_buff[9] |= 0x01 << 8;  //
-    // aip3368h_display_buff[9] |= 0x01 << 9;  //
-    // aip3368h_display_buff[9] |= 0x01 << 10; //
-    // aip3368h_display_buff[9] |= 0x01 << 11; //
-    // aip3368h_display_buff[9] |= 0x01 << 12; //
-    // aip3368h_display_buff[9] |= 0x01 << 13; //
-    // aip3368h_display_buff[9] |= 0x01 << 14; //
-    // aip3368h_display_buff[9] |= 0x01 << 15; //
+    // aip3368h_display_buff[9] |= 0x01 << 0;  // 发动机转速刻度条 第 6 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 1;  // 发动机转速 "4" 字样 指示灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 2;  // 背光刻度条 第 2 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 3;  // 发动机转速刻度条 第 7 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 4;  // 背光刻度条 第 3 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 5;  // 发动机转速刻度条 第 8 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 6;  // 油量 "E" 字样 指示灯（红）
+    // aip3368h_display_buff[9] |= 0x01 << 7;  // 背光刻度条 第 4 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 8;  // 发动机转速刻度条 第 10 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 9;  // 背光刻度条 第 6 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 10; // 背光刻度条 第 5 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 11; // 发动机转速刻度条 第 9 个灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 12; // 发动机转速 "5" 字样 指示灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 13; // 发动机转速 "6" 字样 指示灯（白）
+    // aip3368h_display_buff[9] |= 0x01 << 14; // 时速 第 0 位 指示灯 B 段（白）
+    // aip3368h_display_buff[9] |= 0x01 << 15; // 时速 第 0 位 指示灯 C 段（白）
+
+    // aip3368h_display_buff[10] |= 0x01 << 0; // 发动机转速刻度条 第 5 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 1; // 发动机转速刻度条 第 4 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 2;  // 背光刻度条 第 1 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 3;  // 发动机转速刻度条 第 3 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 4;  // 发动机转速刻度条 第 2 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 5;  // 背光刻度条 第 0 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 6;  // 发动机转速刻度条 第 1 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 7;  // 发动机转速刻度条 第 0 个灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 8;  // 油量 "F" 字样 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 9;  // 油量 第 5 格 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 10; // 油量 第 4 格 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 11; // 油量 第 3 格 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 12; // 油量 第 2 格 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 13; // 油量 图标 （红）
+    // aip3368h_display_buff[10] |= 0x01 << 14; // 油量 第 1 格 指示灯（白）
+    // aip3368h_display_buff[10] |= 0x01 << 15; // 油量 第 0 格 指示灯（红）
 #endif
 
 // 所有灯整体闪烁

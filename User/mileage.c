@@ -101,13 +101,13 @@ void mileage_scan(void)
 
         if (instrument.save_info.is_display_total_mileage)
         {
-            aip3368h_display_mileage(
-                instrument.save_info.total_mileage / 1000, 1);
+            // aip3368h_display_mileage(
+            //     instrument.save_info.total_mileage / 1000, 1);
         }
         else
         {
-            aip3368h_display_mileage(
-                instrument.save_info.subtotal_mileage / 100, 0);
+            // aip3368h_display_mileage(
+            //     instrument.save_info.subtotal_mileage / 100, 0);
         }
     }
 }

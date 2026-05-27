@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              05/22/2026 18:13:48 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              05/27/2026 18:59:00 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   51   1      #endif
   52   1      
   53   1      #if ENGINE_SPEED_SCAN_ENABLE
-C51 COMPILER V9.60.7.0   MAIN                                                              05/22/2026 18:13:48 PAGE 2   
+C51 COMPILER V9.60.7.0   MAIN                                                              05/27/2026 18:59:00 PAGE 2   
 
   54   1          // engine_speed_scan_config(); // 发动机转速扫描的配置
   55   1      #endif
@@ -102,7 +102,7 @@ line level    source
   88   1          // aip3368h_display_boot_animation_handle();
   89   1      
   90   1          // USER_TO_DO 测试时使用
-  91   1          aip3368h_display_test();
+  91   1          // aip3368h_display_test();
   92   1      
   93   1          /* 系统主循环 */
   94   1          while (1)
@@ -126,7 +126,7 @@ line level    source
  112   2              // speed_scan(); // 检测时速
  113   2              // aip3368h_display_speed_handle();
  114   2      #endif
-C51 COMPILER V9.60.7.0   MAIN                                                              05/22/2026 18:13:48 PAGE 3   
+C51 COMPILER V9.60.7.0   MAIN                                                              05/27/2026 18:59:00 PAGE 3   
 
  115   2      
  116   2              // mileage_scan(); // 检测大计里程和小计里程
@@ -164,7 +164,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     49    ----
+   CODE SIZE        =     46    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

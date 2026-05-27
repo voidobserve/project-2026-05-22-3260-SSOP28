@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   IO_KEY                                                            05/22/2026 18:06:44 PAGE 1   
+C51 COMPILER V9.60.7.0   IO_KEY                                                            05/27/2026 18:59:01 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE IO_KEY
@@ -62,7 +62,7 @@ line level    source
   51   1              {
   52   2                      return IO_KEY_ID_VALID;
   53   2              }
-C51 COMPILER V9.60.7.0   IO_KEY                                                            05/22/2026 18:06:44 PAGE 2   
+C51 COMPILER V9.60.7.0   IO_KEY                                                            05/27/2026 18:59:01 PAGE 2   
 
   54   1      
   55   1              return NO_KEY;
@@ -122,18 +122,18 @@ line level    source
  109   2                      if (instrument.save_info.is_display_total_mileage)
  110   2                      {
  111   3                              instrument.save_info.is_display_total_mileage = 0;
- 112   3                              aip3368h_display_mileage(
- 113   3                                      instrument.save_info.subtotal_mileage / 100,
- 114   3                                      0);
+ 112   3                              // aip3368h_display_mileage(
+ 113   3                              //      instrument.save_info.subtotal_mileage / 100,
+ 114   3                              //      0);
  115   3                      }
-C51 COMPILER V9.60.7.0   IO_KEY                                                            05/22/2026 18:06:44 PAGE 3   
+C51 COMPILER V9.60.7.0   IO_KEY                                                            05/27/2026 18:59:01 PAGE 3   
 
  116   2                      else
  117   2                      {
  118   3                              instrument.save_info.is_display_total_mileage = 1;
- 119   3                              aip3368h_display_mileage(
- 120   3                                      instrument.save_info.total_mileage / 1000,
- 121   3                                      1);
+ 119   3                              // aip3368h_display_mileage(
+ 120   3                              //      instrument.save_info.total_mileage / 1000,
+ 121   3                              //      1);
  122   3                      }
  123   2      
  124   2                      instrument_info_save();
@@ -143,9 +143,9 @@ line level    source
  128   2                      if (instrument.save_info.is_display_total_mileage == 0)
  129   2                      {
  130   3                              instrument.save_info.subtotal_mileage = 0;
- 131   3                              aip3368h_display_mileage(
- 132   3                                      instrument.save_info.subtotal_mileage / 100,
- 133   3                                      0);
+ 131   3                              // aip3368h_display_mileage(
+ 132   3                              //      instrument.save_info.subtotal_mileage / 100,
+ 133   3                              //      0);
  134   3                              instrument_info_save();
  135   3                      }
  136   2                      break;
@@ -157,7 +157,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    226    ----
+   CODE SIZE        =    173    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     24    ----
    PDATA SIZE       =   ----    ----

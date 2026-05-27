@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   AIP3368                                                           05/22/2026 18:13:29 PAGE 1   
+C51 COMPILER V9.60.7.0   AIP3368                                                           05/27/2026 11:07:17 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE AIP3368
@@ -62,7 +62,7 @@ line level    source
   51   1      
   52   1          // 一帧完整数据
   53   1          for (i = 0; i < len; i++)
-C51 COMPILER V9.60.7.0   AIP3368                                                           05/22/2026 18:13:29 PAGE 2   
+C51 COMPILER V9.60.7.0   AIP3368                                                           05/27/2026 11:07:17 PAGE 2   
 
   54   1          {
   55   2              aip3368h_module_send_data_to_one_dev(buff[i]);
@@ -126,7 +126,7 @@ line level    source
  113   1          P1_MD0 |= GPIO_P11_MODE_SEL(0x01);
  114   1          FOUT_S11 = GPIO_FOUT_AF_FUNC;
  115   1          // DIO
-C51 COMPILER V9.60.7.0   AIP3368                                                           05/22/2026 18:13:29 PAGE 3   
+C51 COMPILER V9.60.7.0   AIP3368                                                           05/27/2026 11:07:17 PAGE 3   
 
  116   1          P1_MD0 &= ~GPIO_P12_MODE_SEL(0x03);
  117   1          P1_MD0 |= GPIO_P12_MODE_SEL(0x01);
@@ -162,7 +162,7 @@ line level    source
 MODULE INFORMATION:   STATIC OVERLAYABLE
    CODE SIZE        =    257    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =     22       6
+   XDATA SIZE       =     24       6
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

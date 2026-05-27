@@ -13,11 +13,11 @@ void pin_level_scan(void)
 {
     if (0 == PIN_DETECT_BREAKDOWN)
     {
-        aip3368h_display_err_icon(1);
+        // aip3368h_display_err_icon(1);
     }
     else
     {
-        aip3368h_display_err_icon(0);
+        // aip3368h_display_err_icon(0);
     }
 }
 

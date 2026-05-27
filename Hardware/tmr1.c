@@ -84,7 +84,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_err_handle_time_add();
 
         // 修改显存的操作放到了主循环，这里仅用作计时
-        aip3368h_display_boot_animation_time_add();
+        // aip3368h_display_boot_animation_time_add();
 
         // USER_TO_DO 只在测试时只用： 
         // aip3368h_display_test_engine_speed_scale_bar_1ms_isr();

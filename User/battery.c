@@ -83,7 +83,7 @@ void battery_scan(void)
     {
         instrument.flag_is_in_warning_of_low_voltage = 0;
         // 取消报警之后，需要立即更新显示
-        aip3368h_display_bat_err_icon(0);
+        // aip3368h_display_bat_err_icon(0);
     }
     else if (voltage < BAT_LOW_VOLTAGE_WARNING_THRESHOLD)
     {

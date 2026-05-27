@@ -21,12 +21,21 @@ Target DLL:      TXLink_keil_C51.dll V1.00
 Dialog DLL:      TP51.DLL V2.60.1.0
  
 <h2>Project:</h2>
-D:\A_WorkSt\Aworkst\2026-05-22-众邦-长条矩形+圆角摩托车仪表-3260-SSOP28\code\project-2026-05-22-3260-SSOP28\Project\Keil\Project.uvproj
+D:\project\2026-05-22-众邦-长条矩形+圆角摩托车仪表-3260-SSOP28\code\project-2026-05-22-3260-SSOP28\Project\Keil\Project.uvproj
 Project File Date:  05/18/2026
 
 <h2>Output:</h2>
 Build target 'Target 1'
+compiling tmr1.c...
+compiling main.c...
+compiling pin_level_scan.c...
+compiling speed_scan.c...
+compiling engine_speed_scan.c...
+compiling mileage.c...
+compiling fuel_capacity.c...
+compiling battery.c...
 compiling aip3368h_display.c...
+compiling io_key.c...
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?ADC_CONFIG?ADC
@@ -67,19 +76,27 @@ linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?BATTERY_SCAN?BATTERY
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_AIP3368H_DISPLAY_MILEAGE?AIP3368H_DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_AIP3368H_DISPLAY_SPEED?AIP3368H_DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?AIP3368H_DISPLAY_BOOT_ANIMATION_TIME_ADD?AIP3368H_DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?AIP3368H_DISPLAY_BOOT_ANIMATION_HANDLE?AIP3368H_DISPLAY
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?AIP3368H_DISPLAY_ERR_HANDLE_TIME_ADD?AIP3368H_DISPLAY
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?AIP3368H_DISPLAY_ERR_HANDLE?AIP3368H_DISPLAY
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?AIP3368H_DISPLAY_TEST?AIP3368H_DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?IO_KEY_CONFIG?IO_KEY
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?IO_KEY_HANDLE?IO_KEY
-Program Size: data=9.6 xdata=560 code=8849
+Program Size: data=9.6 xdata=558 code=8625
 creating hex file from ".\Release\Objects\Project"...
-".\Release\Objects\Project" - 0 Error(s), 24 Warning(s).
-Build Time Elapsed:  00:00:01
+".\Release\Objects\Project" - 0 Error(s), 28 Warning(s).
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

@@ -353,7 +353,7 @@ void aip3368h_display_speed_handle(void)
 
         speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
         filtered_speed = instrument.speed;
-        aip3368h_display_speed(speed_of_lag);
+        // aip3368h_display_speed(speed_of_lag);
 
         speed_filter_init(instrument.speed);
     }
@@ -389,7 +389,7 @@ void aip3368h_display_speed_handle(void)
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                aip3368h_display_speed(speed_of_lag);
+                // aip3368h_display_speed(speed_of_lag);
                 return;
             }
         }
@@ -419,7 +419,7 @@ void aip3368h_display_speed_handle(void)
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                aip3368h_display_speed(speed_of_lag);
+                // aip3368h_display_speed(speed_of_lag);
                 return;
             }
         }
@@ -454,7 +454,7 @@ void aip3368h_display_speed_handle(void)
 #if USER_DEBUG_ENABLE
         printf("speed_of_lag == %u\n", (u16)speed_of_lag);
 #endif
-        aip3368h_display_speed(speed_of_lag);
+        // aip3368h_display_speed(speed_of_lag);
     }
 }
 

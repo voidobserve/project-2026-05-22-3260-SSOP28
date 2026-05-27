@@ -178,7 +178,7 @@ void fuel_capacity_scan(void)
             if (instrument.flag_is_in_warning_of_low_fuel == 0)
             {
                 // 如果之前没有进入低油量报警
-                aip3368h_display_fuel_level(0); // 清空油量显示
+                // aip3368h_display_fuel_level(0); // 清空油量显示
                 instrument.flag_is_in_warning_of_low_fuel = 1;
             }
         }
@@ -187,7 +187,7 @@ void fuel_capacity_scan(void)
             // 关闭低油量报警
             instrument.flag_is_in_warning_of_low_fuel = 0;
             // 正常显示油量
-            aip3368h_display_fuel_level(fuel_lev_of_lag);
+            // aip3368h_display_fuel_level(fuel_lev_of_lag);
         }
     }
     else
@@ -223,7 +223,7 @@ void fuel_capacity_scan(void)
         if (instrument.flag_is_in_warning_of_low_fuel == 0)
         {
             // 如果之前没有进入低油量报警
-            aip3368h_display_fuel_level(0); // 清空油量显示
+            // aip3368h_display_fuel_level(0); // 清空油量显示
             instrument.flag_is_in_warning_of_low_fuel = 1;
         }
     }
@@ -232,7 +232,7 @@ void fuel_capacity_scan(void)
         // 关闭低油量报警
         instrument.flag_is_in_warning_of_low_fuel = 0;
         // 正常显示油量
-        aip3368h_display_fuel_level(fuel_lev_of_lag);
+        // aip3368h_display_fuel_level(fuel_lev_of_lag);
     }
 }
 

@@ -109,16 +109,16 @@ void io_key_handle(void)
 		if (instrument.save_info.is_display_total_mileage)
 		{
 			instrument.save_info.is_display_total_mileage = 0;
-			aip3368h_display_mileage(
-				instrument.save_info.subtotal_mileage / 100,
-				0);
+			// aip3368h_display_mileage(
+			// 	instrument.save_info.subtotal_mileage / 100,
+			// 	0);
 		}
 		else
 		{
 			instrument.save_info.is_display_total_mileage = 1;
-			aip3368h_display_mileage(
-				instrument.save_info.total_mileage / 1000,
-				1);
+			// aip3368h_display_mileage(
+			// 	instrument.save_info.total_mileage / 1000,
+			// 	1);
 		}
 
 		instrument_info_save();
@@ -128,9 +128,9 @@ void io_key_handle(void)
 		if (instrument.save_info.is_display_total_mileage == 0)
 		{
 			instrument.save_info.subtotal_mileage = 0;
-			aip3368h_display_mileage(
-				instrument.save_info.subtotal_mileage / 100,
-				0);
+			// aip3368h_display_mileage(
+			// 	instrument.save_info.subtotal_mileage / 100,
+			// 	0);
 			instrument_info_save();
 		}
 		break;

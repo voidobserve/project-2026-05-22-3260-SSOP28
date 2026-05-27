@@ -205,10 +205,10 @@ void aip3368h_display_engine_speed_handle(void)
         {
             instrument.flag_is_engine_speed_warning_enable = 0;
             // 取消警报之后，需要立即取消显示：
-            aip3368h_display_exclamation_point(0);
+            // aip3368h_display_exclamation_point(0);
         }
 
-        aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
+        // aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
     } 
 }
 

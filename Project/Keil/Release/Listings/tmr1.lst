@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TMR1                                                              05/22/2026 18:13:29 PAGE 1   
+C51 COMPILER V9.60.7.0   TMR1                                                              05/27/2026 18:59:00 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR1
@@ -62,7 +62,7 @@ line level    source
   50   1          // 周期中断
   51   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
   52   1          {
-C51 COMPILER V9.60.7.0   TMR1                                                              05/22/2026 18:13:29 PAGE 2   
+C51 COMPILER V9.60.7.0   TMR1                                                              05/27/2026 18:59:00 PAGE 2   
 
   53   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
   54   2      
@@ -98,7 +98,7 @@ line level    source
   84   2              // aip3368h_display_err_handle_time_add();
   85   2      
   86   2              // 修改显存的操作放到了主循环，这里仅用作计时
-  87   2              aip3368h_display_boot_animation_time_add();
+  87   2              // aip3368h_display_boot_animation_time_add();
   88   2      
   89   2              // USER_TO_DO 只在测试时只用： 
   90   2              // aip3368h_display_test_engine_speed_scale_bar_1ms_isr();
@@ -114,7 +114,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    197    ----
+   CODE SIZE        =    194    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

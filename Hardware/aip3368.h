@@ -4,7 +4,7 @@
 #include "my_config.h"
 
 // aip3368h 芯片的数量（有多少个芯片级联）：
-#define AIP3368H_DEV_NUM 10
+#define AIP3368H_DEV_NUM 11
 
 #define DIO P12 // 串行数据输入端
 #define DCK P11 // 串行时钟信号的输入端

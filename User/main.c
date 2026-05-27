@@ -88,7 +88,7 @@ void main(void)
     // aip3368h_display_boot_animation_handle();
 
     // USER_TO_DO 测试时使用
-    aip3368h_display_test();
+    // aip3368h_display_test();
 
     /* 系统主循环 */
     while (1)
