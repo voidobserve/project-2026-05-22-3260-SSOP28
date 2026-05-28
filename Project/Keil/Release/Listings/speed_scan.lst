@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 1   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SPEED_SCAN
@@ -62,7 +62,7 @@ line level    source
   50   1      
   51   1          // for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
   52   1          // {
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 2   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 2   
 
   53   1          //     printf("speed[%u] == %u\n", (u16)i, (u16)speed_filter_array[i]);
   54   1          // }
@@ -126,7 +126,7 @@ line level    source
  112          void speed_scan_update_data(void) // 更新检测时速的数据
  113          {
  114   1          cur_speed_scan_time += speed_scan_time_ms;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 3   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 3   
 
  115   1          speed_scan_time_ms = 0;
  116   1          cur_speed_scan_pulse += speed_pulse_cnt;
@@ -190,7 +190,7 @@ line level    source
  172          
  173          //         last_speed_scan_level = 1;
  174          //     }
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 4   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 4   
 
  175          //     else
  176          //     {
@@ -254,7 +254,7 @@ line level    source
  234          //         // speed_scan_update_data();
  235          //         cur_speed_scan_time += speed_scan_time_ms;
  236          //         speed_scan_time_ms = 0;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 5   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 5   
 
  237          //         cur_speed_scan_pulse += speed_pulse_cnt;
  238          //         speed_pulse_cnt = 0;
@@ -318,7 +318,7 @@ line level    source
              -�所用的时间（单位：ms）
  289   3                  */
  290   3                  cur_speed = tmp * 36 / 10 / cur_speed_scan_time;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 6   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 6   
 
  291   3              }
  292   2      
@@ -382,7 +382,7 @@ line level    source
  349   1      
  350   1          if (0 == is_initialized)
  351   1          {
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 7   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 7   
 
  352   2              is_initialized = 1;
  353   2      
@@ -446,7 +446,7 @@ line level    source
  410   4                      else
  411   4                      {
  412   5                          base_step = 5;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/27/2026 18:59:00 PAGE 8   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        05/28/2026 17:15:07 PAGE 8   
 
  413   5                      }
  414   4      

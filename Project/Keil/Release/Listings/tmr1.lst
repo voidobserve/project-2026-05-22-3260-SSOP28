@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TMR1                                                              05/27/2026 18:59:00 PAGE 1   
+C51 COMPILER V9.60.7.0   TMR1                                                              05/28/2026 17:44:02 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR1
@@ -62,7 +62,7 @@ line level    source
   50   1          // 周期中断
   51   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
   52   1          {
-C51 COMPILER V9.60.7.0   TMR1                                                              05/27/2026 18:59:00 PAGE 2   
+C51 COMPILER V9.60.7.0   TMR1                                                              05/28/2026 17:44:02 PAGE 2   
 
   53   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
   54   2      
@@ -101,20 +101,23 @@ line level    source
   87   2              // aip3368h_display_boot_animation_time_add();
   88   2      
   89   2              // USER_TO_DO 只在测试时只用： 
-  90   2              // aip3368h_display_test_engine_speed_scale_bar_1ms_isr();
-  91   2              // aip3368h_display_test_fuel_level_1ms_isr();
-  92   2              // aip3368h_display_test_mileage_1ms_isr();
-  93   2              // aip3368h_display_test_speed_1ms_isr();
-  94   2              // aip3368h_display_test_speed_scale_bar_1ms_isr();
-  95   2          }
-  96   1       
-  97   1          // 退出中断设置IP，不可删除
-  98   1          __IRQnIPnPop(TMR1_IRQn);
-  99   1      }
+  90   2              
+  91   2              aip3368h_display_test_light_blink_1ms_isr();
+  92   2      
+  93   2              // aip3368h_display_test_back_light_scale_bar();
+  94   2              // aip3368h_display_test_engine_speed_scale_bar();
+  95   2              // aip3368h_display_test_engine_speed_digit_scale();
+  96   2              // aip3368h_display_test_gear();
+  97   2              // aip3368h_display_test_speed();
+  98   2          }
+  99   1       
+ 100   1          // 退出中断设置IP，不可删除
+ 101   1          __IRQnIPnPop(TMR1_IRQn);
+ 102   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    194    ----
+   CODE SIZE        =    197    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

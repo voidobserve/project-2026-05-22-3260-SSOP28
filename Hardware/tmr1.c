@@ -87,11 +87,14 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_boot_animation_time_add();
 
         // USER_TO_DO 只在测试时只用： 
-        // aip3368h_display_test_engine_speed_scale_bar_1ms_isr();
-        // aip3368h_display_test_fuel_level_1ms_isr();
-        // aip3368h_display_test_mileage_1ms_isr();
-        // aip3368h_display_test_speed_1ms_isr();
-        // aip3368h_display_test_speed_scale_bar_1ms_isr();
+        
+        aip3368h_display_test_light_blink_1ms_isr();
+
+        // aip3368h_display_test_back_light_scale_bar();
+        // aip3368h_display_test_engine_speed_scale_bar();
+        // aip3368h_display_test_engine_speed_digit_scale();
+        // aip3368h_display_test_gear();
+        // aip3368h_display_test_speed();
     }
  
     // 退出中断设置IP，不可删除
