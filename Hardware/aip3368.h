@@ -1,7 +1,7 @@
 #ifndef __AIP3368_H__
 #define __AIP3368_H__
 
-#include "my_config.h"
+#include "typedef.h"
 
 // aip3368h 芯片的数量（有多少个芯片级联）：
 #define AIP3368H_DEV_NUM 11

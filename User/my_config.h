@@ -7,7 +7,7 @@
 
 #define ARRAY_SIZE(arry) (sizeof(arry) / sizeof(arry[0]))
 
-#define USER_DEBUG_ENABLE 0
+#define USER_DEBUG_ENABLE 1
 #if USER_DEBUG_ENABLE
 #define DEBUG_PIN P21
 #endif
@@ -61,9 +61,8 @@
 
 #include <stdio.h>	//
 #include <string.h> // memset() 
-#include "tk_set.h" // 包含触摸按键的初始化接口
-
-// #include "my_gpio.h" // 自定义的、使用到的引脚
+// #include "tk_set.h" // 包含触摸按键的初始化接口
+ 
 #include "key_driver.h"
 
 #if USER_DEBUG_ENABLE
@@ -71,7 +70,7 @@
 #endif
 #include "tmr1.h"			   // 用于 扫描发动机转速、扫描时速、定时将里程写入flash 的定时器
 #include "tmr2.h"			   // 用于定时扫描脉冲个数(时速、发动机转速)
-#include "instrument.h"		   // 存放各个功能的状态信息
+
 #include "pin_level_scan.h"	   // 扫描引脚电平状态
 #include "adc.h"			   // adc
 #include "speed_scan.h"		   // 速度（时速）扫描
@@ -87,5 +86,7 @@
 
 #include "aip3368.h"
 #include "aip3368h_display.h"
+
+#include "instrument.h"		   // 存放各个功能的状态信息
 
 #endif // end file

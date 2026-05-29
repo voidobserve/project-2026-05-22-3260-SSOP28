@@ -95,6 +95,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_test_engine_speed_digit_scale();
         // aip3368h_display_test_gear();
         // aip3368h_display_test_speed();
+        // aip3368h_display_test_mileage();
     }
  
     // 退出中断设置IP，不可删除

@@ -1,7 +1,8 @@
 #ifndef __AIP3368H_DISPLAY_H__
 #define __AIP3368H_DISPLAY_H__
 
-#include "my_config.h"
+// #include "my_config.h"
+#include "typedef.h"
 
 #define AIP3368H_DISPLAY_TEST_ENABLE 1
 
@@ -25,13 +26,13 @@ enum
 };
 typedef u8 seg_index_t;
 
-// 时速的单位类型
+// 单位类型：公制单位 或 英制单位
 enum
 {
-    SPEED_UNIT_TYPE_KM_H, // km/h
-    SPEED_UNIT_TYPE_MI_H, // mile/h，mph
+    DISTANCE_UNIT_TYPE_METRIC,   // 公制单位，时速用 km/h ，里程用 km
+    DISTANCE_UNIT_TYPE_IMPERIAL, // 英制单位，时速用 mph ，里程用 mile
 };
-typedef u8 speed_unit_type_t;
+typedef u8 distance_unit_type_t; // 距离相关的单位类型
 
 enum
 {
@@ -41,6 +42,7 @@ enum
     AIP3368H_DISPLAY_FUEL_LEVEL_2,
     AIP3368H_DISPLAY_FUEL_LEVEL_3,
     AIP3368H_DISPLAY_FUEL_LEVEL_4,
+    AIP3368H_DISPLAY_FUEL_LEVEL_5, // FULL 
 };
 typedef u8 aip3368h_display_fuel_level_t;
 
@@ -64,9 +66,26 @@ void __aip3368h_display_gear_n_light__(u8 is_enable);
 void __aip3368h_display_gear_digit__(u8 level);
 void aip3368h_display_gear(u8 level);
 
+// 时速单位类型：
+void __aip3368h_display_speed_unit_type__(distance_unit_type_t type, u8 is_enable);
+void aip3368h_display_speed_unit_type(distance_unit_type_t type);
+// 时速：
 void __aip3368h_display_speed_seg__(u8 bit_x, seg_index_t seg, u8 is_enable);
 void __aip3368h_display_speed_bit_x__(u8 bit_x, u8 number);
 void aip3368h_display_speed(u8 speed);
+// 里程单位类型：
+void __aip3368h_display_mileage_unit_type__(distance_unit_type_t type, u8 is_enable);
+void aip3368h_display_mileage_unit_type(distance_unit_type_t type);
+// 里程
+void __aip3368h_display_mileage_bit_x__(u8 bit_x, u8 number);
+void __aip3368h_display_mileage_total_light_(u8 is_enable);
+void __aip3368h_display_mileage_trip_light_(u8 is_enable);
+void __aip3368h_display_mileage_point__(u8 is_enable);
+void aip3368h_display_mileage(u32 mileage, u8 is_displaying_total_mileage);
+
+// 油量图标
+void __aip3368h_display_fuel_icon__(u8 is_enable);
+
 
 // void aip3368h_display_engine_speed_back_light(void);
 // void aip3368h_display_exclamation_point(u8 is_enable);
@@ -74,11 +93,11 @@ void aip3368h_display_speed(u8 speed);
 // void aip3368h_display_bat_err_icon(u8 is_enable);
 // void aip3368h_display_err_icon(u8 is_enable);
 // void aip3368h_display_fuel_level(aip3368h_display_fuel_level_t level);
-void aip3368h_display_mileage_km_icon(u8 is_enable);
-void aip3368h_display_mileage(u32 mileage, u8 is_displaying_total_mileage);
-void aip3368h_display_speed_km_icon(u8 is_enable);
+// void aip3368h_display_mileage_km_icon(u8 is_enable);
 
-void aip3368h_display_speed_scale_bar(u8 level);
+// void aip3368h_display_speed_km_icon(u8 is_enable);
+
+// void aip3368h_display_speed_scale_bar(u8 level);
 
 // void aip3368h_display_boot_animation_1ms_isr(void);
 void aip3368h_display_boot_animation_time_add(void);
@@ -96,6 +115,7 @@ void aip3368h_display_test_engine_speed_scale_bar(void);
 void aip3368h_display_test_engine_speed_digit_scale(void);
 void aip3368h_display_test_gear(void);
 void aip3368h_display_test_speed(void);
+void aip3368h_display_test_mileage(void);
 
 void aip3368h_display_test(void);
 #endif

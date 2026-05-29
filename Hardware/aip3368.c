@@ -1,6 +1,7 @@
 #include "aip3368.h"
 
 #include "string.h" // memset
+#include "include.h"
 
 #if 1 // AIP3368H_MODULE
 

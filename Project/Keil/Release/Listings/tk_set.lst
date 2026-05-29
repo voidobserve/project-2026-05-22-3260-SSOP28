@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 1   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TK_SET
@@ -62,7 +62,7 @@ line level    source
               volatile unsigned char xdata __tk_leave_cnt[TK_CH_USE];
               volatile unsigned char xdata __tk_ch_index[TK_CH_USE];
               
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 2   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 2   
 
               // 用户不允许修改
               unsigned long code __tk_adjust_line = TK_DATA_LINE;
@@ -126,7 +126,7 @@ line level    source
                           5u,
                           TK5_THR_DATA,
                       },
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 3   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 3   
 
               #endif
               
@@ -190,7 +190,7 @@ line level    source
                       {
                           14u,
                           TK14_THR_DATA,
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 4   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 4   
 
                       },
               #endif
@@ -254,7 +254,7 @@ line level    source
               #if TK23_CH_EN
                       {
                           23u,
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 5   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 5   
 
                           TK23_THR_DATA,
                       },
@@ -318,7 +318,7 @@ line level    source
                           if (__tk_ch_index[i] < 20)
                           {
                               P2_MD0 &= ~(0x3 << (__tk_ch_index[i] - 16) * 2);
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 6   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 6   
 
                               P2_MD0 |= (0x3 << (__tk_ch_index[i] - 16) * 2);
                           }
@@ -382,7 +382,7 @@ line level    source
                * @retval None
                */
               // void WUT_IRQHandler(void) interrupt WUT_IRQn
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 7   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 7   
 
               // {
               //     // 进入中断设置IP，不可删除
@@ -446,7 +446,7 @@ line level    source
               
                   /* 库函数初始化 */
                   __tk_lib_init(); // 调用了库（闭源）
-C51 COMPILER V9.60.7.0   TK_SET                                                            05/28/2026 17:15:06 PAGE 8   
+C51 COMPILER V9.60.7.0   TK_SET                                                            05/29/2026 15:50:13 PAGE 8   
 
               
                   /* 按键模块配置函数 */

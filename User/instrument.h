@@ -1,9 +1,9 @@
-#ifndef __FUN_INFO_H__
-#define __FUN_INFO_H__
+#ifndef __INSTRUMENT_H__
+#define __INSTRUMENT_H__
 
-#include "include.h"   // 使用芯片官方提供的头文件
+#include "include.h" // 使用芯片官方提供的头文件
+#include "aip3368h_display.h"
 #include "my_config.h" // 包含自定义的头文件
-// #include "typedef_struct.h"
 
 // 挡位的定义
 enum
@@ -23,13 +23,6 @@ enum
 
 };
 
-//
-enum
-{
-    OFF = 0x00,
-    ON = 0x01,
-};
-
 // 定义存储在flash中的数据
 typedef struct
 {
@@ -41,6 +34,7 @@ typedef struct
     u32 subtotal_mileage;
 
     u8 is_display_total_mileage; // 0：显示总里程，1：显示短距离里程
+    distance_unit_type_t tmp;    // 要显示的时速单位类型，km/h 或 mph
 
     u8 is_save_data_valid;
 } save_info_t;
@@ -48,16 +42,14 @@ typedef struct
 typedef struct
 {
     save_info_t save_info;
-    u32 engine_speed;       // 发动机的转速（单位：rpm）
-    u8 speed;               // 时速(单位：km/h，使用英制单位时，需要进行转换)
-    u8 fuel;                // 油量(单位：百分比)
-
-
+    u32 engine_speed; // 发动机的转速（单位：rpm）
+    u8 speed;         // 时速(单位：km/h，使用英制单位时，需要进行转换)
+    u8 fuel;          // 油量(单位：百分比)
 
     // 标志位，是否处于发动机转速过高的报警状态
-    u8 flag_is_engine_speed_warning_enable;  
+    u8 flag_is_engine_speed_warning_enable;
     // 标志位，是否处于低电压报警状态
-    u8 flag_is_in_warning_of_low_voltage; 
+    u8 flag_is_in_warning_of_low_voltage;
     // 标志位，是否处于低油量报警
     u8 flag_is_in_warning_of_low_fuel;
 

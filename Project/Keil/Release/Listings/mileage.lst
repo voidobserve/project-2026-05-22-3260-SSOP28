@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MILEAGE                                                           05/28/2026 17:15:07 PAGE 1   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           05/29/2026 15:50:14 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MILEAGE
@@ -62,7 +62,7 @@ line level    source
   47   3                  instrument.save_info.total_mileage++; // +1m
   48   3              }
   49   2      
-C51 COMPILER V9.60.7.0   MILEAGE                                                           05/28/2026 17:15:07 PAGE 2   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           05/29/2026 15:50:14 PAGE 2   
 
   50   2              if (instrument.save_info.subtotal_mileage < (u32)(999999 * 100)) // 99999.9 KM
   51   2              {
@@ -126,7 +126,7 @@ line level    source
  108   2              {
  109   3                  // aip3368h_display_mileage(
  110   3                  //     instrument.save_info.subtotal_mileage / 100, 0);
-C51 COMPILER V9.60.7.0   MILEAGE                                                           05/28/2026 17:15:07 PAGE 3   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           05/29/2026 15:50:14 PAGE 3   
 
  111   3              }
  112   2          }

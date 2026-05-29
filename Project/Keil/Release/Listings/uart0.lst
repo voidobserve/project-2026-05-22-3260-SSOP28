@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   UART0                                                             05/28/2026 17:15:06 PAGE 1   
+C51 COMPILER V9.60.7.0   UART0                                                             05/29/2026 15:50:13 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART0
@@ -12,46 +12,46 @@ line level    source
    1          #include "uart0.h"
    2          
    3          #if USER_DEBUG_ENABLE
-              // 设置的波特率需要适配单片机的时钟，这里直接使用了官方的代码
-              #define USER_UART0_BAUD ((SYSCLK - UART0_BAUDRATE) / (UART0_BAUDRATE))
-              
-              #if 1 // 将uart0用作串口打印
-              // 重写putchar()函数
-              extern void uart0_send_byte(u8 byte); // 函数声明
-              char putchar(char c)
-              {
-                  uart0_send_byte(c);
-                  return c;
-              }
-              #endif // 将uart0用作串口打印
-              
-              void uart0_debug_init(void)
-              { 
-                  P0_MD0 &= ~(GPIO_P00_MODE_SEL(0x03)); // 清空寄存器配置
-                  P0_MD0 |= GPIO_P00_MODE_SEL(0x01);    // 输出模式
-                  FOUT_S00 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
-              
-                  UART0_BAUD1 = (USER_UART0_BAUD >> 8) & 0xFF; // 配置波特率高八位
-                  UART0_BAUD0 = USER_UART0_BAUD & 0xFF;        // 配置波特率低八位
-                  UART0_CON0 = UART_STOP_BIT(0x0) |            // 1bit停止位
-                               UART_EN(0x1);                   // 使能 uart
-              }
-              
-              void uart0_send_byte(u8 byte)
-              {
-                  // 等待之前的数据发送完成
-                  while (!(UART0_STA & UART_TX_DONE(0x01)))
-                      ;
-                  UART0_DATA = byte;
-              }
-              
-              #endif  
+   4          // 设置的波特率需要适配单片机的时钟，这里直接使用了官方的代码
+   5          #define USER_UART0_BAUD ((SYSCLK - UART0_BAUDRATE) / (UART0_BAUDRATE))
+   6          
+   7          #if 1 // 将uart0用作串口打印
+   8          // 重写putchar()函数
+   9          extern void uart0_send_byte(u8 byte); // 函数声明
+  10          char putchar(char c)
+  11          {
+  12   1          uart0_send_byte(c);
+  13   1          return c;
+  14   1      }
+  15          #endif // 将uart0用作串口打印
+  16          
+  17          void uart0_debug_init(void)
+  18          { 
+  19   1          P0_MD0 &= ~(GPIO_P00_MODE_SEL(0x03)); // 清空寄存器配置
+  20   1          P0_MD0 |= GPIO_P00_MODE_SEL(0x01);    // 输出模式
+  21   1          FOUT_S00 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
+  22   1      
+  23   1          UART0_BAUD1 = (USER_UART0_BAUD >> 8) & 0xFF; // 配置波特率高八位
+  24   1          UART0_BAUD0 = USER_UART0_BAUD & 0xFF;        // 配置波特率低八位
+  25   1          UART0_CON0 = UART_STOP_BIT(0x0) |            // 1bit停止位
+  26   1                       UART_EN(0x1);                   // 使能 uart
+  27   1      }
+  28          
+  29          void uart0_send_byte(u8 byte)
+  30          {
+  31   1          // 等待之前的数据发送完成
+  32   1          while (!(UART0_STA & UART_TX_DONE(0x01)))
+  33   1              ;
+  34   1          UART0_DATA = byte;
+  35   1      }
+  36          
+  37          #endif  
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   ----    ----
+   CODE SIZE        =     49    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =   ----       1
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

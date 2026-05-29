@@ -1,5 +1,7 @@
-#include "instrument.h"
 #include <string.h> // memset()
+
+#include "instrument.h"
+
 
 volatile instrument_t instrument = {0};
 
