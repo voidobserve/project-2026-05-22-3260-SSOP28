@@ -16,9 +16,9 @@ char putchar(char c)
 
 void uart0_debug_init(void)
 { 
-    P0_MD0 &= ~(GPIO_P00_MODE_SEL(0x03)); // 清空寄存器配置
-    P0_MD0 |= GPIO_P00_MODE_SEL(0x01);    // 输出模式
-    FOUT_S00 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
+    P2_MD0 &= ~(GPIO_P20_MODE_SEL(0x03)); // 清空寄存器配置
+    P2_MD0 |= GPIO_P20_MODE_SEL(0x01);    // 输出模式
+    FOUT_S20 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
 
     UART0_BAUD1 = (USER_UART0_BAUD >> 8) & 0xFF; // 配置波特率高八位
     UART0_BAUD0 = USER_UART0_BAUD & 0xFF;        // 配置波特率低八位

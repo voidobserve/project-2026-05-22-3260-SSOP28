@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              05/29/2026 15:50:14 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              06/01/2026 18:00:44 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
@@ -34,9 +34,9 @@ line level    source
   23          #if USER_DEBUG_ENABLE
   24          void debug_pin_init(void)
   25          {
-  26   1          P2_MD0 &= ~GPIO_P21_MODE_SEL(0x03);
-  27   1          P2_MD0 |= GPIO_P21_MODE_SEL(0x01); // 输出模式
-  28   1          FOUT_S21 = GPIO_FOUT_AF_FUNC;
+  26   1          P0_MD1 &= ~GPIO_P04_MODE_SEL(0x03);
+  27   1          P0_MD1 |= GPIO_P04_MODE_SEL(0x01); // 输出模式
+  28   1          FOUT_S04 = GPIO_FOUT_AF_FUNC;
   29   1          DEBUG_PIN = 0;
   30   1      }
   31          #endif
@@ -50,11 +50,11 @@ line level    source
   39   1      #endif
   40   1      
   41   1      #if PIN_LEVEL_SCAN_ENABLE
-  42   1          // pin_level_scan_config();
+  42   1          pin_level_scan_config();
   43   1      #endif
   44   1      
   45   1      #if IO_KEY_ENABLE
-  46   1          // io_key_config(); // 按键的配置
+  46   1          io_key_config(); // 按键的配置
   47   1      #endif
   48   1      
   49   1      #if SPEED_SCAN_ENABLE
@@ -62,7 +62,7 @@ line level    source
   51   1      #endif
   52   1      
   53   1      #if ENGINE_SPEED_SCAN_ENABLE
-C51 COMPILER V9.60.7.0   MAIN                                                              05/29/2026 15:50:14 PAGE 2   
+C51 COMPILER V9.60.7.0   MAIN                                                              06/01/2026 18:00:44 PAGE 2   
 
   54   1          // engine_speed_scan_config(); // 发动机转速扫描的配置
   55   1      #endif
@@ -102,70 +102,71 @@ line level    source
   88   1          // aip3368h_display_boot_animation_handle();
   89   1      
   90   1          // USER_TO_DO 测试时使用
-  91   1          aip3368h_display_test();
+  91   1          // aip3368h_display_test();
   92   1          // aip3368h_display_mileage(123456, 0);
-  93   1      
-  94   1          /* 系统主循环 */
-  95   1          while (1)
-  96   1          {
-  97   2              // printf("main circle\n");
-  98   2              // DEBUG_PIN = ~DEBUG_PIN;
-  99   2      
- 100   2      #if 1
- 101   2              WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
- 102   2      
- 103   2      #if PIN_LEVEL_SCAN_ENABLE
- 104   2              // pin_level_scan();
- 105   2      #endif
- 106   2      
- 107   2      #if IO_KEY_ENABLE
- 108   2              // key_driver_scan(&io_key_para);
- 109   2              // io_key_handle(); // io按键处理函数
- 110   2      #endif
- 111   2      
- 112   2      #if SPEED_SCAN_ENABLE
- 113   2              // speed_scan(); // 检测时速
- 114   2              // aip3368h_display_speed_handle();
-C51 COMPILER V9.60.7.0   MAIN                                                              05/29/2026 15:50:14 PAGE 3   
+  93   1          
+  94   1      
+  95   1          /* 系统主循环 */
+  96   1          while (1)
+  97   1          {
+  98   2              // printf("main circle\n");
+  99   2              // DEBUG_PIN = ~DEBUG_PIN;
+ 100   2      
+ 101   2      #if 1
+ 102   2              WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
+ 103   2      
+ 104   2      #if PIN_LEVEL_SCAN_ENABLE
+ 105   2              pin_level_scan();
+ 106   2      #endif
+ 107   2      
+ 108   2      #if IO_KEY_ENABLE
+ 109   2              key_driver_scan(&io_key_para);
+ 110   2              io_key_handle(); // io按键处理函数
+ 111   2      #endif
+ 112   2      
+ 113   2      #if SPEED_SCAN_ENABLE
+ 114   2              speed_scan(); // 检测时速
+C51 COMPILER V9.60.7.0   MAIN                                                              06/01/2026 18:00:44 PAGE 3   
 
- 115   2      #endif
- 116   2      
- 117   2              // mileage_scan(); // 检测大计里程和小计里程
- 118   2      
- 119   2      #if ENGINE_SPEED_SCAN_ENABLE
- 120   2              // engine_speed_scan(); // 检测发动机转速
- 121   2              // aip3368h_display_engine_speed_handle();
- 122   2      #endif
- 123   2      
- 124   2      #if FUEL_CAPACITY_SCAN_ENABLE
- 125   2              // fuel_capacity_scan(); // 油量检测
- 126   2      #endif
- 127   2      
- 128   2      #if BATTERY_SCAN_ENABLE
- 129   2              // battery_scan(); // 电池电量检测
- 130   2      #endif
- 131   2      
- 132   2      #endif //
- 133   2      
- 134   2              // memset(aip3368h_display_buff, 0x00, sizeof(aip3368h_display_buff));
- 135   2              // aip3368h_module_display();
- 136   2              // delay_ms(500);
- 137   2      
- 138   2              // memset(aip3368h_display_buff, 0xFF, sizeof(aip3368h_display_buff));
- 139   2              aip3368h_module_display();
- 140   2              // delay_ms(500);
- 141   2          }
- 142   1      }
- 143          
- 144          /**
- 145           * @}
- 146           */
- 147          
- 148          /*************************** (C) COPYRIGHT 2022 HUGE-IC ***** END OF FILE *****/
+ 115   2              aip3368h_display_speed_handle();
+ 116   2      #endif
+ 117   2      
+ 118   2              // mileage_scan(); // 检测大计里程和小计里程
+ 119   2      
+ 120   2      #if ENGINE_SPEED_SCAN_ENABLE
+ 121   2              // engine_speed_scan(); // 检测发动机转速
+ 122   2              // aip3368h_display_engine_speed_handle();
+ 123   2      #endif
+ 124   2      
+ 125   2      #if FUEL_CAPACITY_SCAN_ENABLE
+ 126   2              // fuel_capacity_scan(); // 油量检测
+ 127   2      #endif
+ 128   2      
+ 129   2      #if BATTERY_SCAN_ENABLE
+ 130   2              // battery_scan(); // 电池电量检测
+ 131   2      #endif
+ 132   2      
+ 133   2      #endif //
+ 134   2      
+ 135   2              // memset(aip3368h_display_buff, 0x00, sizeof(aip3368h_display_buff));
+ 136   2              // aip3368h_module_display();
+ 137   2              // delay_ms(500);
+ 138   2      
+ 139   2              // memset(aip3368h_display_buff, 0xFF, sizeof(aip3368h_display_buff));
+ 140   2              aip3368h_module_display();
+ 141   2              // delay_ms(500);
+ 142   2          }
+ 143   1      }
+ 144          
+ 145          /**
+ 146           * @}
+ 147           */
+ 148          
+ 149          /*************************** (C) COPYRIGHT 2022 HUGE-IC ***** END OF FILE *****/
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     82    ----
+   CODE SIZE        =    106    ----
    CONSTANT SIZE    =     11    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   ADC                                                               05/29/2026 15:50:14 PAGE 1   
+C51 COMPILER V9.60.7.0   ADC                                                               06/01/2026 17:53:19 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE ADC
@@ -62,7 +62,7 @@ line level    source
   51   2                             (0x07 << 0));       // 清空ADC内部参考电压的选择配置
   52   2              ADC_ACON1 |= (0x01 << 6) |         // 使能ADC内部参考信号
   53   2                           (0x03 << 3) |         // 关闭测试信号
-C51 COMPILER V9.60.7.0   ADC                                                               05/29/2026 15:50:14 PAGE 2   
+C51 COMPILER V9.60.7.0   ADC                                                               06/01/2026 17:53:19 PAGE 2   
 
   54   2                           (0x01 << 0);          // 内部参考电压选择 2.0 V
   55   2              ADC_CHS0 |= ADC_ANALOG_CHAN(0x04); // P04通路
@@ -126,7 +126,7 @@ line level    source
                   adc_val_tmp = (adc_val_sum >> 4); // 除以16，取平均值
               
                   return adc_val_tmp;
-C51 COMPILER V9.60.7.0   ADC                                                               05/29/2026 15:50:14 PAGE 3   
+C51 COMPILER V9.60.7.0   ADC                                                               06/01/2026 17:53:19 PAGE 3   
 
               }
               #endif
@@ -190,7 +190,7 @@ line level    source
  175   1      }
  176          
  177          #endif
-C51 COMPILER V9.60.7.0   ADC                                                               05/29/2026 15:50:14 PAGE 4   
+C51 COMPILER V9.60.7.0   ADC                                                               06/01/2026 17:53:19 PAGE 4   
 
 
 

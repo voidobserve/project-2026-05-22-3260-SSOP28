@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   UART0                                                             05/29/2026 15:50:13 PAGE 1   
+C51 COMPILER V9.60.7.0   UART0                                                             06/01/2026 17:53:19 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART0
@@ -27,9 +27,9 @@ line level    source
   16          
   17          void uart0_debug_init(void)
   18          { 
-  19   1          P0_MD0 &= ~(GPIO_P00_MODE_SEL(0x03)); // 清空寄存器配置
-  20   1          P0_MD0 |= GPIO_P00_MODE_SEL(0x01);    // 输出模式
-  21   1          FOUT_S00 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
+  19   1          P2_MD0 &= ~(GPIO_P20_MODE_SEL(0x03)); // 清空寄存器配置
+  20   1          P2_MD0 |= GPIO_P20_MODE_SEL(0x01);    // 输出模式
+  21   1          FOUT_S20 |= GPIO_FOUT_UART0_TX;       // 配置为UART0_TX
   22   1      
   23   1          UART0_BAUD1 = (USER_UART0_BAUD >> 8) & 0xFF; // 配置波特率高八位
   24   1          UART0_BAUD0 = USER_UART0_BAUD & 0xFF;        // 配置波特率低八位

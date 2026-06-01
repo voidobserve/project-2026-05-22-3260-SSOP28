@@ -23,9 +23,9 @@
 #if USER_DEBUG_ENABLE
 void debug_pin_init(void)
 {
-    P2_MD0 &= ~GPIO_P21_MODE_SEL(0x03);
-    P2_MD0 |= GPIO_P21_MODE_SEL(0x01); // 输出模式
-    FOUT_S21 = GPIO_FOUT_AF_FUNC;
+    P0_MD1 &= ~GPIO_P04_MODE_SEL(0x03);
+    P0_MD1 |= GPIO_P04_MODE_SEL(0x01); // 输出模式
+    FOUT_S04 = GPIO_FOUT_AF_FUNC;
     DEBUG_PIN = 0;
 }
 #endif
@@ -39,11 +39,11 @@ void user_init(void)
 #endif
 
 #if PIN_LEVEL_SCAN_ENABLE
-    // pin_level_scan_config();
+    pin_level_scan_config();
 #endif
 
 #if IO_KEY_ENABLE
-    // io_key_config(); // 按键的配置
+    io_key_config(); // 按键的配置
 #endif
 
 #if SPEED_SCAN_ENABLE
@@ -88,7 +88,7 @@ void main(void)
     // aip3368h_display_boot_animation_handle();
 
     // USER_TO_DO 测试时使用
-    aip3368h_display_test();
+    // aip3368h_display_test();
     // aip3368h_display_mileage(123456, 0);
     
 
@@ -102,17 +102,17 @@ void main(void)
         WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
 
 #if PIN_LEVEL_SCAN_ENABLE
-        // pin_level_scan();
+        pin_level_scan();
 #endif
 
 #if IO_KEY_ENABLE
-        // key_driver_scan(&io_key_para);
-        // io_key_handle(); // io按键处理函数
+        key_driver_scan(&io_key_para);
+        io_key_handle(); // io按键处理函数
 #endif
 
 #if SPEED_SCAN_ENABLE
-        // speed_scan(); // 检测时速
-        // aip3368h_display_speed_handle();
+        speed_scan(); // 检测时速
+        aip3368h_display_speed_handle();
 #endif
 
         // mileage_scan(); // 检测大计里程和小计里程

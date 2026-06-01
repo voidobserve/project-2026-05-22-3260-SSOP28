@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   PIN_LEVEL_SCAN                                                    05/29/2026 15:50:14 PAGE 1   
+C51 COMPILER V9.60.7.0   PIN_LEVEL_SCAN                                                    06/01/2026 17:53:20 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PIN_LEVEL_SCAN
@@ -15,28 +15,150 @@ line level    source
    4          void pin_level_scan_config(void)
    5          {
    6   1          // 检测 故障 的引脚:
-   7   1          P2_PU |= GPIO_P20_PULL_UP(0x01);      // 上拉
-   8   1          P2_MD0 &= ~(GPIO_P20_MODE_SEL(0x03)); // 输入模式    
-   9   1      }
-  10          
-  11          // 引脚电平扫描
-  12          void pin_level_scan(void)
-  13          {
-  14   1          if (0 == PIN_DETECT_BREAKDOWN)
-  15   1          {
-  16   2              // aip3368h_display_err_icon(1);
-  17   2          }
-  18   1          else
-  19   1          {
-  20   2              // aip3368h_display_err_icon(0);
-  21   2          }
-  22   1      }
-  23          
-  24          #endif
+   7   1          P2_PU |= GPIO_P26_PULL_UP(0x01);      // 上拉
+   8   1          P2_MD1 &= ~(GPIO_P26_MODE_SEL(0x03)); // 输入模式
+   9   1      
+  10   1          // N 档 检测脚：
+  11   1          P0_PU |= GPIO_P06_PULL_UP(0x01); // 上拉
+  12   1          P0_MD1 &= ~GPIO_P06_MODE_SEL(0x03);
+  13   1      
+  14   1          // 1 档 检测脚：
+  15   1          P0_PU |= GPIO_P07_PULL_UP(0x01); // 上拉
+  16   1          P0_MD1 &= ~GPIO_P07_MODE_SEL(0x03);
+  17   1      
+  18   1          // 2 档 检测脚
+  19   1          P1_PU |= GPIO_P10_PULL_UP(0x01);
+  20   1          P1_MD0 &= ~GPIO_P10_MODE_SEL(0x03);
+  21   1      
+  22   1          // 3 档 检测脚
+  23   1          P1_PU |= GPIO_P13_PULL_UP(0x01);
+  24   1          P1_MD0 &= ~GPIO_P13_MODE_SEL(0x03);
+  25   1      
+  26   1          // 4 档 检测脚
+  27   1          P1_PU |= GPIO_P14_PULL_UP(0x01);
+  28   1          P1_MD1 &= ~GPIO_P14_MODE_SEL(0x03);
+  29   1      
+  30   1          // 5 档 检测脚
+  31   1          P3_PU |= GPIO_P30_PULL_UP(0x01);
+  32   1          P3_MD0 &= ~GPIO_P30_MODE_SEL(0x03);
+  33   1      
+  34   1          // 6 档 检测脚
+  35   1          P2_PU |= GPIO_P27_PULL_UP(0x01);
+  36   1          P2_MD1 &= ~GPIO_P27_MODE_SEL(0x03);
+  37   1      
+  38   1          // 小灯（近光灯） 检测脚
+  39   1          P2_MD0 &= ~GPIO_P23_MODE_SEL(0x03);
+  40   1      
+  41   1          // 大灯（远光灯） 检测脚
+  42   1          P2_MD0 &= ~GPIO_P21_MODE_SEL(0x03);
+  43   1      
+  44   1          // 左转向 检测脚
+  45   1          P2_MD1 &= ~GPIO_P25_MODE_SEL(0x03);
+  46   1      
+  47   1          // 右转向 检测脚
+  48   1          P2_MD0 &= ~GPIO_P22_MODE_SEL(0x03);
+  49   1      }
+  50          
+  51          // 引脚电平扫描
+  52          void pin_level_scan(void)
+  53          {
+C51 COMPILER V9.60.7.0   PIN_LEVEL_SCAN                                                    06/01/2026 17:53:20 PAGE 2   
+
+  54   1          // 扫描挡位时，以检测到的最低挡位为优先
+  55   1          if (0 == PIN_DETECT_GEAR_N)
+  56   1          {
+  57   2              instrument.gear = GEAR_NEUTRAL;
+  58   2          }
+  59   1          else if (0 == PIN_DETECT_GEAR_1)
+  60   1          {
+  61   2              instrument.gear = GEAR_FIRST;
+  62   2          }
+  63   1          else if (0 == PIN_DETECT_GEAR_2)
+  64   1          {
+  65   2              instrument.gear = GEAR_SECOND;
+  66   2          }
+  67   1          else if (0 == PIN_DETECT_GEAR_3)
+  68   1          {
+  69   2              instrument.gear = GEAR_THIRD;
+  70   2          }
+  71   1          else if (0 == PIN_DETECT_GEAR_4)
+  72   1          {
+  73   2              instrument.gear = GEAR_FOURTH;
+  74   2          }
+  75   1          else if (0 == PIN_DETECT_GEAR_5)
+  76   1          {
+  77   2              instrument.gear = GEAR_FIFTH;
+  78   2          }
+  79   1          else if (0 == PIN_DETECT_GEAR_6)
+  80   1          {
+  81   2              instrument.gear = GEAR_SIXTH;
+  82   2          }
+  83   1          else
+  84   1          {
+  85   2              // 如果 N档 、 1档 ~ 6档 都没有检测到，说明挡位没有接线
+  86   2              instrument.gear = GEAR_UNKNOWN;
+  87   2          }
+  88   1      
+  89   1          aip3368h_display_gear(instrument.gear);
+  90   1          aip3368h_display_gear_light(1);
+  91   1      
+  92   1          if (0 == PIN_DETECT_BREAKDOWN)
+  93   1          {
+  94   2              aip3368h_display_err_light(1);
+  95   2          }
+  96   1          else
+  97   1          {
+  98   2              aip3368h_display_err_light(0);
+  99   2          }
+ 100   1      
+ 101   1          // 引脚检测到高电平，点亮对应的指示灯，不用闪烁
+ 102   1          if (PIN_DETECT_LFFT_TURN)
+ 103   1          {
+ 104   2              aip3368h_display_left_turn_light(1);
+ 105   2          }
+ 106   1          else
+ 107   1          {
+ 108   2              aip3368h_display_left_turn_light(0);
+ 109   2          }
+ 110   1      
+ 111   1          // 引脚检测到高电平，点亮对应的指示灯，不用闪烁
+ 112   1          if (PIN_DETECT_RIGHT_TURN)
+ 113   1          {
+ 114   2              aip3368h_display_right_turn_light(1);
+ 115   2          }
+C51 COMPILER V9.60.7.0   PIN_LEVEL_SCAN                                                    06/01/2026 17:53:20 PAGE 3   
+
+ 116   1          else
+ 117   1          {
+ 118   2              aip3368h_display_right_turn_light(0);
+ 119   2          }
+ 120   1      
+ 121   1          // 引脚检测到高电平，点亮对应的指示灯
+ 122   1          if (PIN_DETECT_LOW_BEAM)
+ 123   1          {
+ 124   2              aip3368h_display_low_beam_indicator_light(1);
+ 125   2          }
+ 126   1          else
+ 127   1          {
+ 128   2              aip3368h_display_low_beam_indicator_light(0);
+ 129   2          }
+ 130   1      
+ 131   1          // 引脚检测到高电平，点亮对应的指示灯
+ 132   1          if (PIN_DETECT_HIGH_BEAM)
+ 133   1          {
+ 134   2              aip3368h_display_high_beam_indicator_light(1);
+ 135   2          }
+ 136   1          else
+ 137   1          {
+ 138   2              aip3368h_display_high_beam_indicator_light(0);
+ 139   2          }
+ 140   1      }
+ 141          
+ 142          #endif
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     14    ----
+   CODE SIZE        =    269    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

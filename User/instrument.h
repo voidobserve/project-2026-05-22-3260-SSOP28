@@ -20,8 +20,8 @@ enum
         则返回 GEAR_UNKNOWN ， 让显示屏中档位对应的图标空着
     */
     GEAR_UNKNOWN = 0xFF,
-
 };
+typedef u8 gear_t;
 
 // 定义存储在flash中的数据
 typedef struct
@@ -52,6 +52,8 @@ typedef struct
     u8 flag_is_in_warning_of_low_voltage;
     // 标志位，是否处于低油量报警
     u8 flag_is_in_warning_of_low_fuel;
+ 
+    gear_t gear; 
 
 } instrument_t;
 extern volatile instrument_t instrument;

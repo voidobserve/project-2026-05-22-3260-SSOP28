@@ -9,7 +9,7 @@
 
 #define USER_DEBUG_ENABLE 1
 #if USER_DEBUG_ENABLE
-#define DEBUG_PIN P21
+#define DEBUG_PIN P04
 #endif
 
 #define TOUCH_KEY_ENABLE 0 // 是否使能触摸按键检测功能

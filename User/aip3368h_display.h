@@ -16,7 +16,7 @@ typedef struct
 // 数码管 A ~ G 段索引值
 enum
 {
-    SEG_INDEX_A,
+    SEG_INDEX_A = 0x00,
     SEG_INDEX_B,
     SEG_INDEX_C,
     SEG_INDEX_D,
@@ -42,13 +42,33 @@ enum
     AIP3368H_DISPLAY_FUEL_LEVEL_2,
     AIP3368H_DISPLAY_FUEL_LEVEL_3,
     AIP3368H_DISPLAY_FUEL_LEVEL_4,
-    AIP3368H_DISPLAY_FUEL_LEVEL_5, // FULL 
+    AIP3368H_DISPLAY_FUEL_LEVEL_5, // FULL
 };
 typedef u8 aip3368h_display_fuel_level_t;
 
+/*
+    开机动画：
+    时速
+    背光刻度条
+    整个面板各个指示灯从左到右依次点亮
+*/
+enum
+{
+    BOOT_ANIMATION_PHASE_SPEED = 0,
+    BOOT_ANIMATION_PHASE_BACKLIGHT,
+    BOOT_ANIMATION_PHASE_LEFT_TO_RIGHT,
+    BOOT_ANIMATION_PAHSE_END, // 结束
+};
+typedef u8 boot_animation_phase_t;
+
 typedef struct
 {
-    u8 is_in_boot_animiation; // 是否处于启动动画中
+    u8 is_in_boot_animation;         // 是否处于启动动画中
+    u8 boot_animation_time_add_flag; // 给开机动画处理函数提供时基
+    u16 boot_animation_time_cnt;     // 记录整个开机动画的时间
+
+    boot_animation_phase_t boot_animation_phase; // 开机动画的各个阶段
+
 } aip3368h_display_obj_t;
 extern volatile aip3368h_display_obj_t aip3368h_display_obj;
 
@@ -78,14 +98,18 @@ void __aip3368h_display_mileage_unit_type__(distance_unit_type_t type, u8 is_ena
 void aip3368h_display_mileage_unit_type(distance_unit_type_t type);
 // 里程
 void __aip3368h_display_mileage_bit_x__(u8 bit_x, u8 number);
-void __aip3368h_display_mileage_total_light_(u8 is_enable);
-void __aip3368h_display_mileage_trip_light_(u8 is_enable);
+void __aip3368h_display_mileage_total_light__(u8 is_enable);
+void __aip3368h_display_mileage_trip_light__(u8 is_enable);
 void __aip3368h_display_mileage_point__(u8 is_enable);
 void aip3368h_display_mileage(u32 mileage, u8 is_displaying_total_mileage);
 
 // 油量图标
 void __aip3368h_display_fuel_icon__(u8 is_enable);
-
+// 油量"E"字样 指示灯
+void __aip3368h_display_fuel_empty_light__(u8 is_enable);
+// 油量"F"字样 指示灯
+void __aip3368h_display_fuel_full_light__(u8 is_enable);
+void aip3368h_display_fuel_level(aip3368h_display_fuel_level_t level);
 
 // void aip3368h_display_engine_speed_back_light(void);
 // void aip3368h_display_exclamation_point(u8 is_enable);
@@ -116,6 +140,7 @@ void aip3368h_display_test_engine_speed_digit_scale(void);
 void aip3368h_display_test_gear(void);
 void aip3368h_display_test_speed(void);
 void aip3368h_display_test_mileage(void);
+void aip3368h_display_test_fuel(void);
 
 void aip3368h_display_test(void);
 #endif

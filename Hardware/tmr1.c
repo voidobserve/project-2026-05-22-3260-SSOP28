@@ -83,12 +83,14 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_engine_speed_refresh_time_add();
         // aip3368h_display_err_handle_time_add();
 
-        // 修改显存的操作放到了主循环，这里仅用作计时
-        // aip3368h_display_boot_animation_time_add();
+        /*
+            累计开机动画的时间，控制开机动画处理函数的调用周期
+            修改显存的操作放到了主循环，这里仅用作计时
+        */
+        aip3368h_display_boot_animation_time_add();
 
         // USER_TO_DO 只在测试时只用： 
-        
-        aip3368h_display_test_light_blink_1ms_isr();
+        // aip3368h_display_test_light_blink_1ms_isr();
 
         // aip3368h_display_test_back_light_scale_bar();
         // aip3368h_display_test_engine_speed_scale_bar();
@@ -96,6 +98,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_test_gear();
         // aip3368h_display_test_speed();
         // aip3368h_display_test_mileage();
+        // aip3368h_display_test_fuel();
     }
  
     // 退出中断设置IP，不可删除

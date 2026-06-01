@@ -23,7 +23,7 @@ volatile struct key_driver_para io_key_para = {
 	0,
 	// NO_KEY,
 	0,
-	KEY_TYPE_AD,
+	KEY_TYPE_TOUCH, // 触摸按键，实际上是检测触摸ic传递过来的电平信号，可以当作io来检测
 	io_key_get_key_id,
 
 	IO_KEY_ID_NONE,
@@ -49,6 +49,7 @@ u8 io_key_get_key_id(void)
 {
 	if (IO_KEY_PIN == 0)
 	{
+		// 引脚配置为输入上拉，低电平表示按键按下
 		return IO_KEY_ID_VALID;
 	}
 
@@ -106,33 +107,40 @@ void io_key_handle(void)
 	switch (io_key_event)
 	{
 	case KEY_EVENT_CLICK:
-		if (instrument.save_info.is_display_total_mileage)
-		{
-			instrument.save_info.is_display_total_mileage = 0;
-			// aip3368h_display_mileage(
-			// 	instrument.save_info.subtotal_mileage / 100,
-			// 	0);
-		}
-		else
-		{
-			instrument.save_info.is_display_total_mileage = 1;
-			// aip3368h_display_mileage(
-			// 	instrument.save_info.total_mileage / 1000,
-			// 	1);
-		}
+#if USER_DEBUG_ENABLE
+		printf("click\n");
+#endif
 
-		instrument_info_save();
+		// if (instrument.save_info.is_display_total_mileage)
+		// {
+		// 	instrument.save_info.is_display_total_mileage = 0;
+		// 	// aip3368h_display_mileage(
+		// 	// 	instrument.save_info.subtotal_mileage / 100,
+		// 	// 	0);
+		// }
+		// else
+		// {
+		// 	instrument.save_info.is_display_total_mileage = 1;
+		// 	// aip3368h_display_mileage(
+		// 	// 	instrument.save_info.total_mileage / 1000,
+		// 	// 	1);
+		// }
+
+		// instrument_info_save();
 
 		break;
 	case IO_KEY_EVENT_LONG:
-		if (instrument.save_info.is_display_total_mileage == 0)
-		{
-			instrument.save_info.subtotal_mileage = 0;
-			// aip3368h_display_mileage(
-			// 	instrument.save_info.subtotal_mileage / 100,
-			// 	0);
-			instrument_info_save();
-		}
+#if USER_DEBUG_ENABLE
+		printf("Long\n");
+#endif
+		// if (instrument.save_info.is_display_total_mileage == 0)
+		// {
+		// 	instrument.save_info.subtotal_mileage = 0;
+		// 	// aip3368h_display_mileage(
+		// 	// 	instrument.save_info.subtotal_mileage / 100,
+		// 	// 	0);
+		// 	instrument_info_save();
+		// }
 		break;
 
 	default:

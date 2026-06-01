@@ -76,14 +76,13 @@ void aip3368h_module_display(void)
     //     return;
 
     // 刷新间隔 单位：ms
-    if (aip3368h_refresh_cnt < 50)
+    if (aip3368h_refresh_cnt < 25)
     {
         return;
     }
     else
     {
         aip3368h_refresh_cnt = 0;
-        // DEBUG_PIN = ~DEBUG_PIN;
     }
 
 #if AIP3368H_FLASH_TEST_ENABLE
@@ -125,7 +124,6 @@ void aip3368h_module_init(void)
     P0_MD0 &= ~GPIO_P00_MODE_SEL(0x03);
     P0_MD0 |= GPIO_P00_MODE_SEL(0x01);
     FOUT_S00 = GPIO_FOUT_AF_FUNC;
-    
 
     DIO = 0;
     DCK = 0;
