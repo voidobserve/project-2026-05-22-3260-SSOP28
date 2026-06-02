@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 1   
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SPEED_SCAN
@@ -54,454 +54,347 @@ line level    source
   42          
   43          u8 speed_filter_get_speed(void)
   44          {
-  45   1      #if 1
-  46   1          u8 i;
-  47   1          u32 sum = 0;
-  48   1          u8 max_speed = 0;
-  49   1          u8 min_speed = (u8)-1;
-  50   1      
-  51   1          // for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
-  52   1          // {
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 2   
+  45   1          u8 i;
+  46   1          u32 sum = 0;
+  47   1          u8 max_speed = 0;
+  48   1          u8 min_speed = (u8)-1;
+  49   1      
+  50   1          // for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
+  51   1          // {
+  52   1          //     printf("speed[%u] == %u\n", (u16)i, (u16)speed_filter_array[i]);
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 2   
 
-  53   1          //     printf("speed[%u] == %u\n", (u16)i, (u16)speed_filter_array[i]);
-  54   1          // }
-  55   1          // printf("\n===================\n");
-  56   1      
-  57   1          for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
-  58   1          {
-  59   2              sum += speed_filter_array[i];
-  60   2      
-  61   2              if (max_speed < speed_filter_array[i])
-  62   2              {
-  63   3                  max_speed = speed_filter_array[i];
-  64   3              }
-  65   2      
-  66   2              if (min_speed > speed_filter_array[i])
-  67   2              {
-  68   3                  min_speed = speed_filter_array[i];
-  69   3              }
-  70   2          }
-  71   1      
-  72   1          sum -= (max_speed + min_speed);
-  73   1      
-  74   1          return sum / (SPEED_FILTER_ARRAY_SIZE - 2);
-  75   1      #endif
-  76   1      
-  77   1          // u16 i;
-  78   1          // u8 count[256] = {0}; // 速度值范围是 0-255，索引值对应这个速度值
-  79   1          // u8 max_count = 0;
-  80   1          // u8 max_count_val = 0; // 记录出现次数最多的数值
-  81   1      
-  82   1          // // 统计每个值出现的次数
-  83   1          // for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
-  84   1          // {
-  85   1          //     count[speed_filter_array[i]]++;
-  86   1      
-  87   1          //     printf("speed[%u] == %u\n", (u16)i, (u16)speed_filter_array[i]);
-  88   1          // }
-  89   1          // printf("\n===================\n");
-  90   1      
-  91   1          // // 找出出现次数最多的值
-  92   1          // for (i = 0; i < 256; i++) // 0 ~ 255
-  93   1          // {
-  94   1          //     if (count[i] > max_count)
-  95   1          //     {
-  96   1          //         max_count = count[i];
-  97   1          //         max_count_val = i;
-  98   1          //     }
-  99   1          // }
- 100   1      
- 101   1          // return max_count_val;
- 102   1      }
- 103          
- 104          // 时速扫描的配置
- 105          void speed_scan_config(void)
- 106          {
- 107   1          // 使用定时器扫描IO电平变化来计算脉冲
- 108   1          P1_MD1 &= ~GPIO_P15_MODE_SEL(0x3); // 输入模式
- 109   1          P1_PU |= GPIO_P15_PULL_UP(0x1);    // 配置为上拉
- 110   1      }
- 111          
- 112          void speed_scan_update_data(void) // 更新检测时速的数据
- 113          {
- 114   1          cur_speed_scan_time += speed_scan_time_ms;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 3   
-
- 115   1          speed_scan_time_ms = 0;
- 116   1          cur_speed_scan_pulse += speed_pulse_cnt;
- 117   1          speed_pulse_cnt = 0;
- 118   1      }
- 119          
- 120          void speed_scan_timer_50us_isr(void)
- 121          {
- 122   1          static volatile bit last_speed_scan_level = 0; // 记录上一次检测到的引脚电平（时速检�
+  53   1          // }
+  54   1          // printf("\n===================\n");
+  55   1      
+  56   1          for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
+  57   1          {
+  58   2              sum += speed_filter_array[i];
+  59   2      
+  60   2              if (max_speed < speed_filter_array[i])
+  61   2              {
+  62   3                  max_speed = speed_filter_array[i];
+  63   3              }
+  64   2      
+  65   2              if (min_speed > speed_filter_array[i])
+  66   2              {
+  67   3                  min_speed = speed_filter_array[i];
+  68   3              }
+  69   2          }
+  70   1      
+  71   1          sum -= (max_speed + min_speed);
+  72   1      
+  73   1          return sum / (SPEED_FILTER_ARRAY_SIZE - 2);
+  74   1      }
+  75          
+  76          // 时速扫描的配置
+  77          void speed_scan_config(void)
+  78          {
+  79   1          // 使用定时器扫描IO电平变化来计算脉冲
+  80   1          P1_MD1 &= ~GPIO_P15_MODE_SEL(0x3); // 输入模式
+  81   1          P1_PU |= GPIO_P15_PULL_UP(0x1);    // 配置为上拉
+  82   1      }
+  83          
+  84          void speed_scan_update_data(void) // 更新检测时速的数据
+  85          {
+  86   1          cur_speed_scan_time += speed_scan_time_ms;
+  87   1          speed_scan_time_ms = 0;
+  88   1          cur_speed_scan_pulse += speed_pulse_cnt;
+  89   1          speed_pulse_cnt = 0;
+  90   1      }
+  91          
+  92          void speed_scan_timer_50us_isr(void)
+  93          {
+  94   1          static volatile bit last_speed_scan_level = 0; // 记录上一次检测到的引脚电平（时速检�
              -��脚）
- 123   1          static volatile u16 cnt = 0;                   // 记录时速扫描的时间
- 124   1          cnt++;
- 125   1          if (cnt >= 20) // 每1ms进入一次
- 126   1          {
- 127   2              cnt = 0;
- 128   2              // 更新扫描时间（如果一直没有脉冲到来给它清零，这里会一直累加）
- 129   2              speed_scan_time_ms++;
- 130   2      
- 131   2              if (speed_scan_time_ms >= SPEED_SCAN_OVER_TIME &&
- 132   2                  flag_is_speed_scan_over_time == 0)
- 133   2              {
- 134   3                  speed_scan_time_ms = 0;
- 135   3                  flag_is_speed_scan_over_time = 1; // 说明超时，脉冲计数一直没有加一
- 136   3              }
- 137   2          }
- 138   1      
- 139   1          if (SPEED_SCAN_PIN) // 检测时速的引脚
- 140   1          {
- 141   2              if (0 == last_speed_scan_level)
- 142   2              {
- 143   3                  speed_pulse_cnt++;
- 144   3                  speed_scan_update_data();
- 145   3              }
- 146   2      
- 147   2              last_speed_scan_level = 1;
- 148   2          }
- 149   1          else
- 150   1          {
- 151   2              // 如果现在检测到低电平
- 152   2              last_speed_scan_level = 0;
- 153   2          }
- 154   1      }
- 155          
- 156          // void speed_scan_pulse_50us_isr(void)
- 157          // {
- 158          //     static volatile bit last_speed_scan_level = 0; // 记录上一次检测到的引脚电平（时速�
-             -��测脚）
- 159          
- 160          //     static volatile u32 speed_pulse_cnt = 0;
- 161          //     static volatile u8 cnt = 0;
- 162          //     static volatile u16 speed_scan_time_cnt = 0;
- 163          //     static volatile u16 speed_scan_over_time_cnt = 0;
- 164          
- 165          //     if (SPEED_SCAN_PIN) // 检测时速的引脚
- 166          //     {
- 167          //         if (0 == last_speed_scan_level)
- 168          //         {
- 169          //             // 每有一个上升沿，计数++
- 170          //             speed_pulse_cnt++;
- 171          //         }
- 172          
- 173          //         last_speed_scan_level = 1;
- 174          //     }
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 4   
+  95   1          static volatile u16 cnt = 0;                   // 记录时速扫描的时间
+  96   1          cnt++;
+  97   1          if (cnt >= 20) // 每1ms进入一次
+  98   1          {
+  99   2              cnt = 0;
+ 100   2              // 更新扫描时间（如果一直没有脉冲到来给它清零，这里会一直累加）
+ 101   2              speed_scan_time_ms++;
+ 102   2      
+ 103   2              if (speed_scan_time_ms >= SPEED_SCAN_OVER_TIME &&
+ 104   2                  flag_is_speed_scan_over_time == 0)
+ 105   2              {
+ 106   3                  speed_scan_time_ms = 0;
+ 107   3                  flag_is_speed_scan_over_time = 1; // 说明超时，脉冲计数一直没有加一
+ 108   3              }
+ 109   2          }
+ 110   1      
+ 111   1          if (SPEED_SCAN_PIN) // 检测时速的引脚
+ 112   1          {
+ 113   2              if (0 == last_speed_scan_level)
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 3   
 
- 175          //     else
- 176          //     {
- 177          //         // 如果现在检测到低电平
- 178          //         last_speed_scan_level = 0;
- 179          //     }
- 180          
- 181          //     cnt++;
- 182          //     if (cnt >= 20)
- 183          //     {
- 184          //         cnt = 0;
- 185          
- 186          //         speed_scan_time_cnt++;
- 187          //         if (speed_pulse_cnt !=0 && speed_scan_time_cnt >= SPEED_SCAN_UPDATE_TIME)
- 188          //         {
- 189          //             cur_speed_scan_time += speed_scan_time_cnt;
- 190          //             speed_scan_time_cnt = 0;
- 191          //             cur_speed_scan_pulse += speed_pulse_cnt;
- 192          //             speed_pulse_cnt = 0;
- 193          //         }
- 194          //         // else if (speed_scan_time_cnt >= SPEED_SCAN_OVER_TIME)
- 195          //         // {
- 196          
- 197          //         // }
- 198          
- 199          //         if (cur_speed_scan_pulse == 0)
- 200          //         {
- 201          //             cur_speed_scan_time = 0;
- 202          //             speed_scan_over_time_cnt++;
- 203          //             if (speed_scan_over_time_cnt >= SPEED_SCAN_OVER_TIME)
- 204          //             {
- 205          //                 speed_scan_over_time_cnt = 0;
- 206          //                 flag_is_speed_scan_over_time = 1;
- 207          //             }
- 208          //         }
- 209          //     }
- 210          // }
- 211          
- 212          // void speed_scan_time_add(void)
- 213          // {
- 214          //     static volatile u16 speed_scan_time_ms = 0;
- 215          //     static volatile u16 speed_scan_over_time_cnt = 0;
- 216          
- 217          //     // if (speed_pulse_cnt == 0)
- 218          //     // {
- 219          //     //     speed_scan_over_time_cnt++;
- 220          //     //     if (speed_scan_over_time_cnt >= SPEED_SCAN_OVER_TIME)
- 221          //     //     {
- 222          //     //         speed_scan_over_time_cnt = 0;
- 223          //     //         flag_is_speed_scan_over_time = 1;
- 224          //     //     }
- 225          //     // }
- 226          //     // else
- 227          //     // {
- 228          //     //     speed_scan_over_time_cnt = 0;
- 229          //     // }
- 230          
- 231          //     speed_scan_time_ms++;
- 232          //     if (speed_scan_time_ms >= SPEED_SCAN_UPDATE_TIME)
- 233          //     {
- 234          //         // speed_scan_update_data();
- 235          //         cur_speed_scan_time += speed_scan_time_ms;
- 236          //         speed_scan_time_ms = 0;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 5   
-
- 237          //         cur_speed_scan_pulse += speed_pulse_cnt;
- 238          //         speed_pulse_cnt = 0;
- 239          //     }
- 240          // }
- 241          
- 242          void speed_scan(void)
- 243          {
- 244   1          volatile u32 cur_speed = 0;
- 245   1          volatile u32 tmp = 0;
- 246   1          // static u8 is_initiatlized = 0;
- 247   1      
- 248   1          if (cur_speed_scan_time >= SPEED_SCAN_UPDATE_TIME || flag_is_speed_scan_over_time)
- 249   1          {
- 250   2              /*
- 251   2                  采集到的脉冲个数 / 一圈对应的脉冲个数 * 车轮一圈对应走过的距离（�
+ 114   2              {
+ 115   3                  speed_pulse_cnt++;
+ 116   3                  speed_scan_update_data();
+ 117   3              }
+ 118   2      
+ 119   2              last_speed_scan_level = 1;
+ 120   2          }
+ 121   1          else
+ 122   1          {
+ 123   2              // 如果现在检测到低电平
+ 124   2              last_speed_scan_level = 0;
+ 125   2          }
+ 126   1      }
+ 127          
+ 128          void speed_scan(void)
+ 129          {
+ 130   1          volatile u32 cur_speed = 0;
+ 131   1          volatile u32 tmp = 0;
+ 132   1          // static u8 is_initiatlized = 0;
+ 133   1      
+ 134   1          if (cur_speed_scan_time >= SPEED_SCAN_UPDATE_TIME || flag_is_speed_scan_over_time)
+ 135   1          {
+ 136   2              /*
+ 137   2                  采集到的脉冲个数 / 一圈对应的脉冲个数 * 车轮一圈对应走过的距离（�
              -��位：mm），
- 252   2                  计算得到 采集的脉冲个数对应走过的距离（单位：mm）
- 253   2              */
- 254   2              // u32 tmp = (cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN / SPEED_SCAN_PULSE_PER_TURN);
- 255   2              tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) / SPEED_SCAN_PULSE_PER_TURN);
- 256   2      
- 257   2              // 27,638 = (脉冲个数 * 1070) / 3;
- 258   2              //             77
- 259   2      
- 260   2              // printf("cur_speed_scan_pulse %lu\n", cur_speed_scan_pulse);
- 261   2      
- 262   2              if (flag_is_speed_scan_over_time) // 超时，采集到的脉冲个数对应一直是0km/h，认�
+ 138   2                  计算得到 采集的脉冲个数对应走过的距离（单位：mm）
+ 139   2              */
+ 140   2              tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) *
+ 141   2                     SPEED_SCAN_PULSE_COMPENSATION /
+ 142   2                     SPEED_SCAN_PULSE_PER_TURN);
+ 143   2      
+ 144   2              // 27,638 = (脉冲个数 * 1070) / 3;
+ 145   2              //             77
+ 146   2      
+ 147   2              // printf("cur_speed_scan_pulse %lu\n", cur_speed_scan_pulse);
+ 148   2      
+ 149   2              if (flag_is_speed_scan_over_time) // 超时，采集到的脉冲个数对应一直是0km/h，认�
              -�时速是0
- 263   2              {
- 264   3                  // printf("scan over time\n");
- 265   3                  if (cur_speed_scan_pulse != 0)
- 266   3                  {
- 267   4                      // 如果采集的脉冲个数不为0
- 268   4                      cur_speed = 1;
- 269   4                  }
- 270   3                  else
- 271   3                  {
- 272   4                      cur_speed = 0;
- 273   4                  }
- 274   3              }
- 275   2              else // 未超时，计算采集到的脉冲个数对应走过的距离，再转换成以 km/h 的
+ 150   2              {
+ 151   3                  // printf("scan over time\n");
+ 152   3                  if (cur_speed_scan_pulse != 0)
+ 153   3                  {
+ 154   4                      // 如果采集的脉冲个数不为0
+ 155   4                      cur_speed = 1;
+ 156   4                  }
+ 157   3                  else
+ 158   3                  {
+ 159   4                      cur_speed = 0;
+ 160   4                  }
+ 161   3              }
+ 162   2              else // 未超时，计算采集到的脉冲个数对应走过的距离，再转换成以 km/h 的
              -单位
- 276   2              {
- 277   3                  /*
- 278   3                      采集的脉冲个数对应走过的距离（单位：mm）/ 采集所用的时间（单�
+ 163   2              {
+ 164   3                  /*
+ 165   3                      采集的脉冲个数对应走过的距离（单位：mm）/ 采集所用的时间（单�
              -�：ms） == 速度（单位：mm/ms）
- 279   3                      1mm/ms == 1m/s
- 280   3                      因为 1mm/ms * 1000 == 1m/ms
- 281   3                           1m/ms  / 1000 == 1m/s
- 282   3                           先乘以1000再除以1000，那么这个操作就可以去掉，直接化简为 1mm/
+ 166   3                      1mm/ms == 1m/s
+ 167   3                      因为 1mm/ms * 1000 == 1m/ms
+ 168   3                           1m/ms  / 1000 == 1m/s
+ 169   3                           先乘以1000再除以1000，那么这个操作就可以去掉，直接化简为 1mm/
              -ms == 1m/s
- 283   3      
- 284   3                      1m/s == 3.6km/h，那么根据得到的 以 m/s 为单位的速度，先乘以36再除以1
+ 170   3      
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 4   
+
+ 171   3                      1m/s == 3.6km/h，那么根据得到的 以 m/s 为单位的速度，先乘以36再除以1
              -0，得到以km/h为单位的速度值
- 285   3      
- 286   3                      cur_speed == 采集的脉冲个数对应走过的距离（单位：mm）/ 采集所用的�
+ 172   3      
+ 173   3                      cur_speed == 采集的脉冲个数对应走过的距离（单位：mm）/ 采集所用的�
              -��间（单位：ms）* 3.6
- 287   3                      换成单片机可以计算的格式：
- 288   3                      cur_speed == 采集的脉冲个数对应走过的距离（单位：mm） * 36 / 10 / 采�
+ 174   3                      换成单片机可以计算的格式：
+ 175   3                      cur_speed == 采集的脉冲个数对应走过的距离（单位：mm） * 36 / 10 / 采�
              -�所用的时间（单位：ms）
- 289   3                  */
- 290   3                  cur_speed = tmp * 36 / 10 / cur_speed_scan_time;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 6   
-
- 291   3              }
- 292   2      
- 293   2              // 防止时速为0时（有可能是推车，记录不到速度），记录不到里程
- 294   2              distance += tmp;
- 295   2      
- 296   2              // printf("cur distace 2 %lu\n", distance);
- 297   2              // printf("cur distace %lu\n", distance);
- 298   2              // printf("cur speed == %lu \n", cur_speed);
- 299   2              // printf("cur_speed_scan_pulse == %lu\n", cur_speed_scan_pulse);
- 300   2      
- 301   2              cur_speed_scan_pulse = 0;
- 302   2              cur_speed_scan_time = 0;
- 303   2              flag_is_speed_scan_over_time = 0;
- 304   2      
- 305   2              if (cur_speed > 0)
- 306   2              {
- 307   3                  cur_speed = (u32)cur_speed * 102 / 100;
- 308   3              }
- 309   2      
- 310   2              // 限制要发送的时速:
- 311   2              if (cur_speed > 199)
- 312   2              {
- 313   3                  cur_speed = 199;
- 314   3              }
- 315   2      
- 316   2              // // USER_TO_DO 由于更新显示速度的时间很快，只能在这里加入稳定速度值的
+ 176   3                  */
+ 177   3                  cur_speed = tmp * 36 / 10 / cur_speed_scan_time;
+ 178   3              }
+ 179   2      
+ 180   2              // 防止时速为0时（有可能是推车，记录不到速度），记录不到里程
+ 181   2              distance += tmp;
+ 182   2      
+ 183   2              // printf("cur distace 2 %lu\n", distance);
+ 184   2              // printf("cur distace %lu\n", distance);
+ 185   2              // printf("cur speed == %lu \n", cur_speed);
+ 186   2              // printf("cur_speed_scan_pulse == %lu\n", cur_speed_scan_pulse);
+ 187   2      
+ 188   2              cur_speed_scan_pulse = 0;
+ 189   2              cur_speed_scan_time = 0;
+ 190   2              flag_is_speed_scan_over_time = 0;
+ 191   2      
+ 192   2              if (cur_speed > 0)
+ 193   2              {
+ 194   3                  cur_speed = (u32)cur_speed * 102 / 100;
+ 195   3              }
+ 196   2      
+ 197   2              // 限制要发送的时速:
+ 198   2              if (cur_speed > 199)
+ 199   2              {
+ 200   3                  cur_speed = 199;
+ 201   3              }
+ 202   2      
+ 203   2              // // USER_TO_DO 由于更新显示速度的时间很快，只能在这里加入稳定速度值的
              -处理
- 317   2              // /**/
- 318   2              // if (is_initiatlized == 0)
- 319   2              // {
- 320   2              //     is_initiatlized = 1;
- 321   2              //     speed_scan_filter_init(cur_speed);
- 322   2              // }
- 323   2      
- 324   2              // speed_scan_filter_add(cur_speed);
- 325   2              // cur_speed = speed_scan_filter_get_speed();
- 326   2              instrument.speed = cur_speed;
- 327   2          }
- 328   1      }
- 329          
- 330          void aip3368h_display_speed_refresh_time_add(void)
- 331          {
- 332   1          if (aip3368h_display_speed_refresh_time_cnt < ((u8)-1)) // 防止计数溢出
- 333   1          {
- 334   2              aip3368h_display_speed_refresh_time_cnt++;
- 335   2          }
- 336   1      }
- 337          
- 338          void aip3368h_display_speed_handle(void)
- 339          {
- 340   1          static volatile u8 is_initialized = 0; // 是否初始化
- 341   1          static volatile u8 speed_of_lag = 0;   // 延迟显示的时速
- 342   1          volatile u8 cur_speed;                 //
- 343   1      
- 344   1          // α越小越平滑但响应慢,α越大响应快但平滑差
- 345   1      #define ALPHA 7 // 滤波系数，范围：0 ~ 10，推荐值 1 ~ 3
- 346   1          static volatile u8 filtered_speed;
- 347   1          u8 base_step;
- 348   1          u8 speed_abs_diff;
- 349   1      
- 350   1          if (0 == is_initialized)
- 351   1          {
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 7   
+ 204   2              // /**/
+ 205   2              // if (is_initiatlized == 0)
+ 206   2              // {
+ 207   2              //     is_initiatlized = 1;
+ 208   2              //     speed_scan_filter_init(cur_speed);
+ 209   2              // }
+ 210   2      
+ 211   2              // speed_scan_filter_add(cur_speed);
+ 212   2              // cur_speed = speed_scan_filter_get_speed();
+ 213   2              instrument.speed = cur_speed;
+ 214   2          }
+ 215   1      }
+ 216          
+ 217          /**
+ 218           * @brief 递增AIP3368H显示速度刷新时间计数
+ 219           *
+ 220           */
+ 221          void aip3368h_display_speed_refresh_time_add(void)
+ 222          {
+ 223   1          if (aip3368h_display_speed_refresh_time_cnt < ((u8)-1)) // 防止计数溢出
+ 224   1          {
+ 225   2              aip3368h_display_speed_refresh_time_cnt++;
+ 226   2          }
+ 227   1      }
+ 228          
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 5   
 
- 352   2              is_initialized = 1;
- 353   2      
- 354   2              speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
- 355   2              filtered_speed = instrument.speed;
- 356   2              // aip3368h_display_speed(speed_of_lag);
- 357   2      
- 358   2              speed_filter_init(instrument.speed);
- 359   2          }
- 360   1      
- 361   1          if (aip3368h_display_speed_refresh_time_cnt >= AIP3368H_DISPLAY_SPEED_REFRESH_TIME)
- 362   1          {
- 363   2              aip3368h_display_speed_refresh_time_cnt = 0;
- 364   2      
- 365   2              // 如果当前显示的速度值和计算出来的速度值相差太大，需要进行快速逼�
+ 229          void aip3368h_display_speed_handle(void)
+ 230          {
+ 231   1          static volatile u8 is_initialized = 0; // 是否初始化
+ 232   1          static volatile u8 speed_of_lag = 0;   // 延迟显示的时速
+ 233   1          volatile u8 cur_speed;                 //
+ 234   1      
+ 235   1          // α越小越平滑但响应慢,α越大响应快但平滑差
+ 236   1      #define ALPHA 7 // 滤波系数，范围：0 ~ 10，推荐值 1 ~ 3
+ 237   1          static volatile u8 filtered_speed;
+ 238   1          u8 base_step;
+ 239   1          u8 speed_abs_diff;
+ 240   1      
+ 241   1          if (0 == is_initialized)
+ 242   1          {
+ 243   2              is_initialized = 1;
+ 244   2      
+ 245   2              speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
+ 246   2              filtered_speed = instrument.speed;
+ 247   2              aip3368h_display_speed(speed_of_lag);
+ 248   2              speed_filter_init(instrument.speed);
+ 249   2      
+ 250   2              // USER_TO_DO 测试时屏蔽，实际需要恢复
+ 251   2              // aip3368h_display_speed_unit_type(
+ 252   2              //     instrument.save_info.distance_unit_type);
+ 253   2          }
+ 254   1      
+ 255   1      #if 1
+ 256   1          if (aip3368h_display_speed_refresh_time_cnt >= AIP3368H_DISPLAY_SPEED_REFRESH_TIME)
+ 257   1          {
+ 258   2              aip3368h_display_speed_refresh_time_cnt = 0;
+ 259   2      
+ 260   2              // 如果当前显示的速度值和计算出来的速度值相差太大，需要进行快速逼�
              -�：
- 366   2              if (speed_of_lag > instrument.speed)
- 367   2              {
- 368   3                  speed_abs_diff = speed_of_lag - instrument.speed;
- 369   3                  if (speed_abs_diff >= 10)
- 370   3                  {
- 371   4                      // 根据速度插值，调节步长
- 372   4                      if (speed_abs_diff >= 50)
- 373   4                      {
- 374   5                          base_step = 20;
- 375   5                      }
- 376   4                      else if (speed_abs_diff >= 20)
- 377   4                      {
- 378   5                          base_step = 10;
- 379   5                      }
- 380   4                      else
- 381   4                      {
- 382   5                          base_step = 5;
- 383   5                      }
- 384   4      
- 385   4                      speed_of_lag -= base_step;
- 386   4      #if USER_DEBUG_ENABLE
- 387   4                      printf("speed_of_lag == %u\n", (u16)speed_of_lag);
- 388   4      #endif
- 389   4      
- 390   4                      speed_filter_init(instrument.speed);
- 391   4                      filtered_speed = instrument.speed;
- 392   4                      // aip3368h_display_speed(speed_of_lag);
- 393   4                      return;
- 394   4                  }
- 395   3              }
- 396   2              else if (speed_of_lag < instrument.speed)
- 397   2              {
- 398   3                  speed_abs_diff = instrument.speed - speed_of_lag;
- 399   3                  if (speed_abs_diff >= 10)
- 400   3                  {
- 401   4                      // 根据速度插值，调节步长
- 402   4                      if (speed_abs_diff >= 50)
- 403   4                      {
- 404   5                          base_step = 20;
- 405   5                      }
- 406   4                      else if (speed_abs_diff >= 20)
- 407   4                      {
- 408   5                          base_step = 10;
- 409   5                      }
- 410   4                      else
- 411   4                      {
- 412   5                          base_step = 5;
-C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/01/2026 17:53:20 PAGE 8   
+ 261   2              if (speed_of_lag > instrument.speed)
+ 262   2              {
+ 263   3                  speed_abs_diff = speed_of_lag - instrument.speed;
+ 264   3                  if (speed_abs_diff >= 10)
+ 265   3                  {
+ 266   4                      // 根据速度插值，调节步长
+ 267   4                      if (speed_abs_diff >= 50)
+ 268   4                      {
+ 269   5                          base_step = 20;
+ 270   5                      }
+ 271   4                      else if (speed_abs_diff >= 20)
+ 272   4                      {
+ 273   5                          base_step = 10;
+ 274   5                      }
+ 275   4                      else
+ 276   4                      {
+ 277   5                          base_step = 5;
+ 278   5                      }
+ 279   4      
+ 280   4                      speed_of_lag -= base_step;
+ 281   4      #if USER_DEBUG_ENABLE
+ 282   4                      // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+ 283   4      #endif
+ 284   4      
+ 285   4                      speed_filter_init(instrument.speed);
+ 286   4                      filtered_speed = instrument.speed;
+ 287   4                      aip3368h_display_speed(speed_of_lag);
+ 288   4                      return;
+ 289   4                  }
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 6   
 
- 413   5                      }
- 414   4      
- 415   4                      speed_of_lag += base_step;
- 416   4      #if USER_DEBUG_ENABLE
- 417   4                      printf("speed_of_lag == %u\n", (u16)speed_of_lag);
- 418   4      #endif
- 419   4      
- 420   4                      speed_filter_init(instrument.speed);
- 421   4                      filtered_speed = instrument.speed;
- 422   4                      // aip3368h_display_speed(speed_of_lag);
- 423   4                      return;
- 424   4                  }
- 425   3              }
- 426   2      
- 427   2              speed_filter_add(instrument.speed);
- 428   2              cur_speed = speed_filter_get_speed();
- 429   2              /*
- 430   2                  如果当前速度值和过滤后的速度值都是10以下，需要注意
- 431   2                  不能再经过低通滤波器，会导致最后计算出的时速变为0
- 432   2              */
- 433   2              if (cur_speed < 10)
- 434   2              {
- 435   3                  filtered_speed = cur_speed;
- 436   3              }
- 437   2              else
- 438   2              {
- 439   3                  // 套用一阶低通滤波器计算公式：
- 440   3                  filtered_speed = ((u16)ALPHA * cur_speed + ((u16)10 - ALPHA) * filtered_speed) / 10;
- 441   3              }
- 442   2      
- 443   2              cur_speed = filtered_speed;
- 444   2      
- 445   2              if (speed_of_lag > cur_speed)
- 446   2              {
- 447   3                  speed_of_lag--;
- 448   3              }
- 449   2              else if (speed_of_lag < cur_speed)
- 450   2              {
- 451   3                  speed_of_lag++;
- 452   3              }
- 453   2      
- 454   2      #if USER_DEBUG_ENABLE
- 455   2              printf("speed_of_lag == %u\n", (u16)speed_of_lag);
- 456   2      #endif
- 457   2              // aip3368h_display_speed(speed_of_lag);
- 458   2          }
- 459   1      }
- 460          
- 461          #endif
+ 290   3              }
+ 291   2              else if (speed_of_lag < instrument.speed)
+ 292   2              {
+ 293   3                  speed_abs_diff = instrument.speed - speed_of_lag;
+ 294   3                  if (speed_abs_diff >= 10)
+ 295   3                  {
+ 296   4                      // 根据速度插值，调节步长
+ 297   4                      if (speed_abs_diff >= 50)
+ 298   4                      {
+ 299   5                          base_step = 20;
+ 300   5                      }
+ 301   4                      else if (speed_abs_diff >= 20)
+ 302   4                      {
+ 303   5                          base_step = 10;
+ 304   5                      }
+ 305   4                      else
+ 306   4                      {
+ 307   5                          base_step = 5;
+ 308   5                      }
+ 309   4      
+ 310   4                      speed_of_lag += base_step;
+ 311   4      #if USER_DEBUG_ENABLE
+ 312   4                      // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+ 313   4      #endif
+ 314   4      
+ 315   4                      speed_filter_init(instrument.speed);
+ 316   4                      filtered_speed = instrument.speed;
+ 317   4                      aip3368h_display_speed(speed_of_lag);
+ 318   4                      return;
+ 319   4                  }
+ 320   3              }
+ 321   2      
+ 322   2              speed_filter_add(instrument.speed);
+ 323   2              cur_speed = speed_filter_get_speed();
+ 324   2              /*
+ 325   2                  如果当前速度值和过滤后的速度值都是10以下，需要注意
+ 326   2                  不能再经过低通滤波器，会导致最后计算出的时速变为0
+ 327   2              */
+ 328   2              if (cur_speed < 10)
+ 329   2              {
+ 330   3                  filtered_speed = cur_speed;
+ 331   3              }
+ 332   2              else
+ 333   2              {
+ 334   3                  // 套用一阶低通滤波器计算公式：
+ 335   3                  filtered_speed = ((u16)ALPHA * cur_speed + ((u16)10 - ALPHA) * filtered_speed) / 10;
+ 336   3              }
+ 337   2      
+ 338   2              cur_speed = filtered_speed;
+ 339   2      
+ 340   2              if (speed_of_lag > cur_speed)
+ 341   2              {
+ 342   3                  speed_of_lag--;
+ 343   3              }
+ 344   2              else if (speed_of_lag < cur_speed)
+ 345   2              {
+ 346   3                  speed_of_lag++;
+ 347   3              }
+ 348   2      
+ 349   2      #if USER_DEBUG_ENABLE
+ 350   2              // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+ 351   2      #endif
+C51 COMPILER V9.60.7.0   SPEED_SCAN                                                        06/02/2026 17:34:06 PAGE 7   
+
+ 352   2              aip3368h_display_speed(speed_of_lag);
+ 353   2          }
+ 354   1      #endif
+ 355   1      }
+ 356          
+ 357          #endif
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1053    ----
-   CONSTANT SIZE    =     20    ----
+   CODE SIZE        =   1031    ----
+   CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     63      18
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----

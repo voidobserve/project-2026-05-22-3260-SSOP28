@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TMR1                                                              06/01/2026 17:53:19 PAGE 1   
+C51 COMPILER V9.60.7.0   TMR1                                                              06/02/2026 17:34:05 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR1
@@ -62,72 +62,78 @@ line level    source
   50   1          // 周期中断
   51   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
   52   1          {
-C51 COMPILER V9.60.7.0   TMR1                                                              06/01/2026 17:53:19 PAGE 2   
+C51 COMPILER V9.60.7.0   TMR1                                                              06/02/2026 17:34:05 PAGE 2   
 
   53   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
   54   2      
-  55   2              if (mileage_save_time_cnt < 65535)
-  56   2              {
-  57   3                  mileage_save_time_cnt++;
-  58   3              }
-  59   2      
-  60   2              if (io_key_para.cur_scan_times < 255)
-  61   2              {
-  62   3                  io_key_para.cur_scan_times++;
-  63   3              }
-  64   2      
-  65   2      #if FUEL_CAPACITY_SCAN_ENABLE
-  66   2              fuel_capacity_scan_time_add();
-  67   2              fuel_lev_update_time_add();
-  68   2      #endif
-  69   2      
-  70   2              // if (mileage_update_time_cnt < 65535)
-  71   2              {
-  72   3                  mileage_update_time_cnt++;
-  73   3              }
-  74   2      
-  75   2      #if BATTERY_SCAN_ENABLE
-  76   2              // bat_scan_time_add();
-  77   2      #endif // BATTERY_SCAN_ENABLE
-  78   2      
-  79   2              // adc_channel_switch_by_isr();
-  80   2              
-  81   2              aip3368h_refresh_time_add();
-  82   2              // aip3368h_display_speed_refresh_time_add();
-  83   2              // aip3368h_display_engine_speed_refresh_time_add();
-  84   2              // aip3368h_display_err_handle_time_add();
-  85   2      
-  86   2              /*
-  87   2                  累计开机动画的时间，控制开机动画处理函数的调用周期
-  88   2                  修改显存的操作放到了主循环，这里仅用作计时
-  89   2              */
-  90   2              aip3368h_display_boot_animation_time_add();
+  55   2              beep_handle_1ms_isr();
+  56   2      
+  57   2              if (mileage_save_time_cnt < 65535)
+  58   2              {
+  59   3                  mileage_save_time_cnt++;
+  60   3              }
+  61   2      
+  62   2              if (io_key_para.cur_scan_times < 255)
+  63   2              {
+  64   3                  io_key_para.cur_scan_times++;
+  65   3              }
+  66   2      
+  67   2      #if FUEL_CAPACITY_SCAN_ENABLE
+  68   2              fuel_capacity_scan_time_add();
+  69   2              fuel_lev_update_time_add();
+  70   2      #endif
+  71   2      
+  72   2              // if (mileage_update_time_cnt < 65535)
+  73   2              {
+  74   3                  mileage_update_time_cnt++;
+  75   3              }
+  76   2      
+  77   2      #if BATTERY_SCAN_ENABLE
+  78   2              // bat_scan_time_add();
+  79   2      #endif // BATTERY_SCAN_ENABLE
+  80   2      
+  81   2              // adc_channel_switch_by_isr();
+  82   2              
+  83   2              
+  84   2              aip3368h_refresh_time_add();
+  85   2              // 递增AIP3368H显示 速度 刷新时间计数
+  86   2              aip3368h_display_speed_refresh_time_add();
+  87   2              // 递增AIP3368H显示 发动机转速 刷新时间计数
+  88   2              aip3368h_display_engine_speed_refresh_time_add();  
+  89   2              // 控制设置界面对应的设置项目以一定周期进行闪烁
+  90   2              aip3368h_display_setting_item_time_add(); 
   91   2      
-  92   2              // USER_TO_DO 只在测试时只用： 
-  93   2              // aip3368h_display_test_light_blink_1ms_isr();
-  94   2      
-  95   2              // aip3368h_display_test_back_light_scale_bar();
-  96   2              // aip3368h_display_test_engine_speed_scale_bar();
-  97   2              // aip3368h_display_test_engine_speed_digit_scale();
-  98   2              // aip3368h_display_test_gear();
-  99   2              // aip3368h_display_test_speed();
- 100   2              // aip3368h_display_test_mileage();
- 101   2              // aip3368h_display_test_fuel();
- 102   2          }
- 103   1       
- 104   1          // 退出中断设置IP，不可删除
- 105   1          __IRQnIPnPop(TMR1_IRQn);
- 106   1      }
+  92   2              /*
+  93   2                  累计开机动画的时间，控制开机动画处理函数的调用周期
+  94   2                  修改显存的操作放到了主循环，这里仅用作计时
+  95   2              */
+  96   2              aip3368h_display_boot_animation_time_add();
+  97   2      
+  98   2              // USER_TO_DO 只在测试时只用： 
+  99   2              // aip3368h_display_test_light_blink_1ms_isr();
+ 100   2      
+ 101   2              // aip3368h_display_test_back_light_scale_bar();
+ 102   2              // aip3368h_display_test_engine_speed_scale_bar();
+ 103   2              // aip3368h_display_test_engine_speed_digit_scale();
+ 104   2              // aip3368h_display_test_gear();
+ 105   2              // aip3368h_display_test_speed();
+ 106   2              // aip3368h_display_test_mileage();
+ 107   2              // aip3368h_display_test_fuel();
+ 108   2          }
+ 109   1       
+ 110   1          // 退出中断设置IP，不可删除
+ 111   1          __IRQnIPnPop(TMR1_IRQn);
+ 112   1      }
 
+
+C51 COMPILER V9.60.7.0   TMR1                                                              06/02/2026 17:34:05 PAGE 3   
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    197    ----
+   CODE SIZE        =    209    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-C51 COMPILER V9.60.7.0   TMR1                                                              06/01/2026 17:53:19 PAGE 3   
-
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

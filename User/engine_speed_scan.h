@@ -12,15 +12,12 @@
 // 检测到 多少个脉冲 表示 发动机转过一圈
 // #define ENGINE_SPEED_SCAN_PULSE_PER_TURN (60)
 
-// 检测到一个脉冲表示发动机转过多少圈
-#if 1
-#define ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS (1)
-// #define ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS (15)
-// #define ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS (10)
-// #define ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS (99)
-#elif
+ 
+// 检测到一个脉冲表示发动机转了 xx 圈，单位：0.001圈
+#define ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS (1057)
+// 补偿系数，根据上面的单位，需要利用该系数，恢复成以1圈为单位的值
+#define ENGINE_SPEED_SCAN_COMPONSATION (1000)
 
-#endif
   
 // 发动机转速的更新时间，单位：ms
 #define ENGINE_SPEED_SCAN_UPDATE_TIME (500)
@@ -31,7 +28,7 @@
 #define ENGINE_SPEED_SCAN_OVER_TIME (600)
 
 
-#define AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME 200
+#define AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME 50
 
 // 检测发动机转速所需的配置
 // ======================================================

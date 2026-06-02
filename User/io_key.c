@@ -104,12 +104,46 @@ void io_key_handle(void)
 	io_key_para.latest_key_val = IO_KEY_ID_NONE;
 	io_key_para.latest_key_event = KEY_EVENT_NONE;
 
+	// USER_TO_DO 有按下按键，清空自动退出设置的计时
 	switch (io_key_event)
 	{
 	case KEY_EVENT_CLICK:
 #if USER_DEBUG_ENABLE
 		printf("click\n");
 #endif
+
+		beep_play(117);
+
+		if (instrument.cur_sel_setting_item ==
+			SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE)
+		{
+			instrument.save_info.is_display_total_mileage =
+				!instrument.save_info.is_display_total_mileage;
+			aip3368h_display_mileage_refresh();
+		}
+		else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
+				 instrument.cur_sel_setting_item)
+		{
+			// 如果正在设置当前要显示的单位类型，km/h 或 mph
+
+			if (DISTANCE_UNIT_TYPE_METRIC ==
+				instrument.save_info.distance_unit_type)
+			{
+				instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_IMPERIAL;
+
+				aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
+				aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
+			}
+			else
+			{
+				instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_METRIC;
+				aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_METRIC);
+				aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_METRIC);
+			}
+
+			// 立即刷新显示，清空闪烁的计时
+			aip3368h_display_setting_item_time_clear();
+		}
 
 		// if (instrument.save_info.is_display_total_mileage)
 		// {
@@ -133,14 +167,41 @@ void io_key_handle(void)
 #if USER_DEBUG_ENABLE
 		printf("Long\n");
 #endif
-		// if (instrument.save_info.is_display_total_mileage == 0)
-		// {
-		// 	instrument.save_info.subtotal_mileage = 0;
-		// 	// aip3368h_display_mileage(
-		// 	// 	instrument.save_info.subtotal_mileage / 100,
-		// 	// 	0);
-		// 	instrument_info_save();
-		// }
+		beep_play(117);
+
+		if (SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE ==
+			instrument.cur_sel_setting_item)
+		{
+			// 如果正在显示里程
+
+			if (1 == instrument.save_info.is_display_total_mileage)
+			{
+				/*
+					如果显示的是 TOTAL 里程，切换到设置要显示的单位类型
+				*/
+				instrument.cur_sel_setting_item = SETTING_ITEM_DISTANCE_UNIT_TYPE;
+
+				// USER_TO_DO 立即刷新显示，清空控制闪烁的计时
+			}
+			else
+			{
+				// 如果显示的是 TRIP 里程，清空它
+				instrument.save_info.subtotal_mileage = 0;
+				aip3368h_display_mileage_refresh();
+				instrument_info_save();
+			}
+		}
+		else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
+				 instrument.cur_sel_setting_item)
+		{
+			// 从 设置单位类型 -> 设置车轮周长
+			instrument.cur_sel_setting_item = SETTING_ITEM_WHELL_CIRCUMFERENCE;
+			aip3368h_display_speed_unit_type(
+				instrument.save_info.distance_unit_type);
+			aip3368h_display_mileage_unit_type(
+				instrument.save_info.distance_unit_type);
+		}
+
 		break;
 
 	default:

@@ -598,6 +598,22 @@ void __aip3368h_display_speed_bit_x__(u8 bit_x, u8 number)
 }
 
 /**
+ * @brief 清空数码管 第 x 位 显示的内容
+ * 
+ * @param bit_x 0 ~ 2，对应第 0 ~ 2 位数码管
+ *
+ */
+void __aip3368h_display_speed_bit_x_clear__(u8 bit_x)
+{
+    u8 i;
+    for (i = 0; i < 7; i++)
+    {
+        aip3368h_display_buff[speed_segment_map[bit_x][i].buff_index] &=
+            ~(0x01 << speed_segment_map[bit_x][i].bit_offset);
+    }
+}
+
+/**
  * @brief 显示时速
  *
  * @param speed 0 ~ 199
@@ -1053,105 +1069,6 @@ void __aip3368h_display_boot_animation_in_engine_speed_scale_bar__(void)
             // aip3368h_display_engine_speed_scale_bar(animation_engine_speed_scale_bar_level);
         }
     }
-}
-
-// void __aip3368h_display_boot_animation_in_speed_scale_bar__(void)
-// {
-//     static u16 animation_speed_scale_bar_step = 0; // 控制时速刻度条的步长
-//     static u8 animation_phase = 0;                 // 0:渐渐递增，1:保持最高，2:渐渐递减
-//     static u8 animation_speed_scale_bar_level = 0;
-
-//     animation_speed_scale_bar_step++;
-//     if (0 == animation_phase)
-//     {
-//         if (animation_speed_scale_bar_step >= 100)
-//         {
-//             animation_speed_scale_bar_step = 0;
-//             animation_speed_scale_bar_level++;
-
-//             if (animation_speed_scale_bar_level >= 16)
-//             {
-//                 // animation_speed_scale_bar_level = 12;
-//                 animation_phase = 1; // 进入保持阶段
-//             }
-
-//             // aip3368h_display_speed_scale_bar(animation_speed_scale_bar_level);
-//         }
-//     }
-//     else if (1 == animation_phase)
-//     {
-//         if (animation_speed_scale_bar_step >= 400)
-//         {
-//             animation_speed_scale_bar_step = 0;
-//             animation_phase = 2; // 进入递减阶段
-//         }
-//     }
-//     else if (2 == animation_phase)
-//     {
-//         if (animation_speed_scale_bar_step >= 100)
-//         {
-//             animation_speed_scale_bar_step = 0;
-
-//             if (animation_speed_scale_bar_level > 0)
-//             {
-//                 animation_speed_scale_bar_level--;
-//             }
-
-//             aip3368h_display_speed_scale_bar(animation_speed_scale_bar_level);
-//         }
-//     }
-// }
-
-// 时速和里程的开机动画显示
-void __aip3368h_display_boot_animation_in_speed_and_mileage__(void)
-{
-    // static u16 animation_step = 0; // 控制动画的步长
-    // static u8 animation_phase = 0; // 0:渐渐递增，1:保持最高，2:渐渐递减
-    // static u8 animation_val = 0;
-    // volatile u8 i;
-
-    // animation_step++;
-    // if (0 == animation_phase)
-    // {
-    //     if (animation_step >= 200)
-    //     {
-    //         animation_step = 0;
-    //         // __aip3368h_display_speed_bit_x__(0, animation_val);
-    //         // __aip3368h_display_speed_bit_x__(1, animation_val);
-
-    //         for (i = 0; i < 6; i++)
-    //         {
-    //             __aip3368h_display_mileage_bit_x__(i, animation_val);
-    //         }
-
-    //         animation_val++;
-
-    //         if (animation_val >= 10)
-    //         {
-    //             animation_val = 9;
-    //             animation_phase = 1;
-    //         }
-    //     }
-    // }
-    // else if (1 == animation_phase)
-    // {
-    //     if (animation_step >= 200)
-    //     {
-    //         animation_step = 0;
-
-    //         if (animation_val > 0)
-    //         {
-    //             animation_val--;
-    //         }
-
-    //         // __aip3368h_display_speed_bit_x__(0, animation_val);
-    //         // __aip3368h_display_speed_bit_x__(1, animation_val);
-    //         for (i = 0; i < 6; i++)
-    //         {
-    //             __aip3368h_display_mileage_bit_x__(i, animation_val);
-    //         }
-    //     }
-    // }
 }
 
 void __aip3368h_display_boot_animation_in_fuel_level__(void)
@@ -1610,34 +1527,34 @@ void aip3368h_display_err_handle(void)
     }
 
     // 发动机转速过高报警
-    if (instrument.flag_is_engine_speed_warning_enable)
-    {
-        // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
-        if ((aip3368h_display_buff[0] >> 1) & 0x01)
-        {
-            aip3368h_display_buff[0] &= ~(0x01 << 1);
-        }
-        else
-        {
-            aip3368h_display_buff[0] |= (0x01 << 1);
-        }
-    }
+    // if (instrument.flag_is_engine_speed_warning_enable)
+    // {
+    //     // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
+    //     if ((aip3368h_display_buff[0] >> 1) & 0x01)
+    //     {
+    //         aip3368h_display_buff[0] &= ~(0x01 << 1);
+    //     }
+    //     else
+    //     {
+    //         aip3368h_display_buff[0] |= (0x01 << 1);
+    //     }
+    // }
 
     // 低电量报警
-    if (instrument.flag_is_in_warning_of_low_voltage)
-    {
-        // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
-        if ((aip3368h_display_buff[2] >> 10) & 0x01)
-        {
-            aip3368h_display_buff[2] &= ~(0x01 << 10); // 电池电量低，第 1 格指示灯（红）
-            aip3368h_display_buff[2] &= ~(0x01 << 11); // 电池电量低，第 0 格指示灯（红）
-        }
-        else
-        {
-            aip3368h_display_buff[2] |= 0x01 << 10; // 电池电量低，第 1 格指示灯（红）
-            aip3368h_display_buff[2] |= 0x01 << 11; // 电池电量低，第 0 格指示灯（红）
-        }
-    }
+    // if (instrument.flag_is_in_warning_of_low_voltage)
+    // {
+    //     // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
+    //     if ((aip3368h_display_buff[2] >> 10) & 0x01)
+    //     {
+    //         aip3368h_display_buff[2] &= ~(0x01 << 10); // 电池电量低，第 1 格指示灯（红）
+    //         aip3368h_display_buff[2] &= ~(0x01 << 11); // 电池电量低，第 0 格指示灯（红）
+    //     }
+    //     else
+    //     {
+    //         aip3368h_display_buff[2] |= 0x01 << 10; // 电池电量低，第 1 格指示灯（红）
+    //         aip3368h_display_buff[2] |= 0x01 << 11; // 电池电量低，第 0 格指示灯（红）
+    //     }
+    // }
 
     // 低油量 报警
     if (instrument.flag_is_in_warning_of_low_fuel)

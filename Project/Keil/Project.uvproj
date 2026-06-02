@@ -441,6 +441,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\Hardware\aip3368.c</FilePath>
             </File>
+            <File>
+              <FileName>beep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Hardware\beep.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

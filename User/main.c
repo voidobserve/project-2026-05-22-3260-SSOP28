@@ -38,6 +38,8 @@ void user_init(void)
     printf("sys reset\n");
 #endif
 
+    beep_init();
+
 #if PIN_LEVEL_SCAN_ENABLE
     pin_level_scan_config();
 #endif
@@ -47,11 +49,11 @@ void user_init(void)
 #endif
 
 #if SPEED_SCAN_ENABLE
-    // speed_scan_config(); // 时速扫描的配置
+    speed_scan_config(); // 时速扫描的配置
 #endif
 
 #if ENGINE_SPEED_SCAN_ENABLE
-    // engine_speed_scan_config(); // 发动机转速扫描的配置
+    engine_speed_scan_config(); // 发动机转速扫描的配置
 #endif
 
 #if (BATTERY_SCAN_ENABLE || FUEL_CAPACITY_SCAN_ENABLE)
@@ -64,8 +66,9 @@ void user_init(void)
     tmr1_config(); //
     tmr2_config(); // 扫描脉冲(电平变化)的定时器
 
-    delay_ms(1); // 等待系统稳定
-                 // delay_ms(2000); // 等待系统稳定
+    beep_play(117); // 上电之后，让蜂鸣器鸣叫一声
+    delay_ms(1);    // 等待系统稳定
+                    // delay_ms(2000); // 等待系统稳定
 }
 
 void main(void)
@@ -90,7 +93,6 @@ void main(void)
     // USER_TO_DO 测试时使用
     // aip3368h_display_test();
     // aip3368h_display_mileage(123456, 0);
-    
 
     /* 系统主循环 */
     while (1)
@@ -108,6 +110,7 @@ void main(void)
 #if IO_KEY_ENABLE
         key_driver_scan(&io_key_para);
         io_key_handle(); // io按键处理函数
+        aip3368h_display_setting_item_handle();
 #endif
 
 #if SPEED_SCAN_ENABLE
@@ -115,7 +118,7 @@ void main(void)
         aip3368h_display_speed_handle();
 #endif
 
-        // mileage_scan(); // 检测大计里程和小计里程
+        mileage_scan(); // 检测大计里程和小计里程
 
 #if ENGINE_SPEED_SCAN_ENABLE
         // engine_speed_scan(); // 检测发动机转速
@@ -132,13 +135,8 @@ void main(void)
 
 #endif //
 
-        // memset(aip3368h_display_buff, 0x00, sizeof(aip3368h_display_buff));
-        // aip3368h_module_display();
-        // delay_ms(500);
 
-        // memset(aip3368h_display_buff, 0xFF, sizeof(aip3368h_display_buff));
         aip3368h_module_display();
-        // delay_ms(500);
     }
 }
 

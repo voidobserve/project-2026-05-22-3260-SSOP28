@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/01/2026 17:53:20 PAGE 1   
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/02/2026 17:54:14 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE INSTRUMENT
@@ -12,7 +12,7 @@ line level    source
    1          #include <string.h> // memset()
    2          
    3          #include "instrument.h"
-   4          
+   4          #include "my_config.h"
    5          
    6          volatile instrument_t instrument = {0};
    7          
@@ -36,34 +36,145 @@ line level    source
   25   2      
   26   2              instrument.save_info.is_display_total_mileage = 1; // 默认显示大计里程
   27   2              instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL;
-  28   2              instrument_info_save(); // 将数据写回flash
-  29   2          }
-  30   1      }
-  31          
-  32          void instrument_info_save(void)
-  33          {
-  34   1      #if USE_INTERNAL_FLASH_SAVE_DATA
-  35   1      
-  36   1          instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL; // 表示数据有效，让下一
+  28   2              instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_METRIC;
+  29   2              // instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_IMPERIAL;
+  30   2      
+  31   2              instrument_info_save(); // 将数据写回flash
+  32   2          }
+  33   1      }
+  34          
+  35          void instrument_info_save(void)
+  36          {
+  37   1      #if USE_INTERNAL_FLASH_SAVE_DATA
+  38   1      
+  39   1          instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL; // 表示数据有效，让下一
              -次上电读出数据时，验证该标志位
-  37   1          // 先擦除扇区再写入
-  38   1          flash_erase_sector(FLASH_START_ADDR);
-  39   1          flash_program(FLASH_START_ADDR,
-  40   1                        (u8 *)&instrument.save_info,
-  41   1                        sizeof(save_info_t));
-  42   1      #endif
-  43   1      }
+  40   1          // 先擦除扇区再写入
+  41   1          flash_erase_sector(FLASH_START_ADDR);
+  42   1          flash_program(FLASH_START_ADDR,
+  43   1                        (u8 *)&instrument.save_info,
+  44   1                        sizeof(save_info_t));
+  45   1      #endif
+  46   1      }
+  47          
+  48          // 控制设置界面对应的设置项目以一定周期进行闪烁
+  49          static volatile u16 aip3368h_display_setting_item_time_cnt = 0;
+  50          // 进入设置界面后，一段时间没有操作时，退出设置：
+  51          static volatile u16 aip3368h_display_setting_item_exit_time_cnt;
+  52          
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/02/2026 17:54:14 PAGE 2   
+
+  53          void aip3368h_display_setting_item_time_add(void)
+  54          {
+  55   1          if (aip3368h_display_setting_item_time_cnt < ((u16)-1))
+  56   1          {
+  57   2              aip3368h_display_setting_item_time_cnt++;
+  58   2          }
+  59   1      }
+  60          
+  61          // 清除设置界面对应设置项目的闪烁时间，让它重新开始计时并闪烁
+  62          void aip3368h_display_setting_item_time_clear(void)
+  63          {
+  64   1          aip3368h_display_setting_item_time_cnt = 0;
+  65   1      }
+  66          
+  67          // USER_TO_DO 目前还没有添加自动退出功能
+  68          void aip3368h_display_setting_item_exit_time_add(void)
+  69          {
+  70   1          if (aip3368h_display_setting_item_exit_time_cnt < ((u16)-1))
+  71   1          {
+  72   2              aip3368h_display_setting_item_exit_time_cnt++;
+  73   2          }
+  74   1      }
+  75          
+  76          void aip3368h_display_setting_item_exit_time_clear(void)
+  77          {
+  78   1          aip3368h_display_setting_item_exit_time_cnt = 0;
+  79   1      }
+  80          
+  81          void aip3368h_display_setting_item_handle(void)
+  82          {
+  83   1          if (aip3368h_display_setting_item_time_cnt >= 500)
+  84   1          {
+  85   2              aip3368h_display_setting_item_time_cnt = 0;
+  86   2          }
+  87   1          else
+  88   1          {
+  89   2              return;
+  90   2          }
+  91   1      
+  92   1          switch (instrument.cur_sel_setting_item)
+  93   1          {
+  94   2          // case SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE:
+  95   2      
+  96   2          //     break;
+  97   2          case SETTING_ITEM_DISTANCE_UNIT_TYPE:
+  98   2              // 让 时速 和 里程 的单位都进行闪烁显示
+  99   2      
+ 100   2              if (DISTANCE_UNIT_TYPE_METRIC ==
+ 101   2                  instrument.save_info.distance_unit_type)
+ 102   2              {
+ 103   3                  // 如果当前 设置的项目 是公制单位
+ 104   3      
+ 105   3                  // 直接读取显存，判断有没有点亮对应的指示灯
+ 106   3                  if ((aip3368h_display_buff[5] >> 10) & 0x01)
+ 107   3                  {
+ 108   4                      // 如果是点亮的，改为熄灭
+ 109   4                      __aip3368h_display_speed_unit_type__(DISTANCE_UNIT_TYPE_METRIC, 0);
+ 110   4                      __aip3368h_display_mileage_unit_type__(DISTANCE_UNIT_TYPE_METRIC, 0);
+ 111   4                  }
+ 112   3                  else
+ 113   3                  {
+ 114   4                      // 如果当前是熄灭的，点亮它
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/02/2026 17:54:14 PAGE 3   
+
+ 115   4                      __aip3368h_display_speed_unit_type__(DISTANCE_UNIT_TYPE_METRIC, 1);
+ 116   4                      __aip3368h_display_mileage_unit_type__(DISTANCE_UNIT_TYPE_METRIC, 1);
+ 117   4                  }
+ 118   3              }
+ 119   2              else if (DISTANCE_UNIT_TYPE_IMPERIAL ==
+ 120   2                       instrument.save_info.distance_unit_type)
+ 121   2              {
+ 122   3                  // 直接读取显存，判断有没有点亮对应的指示灯
+ 123   3                  if ((aip3368h_display_buff[5] >> 11) & 0x01)
+ 124   3                  {
+ 125   4                      // 如果是点亮的，改为熄灭
+ 126   4                      __aip3368h_display_speed_unit_type__(DISTANCE_UNIT_TYPE_IMPERIAL, 0);
+ 127   4                      __aip3368h_display_mileage_unit_type__(DISTANCE_UNIT_TYPE_IMPERIAL, 0);
+ 128   4                  }
+ 129   3                  else
+ 130   3                  {
+ 131   4                      // 如果当前是熄灭的，点亮它
+ 132   4                      __aip3368h_display_speed_unit_type__(DISTANCE_UNIT_TYPE_IMPERIAL, 1);
+ 133   4                      __aip3368h_display_mileage_unit_type__(DISTANCE_UNIT_TYPE_IMPERIAL, 1);
+ 134   4                  }
+ 135   3              }
+ 136   2              break;
+ 137   2          case SETTING_ITEM_WHELL_CIRCUMFERENCE:
+ 138   2              // 正在设置车轮周长 
+ 139   2              /*
+ 140   2                  设置范围 ： 50 ~ 180，每次调节步长为5，
+ 141   2                  可以直接判断时速第2位的A段数码管有没有点亮，
+ 142   2                  来控制闪烁
+ 143   2              */ 
+ 144   2      
+ 145   2              // USER_TO_DO 还是需要编写独立的清空显示函数
+ 146   2      
+ 147   2              break;
+ 148   2      
+ 149   2          default:
+ 150   2              break;
+ 151   2          }
+ 152   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    101    ----
+   CODE SIZE        =    280    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =     21      11
+   XDATA SIZE       =     24      11
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/01/2026 17:53:20 PAGE 2   
-
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 

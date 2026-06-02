@@ -25,35 +25,10 @@
 #define TEMP_OF_WATER_SCAN_ENABLE 0 // 是否使能水温检测
 
 #define USE_INTERNAL_FLASH_SAVE_DATA 1
+ 
 
-#define KEY_UP_VOL_UP ((u16)209)
-#define KEY_DOWN_VOL_DOWN ((u16)210)
-#define KEY_LEFT_PRE ((u16)207)
-#define KEY_RIGHT_NEXT ((u16)208)
-#define KEY_ENTER_MENU ((u16)127)
+ 
 
-// ======================================================
-// 水温检测配置:
-#if TEMP_OF_WATER_SCAN_ENABLE
-// 发送水温报警/解除水温报警的时间:(单位：ms，每隔xxms发送一次当前水温报警的状态)
-#define TEMP_OF_WATER_UPDATE_TIME_MS (1000)
-
-// 水温检测的累计时间(单位：ms)
-#define TEMP_OF_WATER_ACCUMULATE_TIEM_MS (10000) // 10s
-// 水温检测对应的报警ad值，满足该值且超过累计时间时，触发报警
-#define TEMP_OF_WATER_WARNING_AD_VAL (3015)
-// 水温检测对应的解除报警ad值，满足该值且超过累计时间时，解除报警
-#define TEMP_OF_WATER_CANCEL_WARNING_AD_VAL (2048)
-
-// 注意:水温报警和解除报警对应的ad值不能一致，差值也不能过小
-#endif
-
-// 水温检测配置
-// ======================================================
-
-// 里程的配置:
-// 大小里程的更新时间(单位:ms):
-#define MILEAGE_UPDATE_TIME_MS (1000)
 
 // 主函数完成一次循环所需的时间，单位：ms (0--说明每次调用该函数的时间很短，可以忽略不计)(注意不能大于变量类型的大小)
 // 功能全部开放后，每一轮的时间可能都不一样，不在时间要求高的场合使用(目前最短的一个周期是8ms)
@@ -81,6 +56,7 @@
 #include "battery.h"	   // 电池电量检测
 // #include "touch_key.h"		   // 触摸按键
 #include "io_key.h"
+#include "beep.h"
 
 #include "user_flash.h"
 

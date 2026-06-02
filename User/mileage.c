@@ -7,6 +7,59 @@ volatile u32 distance;              // 存放每次扫描时走过的路程（�
 
 volatile u16 mileage_update_time_cnt; // 里程更新的时间计数,每隔一段时间更新一次当前里程（负责控制发送里程的周期）
 
+void aip3368h_display_mileage_refresh(void)
+{
+    // 刷新总里程
+    if (instrument.save_info.is_display_total_mileage)
+    {
+
+        if (instrument.save_info.distance_unit_type ==
+            DISTANCE_UNIT_TYPE_METRIC)
+        {
+            // 使用 公制 单位
+            aip3368h_display_mileage(
+                instrument.save_info.total_mileage / 1000,
+                1);
+        }
+        else if (instrument.save_info.distance_unit_type ==
+                 DISTANCE_UNIT_TYPE_IMPERIAL)
+        {
+            // 使用 英制 单位
+            // 1km == 0.621427mile
+            // 0.621427 mile * 1610 == 1000.49747 m
+            aip3368h_display_mileage(
+                instrument.save_info.total_mileage / 1610,
+                1);
+        }
+    }
+    else
+    {
+        // 刷新 小计里程(TRIP)
+
+        if (instrument.save_info.distance_unit_type ==
+            DISTANCE_UNIT_TYPE_METRIC)
+        {
+            // 使用 公制 单位
+            aip3368h_display_mileage(
+                instrument.save_info.subtotal_mileage / 100,
+                0);
+        }
+        else if (instrument.save_info.distance_unit_type ==
+                 DISTANCE_UNIT_TYPE_IMPERIAL)
+        {
+            // 使用 英制 单位
+            // 1km == 0.621427mile
+            // 0.621427 mile * 1610 == 1000.49747 m
+            aip3368h_display_mileage(
+                instrument.save_info.subtotal_mileage / 161,
+                0);
+        }
+
+        // aip3368h_display_mileage(
+        //     instrument.save_info.subtotal_mileage / 100, 0);
+    }
+}
+
 // 总里程扫描
 void mileage_scan(void)
 {
@@ -20,14 +73,10 @@ void mileage_scan(void)
     */
     static volatile bit flag_is_any_mileage_save;
 
-    // 每隔一段时间，交替发送大计里程和小计里程，用该变量来控制交替
-    // static volatile bit is_send_total_mileage = 0; // 是否发送大计里程
-
     // 每过1s，且里程有变化，就保存一次；这个里程变化的条件最好大于10m，否则会经常写入eeprom
     if ((mileage_save_time_cnt >= 1000) && /* 1s后 */
         flag_is_any_mileage_save)          /* 里程有变化，需要保存 */
     {
-        // fun_info_save();
         instrument_info_save();
         flag_is_any_mileage_save = 0;
         mileage_save_time_cnt = 0;
@@ -65,49 +114,20 @@ void mileage_scan(void)
         }
     }
 
-#if 0
-    // 如果大计里程有变化且超过了100m(不能满1000m再发送，在显示上，会先更新大计里程，过几百ms才更新小计里程)
-    if ((instrument.save_info.is_display_total_mileage == 1) && // 当前要显示的是大计里程
-        (instrument.save_info.total_mileage - old_total_mileage) > 100)
-    {
-        old_total_mileage = instrument.save_info.total_mileage; // 记录旧的里程
-
-        // printf("total mileage: %lu m\n", instrument.save_info.total_mileage);
-
-        // 发送数据的操作，可以先置标志位
-        // flag_get_total_mileage = 1;
-    }
-
-    // 如果小计里程有变化且超过了100m
-    if ((instrument.save_info.is_display_total_mileage == 0) && // 当前要显示的是小计里程
-        (instrument.save_info.subtotal_mileage - old_subtotal_mileage) > 100)
-    {
-        old_subtotal_mileage = instrument.save_info.subtotal_mileage; // 记录旧的里程
-
-        // printf("subtotal mileage: %lu m\n", instrument.save_info.subtotal_mileage);
-
-        // 发送数据的操作，可以先置标志位
-        // flag_get_sub_total_mileage = 1;
-    }
-#endif
-
     if (0 == is_initialized || mileage_update_time_cnt >= MILEAGE_UPDATE_TIME_MS)
     {
         // 每隔一段时间，发送大小里程，
         // 因为最后大计里程在999999km,小计里程在999.9km之后，就不更新了，
         // 要再刷新一次，才会发送1000000km和1000.0km的大小里程
         mileage_update_time_cnt = 0;
-        is_initialized = 1;
 
-        if (instrument.save_info.is_display_total_mileage)
+        if (0 == is_initialized)
         {
-            // aip3368h_display_mileage(
-            //     instrument.save_info.total_mileage / 1000, 1);
+            aip3368h_display_mileage_unit_type(
+                instrument.save_info.distance_unit_type);
+            is_initialized = 1;
         }
-        else
-        {
-            // aip3368h_display_mileage(
-            //     instrument.save_info.subtotal_mileage / 100, 0);
-        }
+
+        aip3368h_display_mileage_refresh();
     }
 }

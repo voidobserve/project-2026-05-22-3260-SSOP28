@@ -76,26 +76,26 @@ void battery_scan(void)
         return;
     }
 
-    // 这里必须要等滑动平均的数组初始化完成，再获取ad值。否则会得到错误的ad值
-    adc_val = bat_adc_val_get();
-    voltage = ADC_VAL_TO_BAT_VOLTAGE(adc_val);
-    if (voltage >= BAT_CANCEL_LOW_VOLTAGE_WARNING_THRESHOLD)
-    {
-        instrument.flag_is_in_warning_of_low_voltage = 0;
-        // 取消报警之后，需要立即更新显示
-        // aip3368h_display_bat_err_icon(0);
-    }
-    else if (voltage < BAT_LOW_VOLTAGE_WARNING_THRESHOLD)
-    {
-        instrument.flag_is_in_warning_of_low_voltage = 1;
-    }
-    else
-    {
-        /*
-            如果检测到的电压在 低电压报警阈值 和 取消低电压报警阈值之间，
-            不做处理，保持之前的显示
-        */
-    }
+    // // 这里必须要等滑动平均的数组初始化完成，再获取ad值。否则会得到错误的ad值
+    // adc_val = bat_adc_val_get();
+    // voltage = ADC_VAL_TO_BAT_VOLTAGE(adc_val);
+    // if (voltage >= BAT_CANCEL_LOW_VOLTAGE_WARNING_THRESHOLD)
+    // {
+    //     instrument.flag_is_in_warning_of_low_voltage = 0;
+    //     // 取消报警之后，需要立即更新显示
+    //     // aip3368h_display_bat_err_icon(0);
+    // }
+    // else if (voltage < BAT_LOW_VOLTAGE_WARNING_THRESHOLD)
+    // {
+    //     instrument.flag_is_in_warning_of_low_voltage = 1;
+    // }
+    // else
+    // {
+    //     /*
+    //         如果检测到的电压在 低电压报警阈值 和 取消低电压报警阈值之间，
+    //         不做处理，保持之前的显示
+    //     */
+    // }
 
     // printf("adc_val == %u\n", adc_val);
     // printf("voltage == %u\n", voltage);

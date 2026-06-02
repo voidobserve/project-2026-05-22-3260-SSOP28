@@ -2,6 +2,7 @@
 #define __AIP3368H_DISPLAY_H__
 
 // #include "my_config.h"
+#include "instrument.h"
 #include "typedef.h"
 
 #define AIP3368H_DISPLAY_TEST_ENABLE 1
@@ -25,14 +26,6 @@ enum
     SEG_INDEX_G,
 };
 typedef u8 seg_index_t;
-
-// 单位类型：公制单位 或 英制单位
-enum
-{
-    DISTANCE_UNIT_TYPE_METRIC,   // 公制单位，时速用 km/h ，里程用 km
-    DISTANCE_UNIT_TYPE_IMPERIAL, // 英制单位，时速用 mph ，里程用 mile
-};
-typedef u8 distance_unit_type_t; // 距离相关的单位类型
 
 enum
 {
@@ -92,6 +85,7 @@ void aip3368h_display_speed_unit_type(distance_unit_type_t type);
 // 时速：
 void __aip3368h_display_speed_seg__(u8 bit_x, seg_index_t seg, u8 is_enable);
 void __aip3368h_display_speed_bit_x__(u8 bit_x, u8 number);
+void __aip3368h_display_speed_bit_x_clear__(u8 bit_x);
 void aip3368h_display_speed(u8 speed);
 // 里程单位类型：
 void __aip3368h_display_mileage_unit_type__(distance_unit_type_t type, u8 is_enable);
@@ -111,19 +105,6 @@ void __aip3368h_display_fuel_empty_light__(u8 is_enable);
 void __aip3368h_display_fuel_full_light__(u8 is_enable);
 void aip3368h_display_fuel_level(aip3368h_display_fuel_level_t level);
 
-// void aip3368h_display_engine_speed_back_light(void);
-// void aip3368h_display_exclamation_point(u8 is_enable);
-// void aip3368h_display_engine_speed_scale_bar(u8 level);
-// void aip3368h_display_bat_err_icon(u8 is_enable);
-// void aip3368h_display_err_icon(u8 is_enable);
-// void aip3368h_display_fuel_level(aip3368h_display_fuel_level_t level);
-// void aip3368h_display_mileage_km_icon(u8 is_enable);
-
-// void aip3368h_display_speed_km_icon(u8 is_enable);
-
-// void aip3368h_display_speed_scale_bar(u8 level);
-
-// void aip3368h_display_boot_animation_1ms_isr(void);
 void aip3368h_display_boot_animation_time_add(void);
 void aip3368h_display_boot_animation_handle(void);
 

@@ -9,6 +9,7 @@
 ".\Release\Objects\key_driver.obj",
 ".\Release\Objects\user_flash.obj",
 ".\Release\Objects\aip3368.obj",
+".\Release\Objects\beep.obj",
 ".\Release\Objects\main.obj",
 ".\Release\Objects\pin_level_scan.obj",
 ".\Release\Objects\speed_scan.obj",

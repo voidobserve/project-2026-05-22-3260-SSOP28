@@ -51,11 +51,11 @@ void TIMR2_IRQHandler(void) interrupt TMR2_IRQn
         TMR2_CONH |= TMR_PRD_PND(0x1); // 清除pending
 
 #if ENGINE_SPEED_SCAN_ENABLE
-        // engine_speed_scan_timer_50us_isr();
-#endif // #if ENGINE_SPEED_SCAN_ENABLE
+        engine_speed_scan_timer_50us_isr();
+#endif
 
 #if SPEED_SCAN_ENABLE
-        // speed_scan_timer_50us_isr();
+        speed_scan_timer_50us_isr();
 #endif
     }
 

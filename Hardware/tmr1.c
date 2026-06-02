@@ -52,6 +52,8 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
     {
         TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
 
+        beep_handle_1ms_isr();
+
         if (mileage_save_time_cnt < 65535)
         {
             mileage_save_time_cnt++;
@@ -78,10 +80,14 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
 
         // adc_channel_switch_by_isr();
         
+        
         aip3368h_refresh_time_add();
-        // aip3368h_display_speed_refresh_time_add();
-        // aip3368h_display_engine_speed_refresh_time_add();
-        // aip3368h_display_err_handle_time_add();
+        // 递增AIP3368H显示 速度 刷新时间计数
+        aip3368h_display_speed_refresh_time_add();
+        // 递增AIP3368H显示 发动机转速 刷新时间计数
+        aip3368h_display_engine_speed_refresh_time_add();  
+        // 控制设置界面对应的设置项目以一定周期进行闪烁
+        aip3368h_display_setting_item_time_add(); 
 
         /*
             累计开机动画的时间，控制开机动画处理函数的调用周期

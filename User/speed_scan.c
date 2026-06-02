@@ -42,7 +42,6 @@ void speed_filter_add(u8 speed)
 
 u8 speed_filter_get_speed(void)
 {
-#if 1
     u8 i;
     u32 sum = 0;
     u8 max_speed = 0;
@@ -72,33 +71,6 @@ u8 speed_filter_get_speed(void)
     sum -= (max_speed + min_speed);
 
     return sum / (SPEED_FILTER_ARRAY_SIZE - 2);
-#endif
-
-    // u16 i;
-    // u8 count[256] = {0}; // 速度值范围是 0-255，索引值对应这个速度值
-    // u8 max_count = 0;
-    // u8 max_count_val = 0; // 记录出现次数最多的数值
-
-    // // 统计每个值出现的次数
-    // for (i = 0; i < SPEED_FILTER_ARRAY_SIZE; i++)
-    // {
-    //     count[speed_filter_array[i]]++;
-
-    //     printf("speed[%u] == %u\n", (u16)i, (u16)speed_filter_array[i]);
-    // }
-    // printf("\n===================\n");
-
-    // // 找出出现次数最多的值
-    // for (i = 0; i < 256; i++) // 0 ~ 255
-    // {
-    //     if (count[i] > max_count)
-    //     {
-    //         max_count = count[i];
-    //         max_count_val = i;
-    //     }
-    // }
-
-    // return max_count_val;
 }
 
 // 时速扫描的配置
@@ -153,92 +125,6 @@ void speed_scan_timer_50us_isr(void)
     }
 }
 
-// void speed_scan_pulse_50us_isr(void)
-// {
-//     static volatile bit last_speed_scan_level = 0; // 记录上一次检测到的引脚电平（时速检测脚）
-
-//     static volatile u32 speed_pulse_cnt = 0;
-//     static volatile u8 cnt = 0;
-//     static volatile u16 speed_scan_time_cnt = 0;
-//     static volatile u16 speed_scan_over_time_cnt = 0;
-
-//     if (SPEED_SCAN_PIN) // 检测时速的引脚
-//     {
-//         if (0 == last_speed_scan_level)
-//         {
-//             // 每有一个上升沿，计数++
-//             speed_pulse_cnt++;
-//         }
-
-//         last_speed_scan_level = 1;
-//     }
-//     else
-//     {
-//         // 如果现在检测到低电平
-//         last_speed_scan_level = 0;
-//     }
-
-//     cnt++;
-//     if (cnt >= 20)
-//     {
-//         cnt = 0;
-
-//         speed_scan_time_cnt++;
-//         if (speed_pulse_cnt !=0 && speed_scan_time_cnt >= SPEED_SCAN_UPDATE_TIME)
-//         {
-//             cur_speed_scan_time += speed_scan_time_cnt;
-//             speed_scan_time_cnt = 0;
-//             cur_speed_scan_pulse += speed_pulse_cnt;
-//             speed_pulse_cnt = 0;
-//         }
-//         // else if (speed_scan_time_cnt >= SPEED_SCAN_OVER_TIME)
-//         // {
-
-//         // }
-
-//         if (cur_speed_scan_pulse == 0)
-//         {
-//             cur_speed_scan_time = 0;
-//             speed_scan_over_time_cnt++;
-//             if (speed_scan_over_time_cnt >= SPEED_SCAN_OVER_TIME)
-//             {
-//                 speed_scan_over_time_cnt = 0;
-//                 flag_is_speed_scan_over_time = 1;
-//             }
-//         }
-//     }
-// }
-
-// void speed_scan_time_add(void)
-// {
-//     static volatile u16 speed_scan_time_ms = 0;
-//     static volatile u16 speed_scan_over_time_cnt = 0;
-
-//     // if (speed_pulse_cnt == 0)
-//     // {
-//     //     speed_scan_over_time_cnt++;
-//     //     if (speed_scan_over_time_cnt >= SPEED_SCAN_OVER_TIME)
-//     //     {
-//     //         speed_scan_over_time_cnt = 0;
-//     //         flag_is_speed_scan_over_time = 1;
-//     //     }
-//     // }
-//     // else
-//     // {
-//     //     speed_scan_over_time_cnt = 0;
-//     // }
-
-//     speed_scan_time_ms++;
-//     if (speed_scan_time_ms >= SPEED_SCAN_UPDATE_TIME)
-//     {
-//         // speed_scan_update_data();
-//         cur_speed_scan_time += speed_scan_time_ms;
-//         speed_scan_time_ms = 0;
-//         cur_speed_scan_pulse += speed_pulse_cnt;
-//         speed_pulse_cnt = 0;
-//     }
-// }
-
 void speed_scan(void)
 {
     volatile u32 cur_speed = 0;
@@ -251,8 +137,9 @@ void speed_scan(void)
             采集到的脉冲个数 / 一圈对应的脉冲个数 * 车轮一圈对应走过的距离（单位：mm），
             计算得到 采集的脉冲个数对应走过的距离（单位：mm）
         */
-        // u32 tmp = (cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN / SPEED_SCAN_PULSE_PER_TURN);
-        tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) / SPEED_SCAN_PULSE_PER_TURN);
+        tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) *
+               SPEED_SCAN_PULSE_COMPENSATION /
+               SPEED_SCAN_PULSE_PER_TURN);
 
         // 27,638 = (脉冲个数 * 1070) / 3;
         //             77
@@ -327,6 +214,10 @@ void speed_scan(void)
     }
 }
 
+/**
+ * @brief 递增AIP3368H显示速度刷新时间计数
+ *
+ */
 void aip3368h_display_speed_refresh_time_add(void)
 {
     if (aip3368h_display_speed_refresh_time_cnt < ((u8)-1)) // 防止计数溢出
@@ -353,11 +244,15 @@ void aip3368h_display_speed_handle(void)
 
         speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
         filtered_speed = instrument.speed;
-        // aip3368h_display_speed(speed_of_lag);
-
+        aip3368h_display_speed(speed_of_lag);
         speed_filter_init(instrument.speed);
+
+        // USER_TO_DO 测试时屏蔽，实际需要恢复
+        // aip3368h_display_speed_unit_type(
+        //     instrument.save_info.distance_unit_type);
     }
 
+#if 1
     if (aip3368h_display_speed_refresh_time_cnt >= AIP3368H_DISPLAY_SPEED_REFRESH_TIME)
     {
         aip3368h_display_speed_refresh_time_cnt = 0;
@@ -384,12 +279,12 @@ void aip3368h_display_speed_handle(void)
 
                 speed_of_lag -= base_step;
 #if USER_DEBUG_ENABLE
-                printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+                // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
 #endif
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                // aip3368h_display_speed(speed_of_lag);
+                aip3368h_display_speed(speed_of_lag);
                 return;
             }
         }
@@ -414,12 +309,12 @@ void aip3368h_display_speed_handle(void)
 
                 speed_of_lag += base_step;
 #if USER_DEBUG_ENABLE
-                printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+                // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
 #endif
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                // aip3368h_display_speed(speed_of_lag);
+                aip3368h_display_speed(speed_of_lag);
                 return;
             }
         }
@@ -452,10 +347,11 @@ void aip3368h_display_speed_handle(void)
         }
 
 #if USER_DEBUG_ENABLE
-        printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+        // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
 #endif
-        // aip3368h_display_speed(speed_of_lag);
+        aip3368h_display_speed(speed_of_lag);
     }
+#endif
 }
 
 #endif

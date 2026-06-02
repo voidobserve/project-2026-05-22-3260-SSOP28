@@ -79,9 +79,10 @@ void engine_speed_scan(void)
     volatile u32 rpm;                     // 由下面的语句赋值，这里为了节省程序空间，没有赋初始值
 
     if (cur_engine_speed_scan_ms >= ENGINE_SPEED_SCAN_UPDATE_TIME || flag_is_engine_speed_scan_over_time)
-    // if (cur_engine_speed_scan_ms >= ENGINE_SPEED_SCAN_UPDATE_TIME )
     {
-        // printf("cur_engine_speed_scan_ms:%lu\n", cur_engine_speed_scan_ms);
+#if USER_DEBUG_ENABLE
+// printf("cur_engine_speed_scan_ms:%lu\n", cur_engine_speed_scan_ms);
+#endif
         if (flag_is_engine_speed_scan_over_time)
         {
             flag_is_engine_speed_scan_over_time = 0;
@@ -105,11 +106,13 @@ void engine_speed_scan(void)
             */
             rpm = (u32)cur_engine_speed_scan_cnt *
                   ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS *
-                  CONVER_ONE_MINUTE_TO_MS /
+                  (CONVER_ONE_MINUTE_TO_MS / ENGINE_SPEED_SCAN_COMPONSATION) /
                   cur_engine_speed_scan_ms;
         }
-
-        // printf("cur engine speed pulse cnt:%lu\n",cur_engine_speed_scan_cnt);
+#if USER_DEBUG_ENABLE
+// 打印检测到的脉冲个数
+// printf("cur engine speed pulse cnt:%lu\n",cur_engine_speed_scan_cnt);
+#endif
 
         cur_engine_speed_scan_cnt = 0;
         cur_engine_speed_scan_ms = 0;
@@ -120,22 +123,13 @@ void engine_speed_scan(void)
             rpm = 65535;
         }
 
-        // printf("cur rpm %lu\n", rpm);
+#if USER_DEBUG_ENABLE
+        printf("cur rpm %lu\n", rpm);
+#endif
 
         instrument.engine_speed = rpm; // 向全局变量存放发动机转速
     }
 }
-
-// // 定义发动机转速和挡位的映射关系类型
-// typedef struct
-// {
-//     u8 level_index;
-//     u8 engine_speed_per_k_rpm;
-// } engine_speed_map_t;
-// static const engine_speed_map_t engine_speed_map[] = {
-//     {0, 1}, // 挡位0 1000rpm
-//     {1, 2}, // 挡位1 2000rpm
-// };
 
 void aip3368h_display_engine_speed_refresh_time_add(void)
 {
@@ -153,11 +147,11 @@ void aip3368h_display_engine_speed_refresh_time_add(void)
 // 将采集到的发动机转速转换为仪表对应的转速滑动条挡位
 u8 engine_speed_get_level(void)
 {
-    u8 level = instrument.engine_speed / 1000; // 仪表上的一格对应1000rpm
+    u8 level = instrument.engine_speed / 500; // 仪表上的一格对应 500 rpm
 
-    if (level > 12)
+    if (level > 24)
     {
-        level = 12;
+        level = 24;
     }
 
     return level;
@@ -169,18 +163,32 @@ void aip3368h_display_engine_speed_handle(void)
     static u8 engine_speed_level_of_lag = 0;
     static u8 is_initialized = 0;
     u8 cur_engine_speed_level = 0;
+    u8 level_diff;              // 显示的和实际计算得到的挡位插值
+    u16 refresh_time_threshold; // 刷新间隔阈值
 
     if (is_initialized == 0)
     {
         is_initialized = 1;
 
         engine_speed_level_of_lag = engine_speed_get_level();
+
+        // USER_TO_DO 测试时屏蔽，实际要恢复
+        aip3368h_display_engine_speed_digit_scale(13);
+        aip3368h_display_x1000rpm_light(1);
     }
 
-    if (aip3368h_display_engine_speed_refresh_time_cnt >= AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME)
+    // 如果当前发动机转速与显示的发动机转速很接近，延长刷新时间（样机大约是2s）
+    cur_engine_speed_level = engine_speed_get_level();
+    level_diff =
+        (cur_engine_speed_level > engine_speed_level_of_lag) ? (cur_engine_speed_level - engine_speed_level_of_lag) : (engine_speed_level_of_lag - cur_engine_speed_level);
+
+    refresh_time_threshold =
+        (level_diff <= 1) ? (AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME * 40) : AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME;
+
+    if (aip3368h_display_engine_speed_refresh_time_cnt >= refresh_time_threshold)
     {
         aip3368h_display_engine_speed_refresh_time_cnt = 0;
-        cur_engine_speed_level = engine_speed_get_level();
+        // cur_engine_speed_level = engine_speed_get_level();
 
         if (engine_speed_level_of_lag < cur_engine_speed_level)
         {
@@ -194,22 +202,8 @@ void aip3368h_display_engine_speed_handle(void)
             }
         }
 
-        // printf("instrument.engine_speed == %lu\n", instrument.engine_speed);
-        // printf("engine_speed_level_of_lag == %u\n", (u16)engine_speed_level_of_lag);
-
-        if (engine_speed_level_of_lag >= 8)
-        {
-            instrument.flag_is_engine_speed_warning_enable = 1;
-        }
-        else
-        {
-            instrument.flag_is_engine_speed_warning_enable = 0;
-            // 取消警报之后，需要立即取消显示：
-            // aip3368h_display_exclamation_point(0);
-        }
-
-        // aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
-    } 
+        aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
+    }
 }
 
 #endif // #if ENGINE_SPEED_SCAN_ENABLE
