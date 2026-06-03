@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   IO_KEY                                                            06/02/2026 17:54:14 PAGE 1   
+C51 COMPILER V9.60.7.0   IO_KEY                                                            06/03/2026 18:44:13 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE IO_KEY
@@ -62,7 +62,7 @@ line level    source
   50   1              if (IO_KEY_PIN == 0)
   51   1              {
   52   2                      // 引脚配置为输入上拉，低电平表示按键按下
-C51 COMPILER V9.60.7.0   IO_KEY                                                            06/02/2026 17:54:14 PAGE 2   
+C51 COMPILER V9.60.7.0   IO_KEY                                                            06/03/2026 18:44:13 PAGE 2   
 
   53   2                      return IO_KEY_ID_VALID;
   54   2              }
@@ -117,120 +117,110 @@ line level    source
  103   1              io_key_event = __io_key_get_event__(io_key_para.latest_key_val, io_key_para.latest_key_event);
  104   1              io_key_para.latest_key_val = IO_KEY_ID_NONE;
  105   1              io_key_para.latest_key_event = KEY_EVENT_NONE;
- 106   1      
- 107   1              // USER_TO_DO 有按下按键，清空自动退出设置的计时
- 108   1              switch (io_key_event)
- 109   1              {
- 110   2              case KEY_EVENT_CLICK:
- 111   2      #if USER_DEBUG_ENABLE
- 112   2                      printf("click\n");
- 113   2      #endif
- 114   2      
-C51 COMPILER V9.60.7.0   IO_KEY                                                            06/02/2026 17:54:14 PAGE 3   
+ 106   1       
+ 107   1              switch (io_key_event)
+ 108   1              {
+ 109   2              case KEY_EVENT_CLICK:
+ 110   2      #if USER_DEBUG_ENABLE
+ 111   2                      // printf("click\n");
+ 112   2      #endif
+ 113   2      
+ 114   2                      beep_play(117);
+C51 COMPILER V9.60.7.0   IO_KEY                                                            06/03/2026 18:44:13 PAGE 3   
 
- 115   2                      beep_play(117);
- 116   2      
- 117   2                      if (instrument.cur_sel_setting_item ==
- 118   2                              SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE)
- 119   2                      {
- 120   3                              instrument.save_info.is_display_total_mileage =
- 121   3                                      !instrument.save_info.is_display_total_mileage;
- 122   3                              aip3368h_display_mileage_refresh();
- 123   3                      }
- 124   2                      else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
- 125   2                                       instrument.cur_sel_setting_item)
- 126   2                      {
- 127   3                              // 如果正在设置当前要显示的单位类型，km/h 或 mph
- 128   3      
+ 115   2      
+ 116   2                      if (UI_STATE_NORMAL == ui_manager.state)
+ 117   2                      {
+ 118   3                              instrument.save_info.is_display_total_mileage =
+ 119   3                                      !instrument.save_info.is_display_total_mileage;
+ 120   3                              
+ 121   3                              instrument_info_save();
+ 122   3                      }
+ 123   2                      else if (UI_STATE_SETTING_DISTANCE_UNIT_TYPE ==
+ 124   2                                       ui_manager.state)
+ 125   2                      {
+ 126   3                              // 如果正在设置当前要显示的单位类型，km/h 或 mph
+ 127   3      
+ 128   3                              // 切换 单位类型
  129   3                              if (DISTANCE_UNIT_TYPE_METRIC ==
  130   3                                      instrument.save_info.distance_unit_type)
  131   3                              {
- 132   4                                      instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_IMPERIAL;
- 133   4      
- 134   4                                      aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
- 135   4                                      aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
- 136   4                              }
- 137   3                              else
- 138   3                              {
- 139   4                                      instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_METRIC;
- 140   4                                      aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_METRIC);
- 141   4                                      aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_METRIC);
- 142   4                              }
- 143   3      
- 144   3                              // 立即刷新显示，清空闪烁的计时
- 145   3                              aip3368h_display_setting_item_time_clear();
- 146   3                      }
- 147   2      
- 148   2                      // if (instrument.save_info.is_display_total_mileage)
- 149   2                      // {
- 150   2                      //      instrument.save_info.is_display_total_mileage = 0;
- 151   2                      //      // aip3368h_display_mileage(
- 152   2                      //      //      instrument.save_info.subtotal_mileage / 100,
- 153   2                      //      //      0);
- 154   2                      // }
- 155   2                      // else
- 156   2                      // {
- 157   2                      //      instrument.save_info.is_display_total_mileage = 1;
- 158   2                      //      // aip3368h_display_mileage(
- 159   2                      //      //      instrument.save_info.total_mileage / 1000,
- 160   2                      //      //      1);
- 161   2                      // }
- 162   2      
- 163   2                      // instrument_info_save();
- 164   2      
- 165   2                      break;
- 166   2              case IO_KEY_EVENT_LONG:
- 167   2      #if USER_DEBUG_ENABLE
- 168   2                      printf("Long\n");
- 169   2      #endif
- 170   2                      beep_play(117);
- 171   2      
- 172   2                      if (SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE ==
- 173   2                              instrument.cur_sel_setting_item)
- 174   2                      {
- 175   3                              // 如果正在显示里程
- 176   3      
-C51 COMPILER V9.60.7.0   IO_KEY                                                            06/02/2026 17:54:14 PAGE 4   
+ 132   4                                      instrument.save_info.distance_unit_type =
+ 133   4                                              DISTANCE_UNIT_TYPE_IMPERIAL;
+ 134   4                              }
+ 135   3                              else
+ 136   3                              {
+ 137   4                                      instrument.save_info.distance_unit_type =
+ 138   4                                              DISTANCE_UNIT_TYPE_METRIC;
+ 139   4                              }
+ 140   3                      }
+ 141   2                      else if (UI_STATE_SETTING_WHEEL_CIRCUMFERENCE ==
+ 142   2                                       ui_manager.state)
+ 143   2                      {
+ 144   3                              // 如果正在设置车轮周长
+ 145   3      
+ 146   3                              instrument.save_info.whell_circumference += 5;
+ 147   3                              if (instrument.save_info.whell_circumference > 180)
+ 148   3                              {
+ 149   4                                      instrument.save_info.whell_circumference = 50;
+ 150   4                              } 
+ 151   3                      }
+ 152   2      
+ 153   2                      ui_display_refresh();
+ 154   2                      break;
+ 155   2              case IO_KEY_EVENT_LONG:
+ 156   2      #if USER_DEBUG_ENABLE
+ 157   2                      // printf("Long\n");
+ 158   2      #endif
+ 159   2                      beep_play(117);
+ 160   2      
+ 161   2                      if (UI_STATE_NORMAL == ui_manager.state)
+ 162   2                      {
+ 163   3                              // 如果正在显示里程
+ 164   3                              if (1 == instrument.save_info.is_display_total_mileage)
+ 165   3                              {
+ 166   4                                      /*
+ 167   4                                              如果显示的是 TOTAL 里程，切换到设置要显示的单位类型
+ 168   4                                      */
+ 169   4                                      ui_set_state(UI_STATE_SETTING_DISTANCE_UNIT_TYPE);
+ 170   4                              }
+ 171   3                              else
+ 172   3                              {
+ 173   4                                      // 如果显示的是 TRIP 里程，清空它
+ 174   4                                      instrument.save_info.subtotal_mileage = 0; 
+ 175   4                                      instrument_info_save();
+ 176   4                              } 
+C51 COMPILER V9.60.7.0   IO_KEY                                                            06/03/2026 18:44:13 PAGE 4   
 
- 177   3                              if (1 == instrument.save_info.is_display_total_mileage)
- 178   3                              {
- 179   4                                      /*
- 180   4                                              如果显示的是 TOTAL 里程，切换到设置要显示的单位类型
- 181   4                                      */
- 182   4                                      instrument.cur_sel_setting_item = SETTING_ITEM_DISTANCE_UNIT_TYPE;
- 183   4      
- 184   4                                      // USER_TO_DO 立即刷新显示，清空控制闪烁的计时
- 185   4                              }
- 186   3                              else
- 187   3                              {
- 188   4                                      // 如果显示的是 TRIP 里程，清空它
- 189   4                                      instrument.save_info.subtotal_mileage = 0;
- 190   4                                      aip3368h_display_mileage_refresh();
- 191   4                                      instrument_info_save();
- 192   4                              }
- 193   3                      }
- 194   2                      else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
- 195   2                                       instrument.cur_sel_setting_item)
- 196   2                      {
- 197   3                              // 从 设置单位类型 -> 设置车轮周长
- 198   3                              instrument.cur_sel_setting_item = SETTING_ITEM_WHELL_CIRCUMFERENCE;
- 199   3                              aip3368h_display_speed_unit_type(
- 200   3                                      instrument.save_info.distance_unit_type);
- 201   3                              aip3368h_display_mileage_unit_type(
- 202   3                                      instrument.save_info.distance_unit_type);
- 203   3                      }
- 204   2      
- 205   2                      break;
- 206   2      
- 207   2              default:
- 208   2                      break;
- 209   2              }
- 210   1      }
+ 177   3                      }
+ 178   2                      else if (UI_STATE_SETTING_DISTANCE_UNIT_TYPE ==
+ 179   2                                       ui_manager.state)
+ 180   2                      {
+ 181   3                              // 从 设置单位类型 -> 设置车轮周长
+ 182   3                              ui_manager.state = UI_STATE_SETTING_WHEEL_CIRCUMFERENCE; 
+ 183   3                              instrument_info_save(); // 退出单位类型设置后，保存
+ 184   3                      }
+ 185   2                      else if (UI_STATE_SETTING_WHEEL_CIRCUMFERENCE ==
+ 186   2                                       ui_manager.state)
+ 187   2                      {
+ 188   3                              // 从 设置车轮周长 -> 正常显示
+ 189   3                              ui_manager.state = UI_STATE_NORMAL; 
+ 190   3                              instrument_info_save(); // 退出 车轮周长设置 后，保存
+ 191   3                      }
+ 192   2      
+ 193   2                      ui_display_refresh();
+ 194   2      
+ 195   2                      break;
+ 196   2      
+ 197   2              default:
+ 198   2                      break;
+ 199   2              }
+ 200   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    299    ----
-   CONSTANT SIZE    =     13    ----
+   CODE SIZE        =    288    ----
+   CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     24    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----

@@ -59,6 +59,11 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
             mileage_save_time_cnt++;
         }
 
+        if (mileage_update_time_cnt < 65535)
+        {
+            mileage_update_time_cnt++;
+        }
+
         if (io_key_para.cur_scan_times < 255)
         {
             io_key_para.cur_scan_times++;
@@ -68,26 +73,10 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         fuel_capacity_scan_time_add();
         fuel_lev_update_time_add();
 #endif
+ 
 
-        // if (mileage_update_time_cnt < 65535)
-        {
-            mileage_update_time_cnt++;
-        }
-
-#if BATTERY_SCAN_ENABLE
-        // bat_scan_time_add();
-#endif // BATTERY_SCAN_ENABLE
-
-        // adc_channel_switch_by_isr();
-        
-        
-        aip3368h_refresh_time_add();
-        // 递增AIP3368H显示 速度 刷新时间计数
-        aip3368h_display_speed_refresh_time_add();
-        // 递增AIP3368H显示 发动机转速 刷新时间计数
-        aip3368h_display_engine_speed_refresh_time_add();  
-        // 控制设置界面对应的设置项目以一定周期进行闪烁
-        aip3368h_display_setting_item_time_add(); 
+        adc_channel_switch_by_isr();
+        ui_timer_handle_isr();
 
         /*
             累计开机动画的时间，控制开机动画处理函数的调用周期
@@ -95,7 +84,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         */
         aip3368h_display_boot_animation_time_add();
 
-        // USER_TO_DO 只在测试时只用： 
+        // USER_TO_DO 只在测试时只用：
         // aip3368h_display_test_light_blink_1ms_isr();
 
         // aip3368h_display_test_back_light_scale_bar();
@@ -106,7 +95,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_test_mileage();
         // aip3368h_display_test_fuel();
     }
- 
+
     // 退出中断设置IP，不可删除
     __IRQnIPnPop(TMR1_IRQn);
 }

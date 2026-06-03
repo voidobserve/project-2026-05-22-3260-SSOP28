@@ -56,8 +56,8 @@ void user_init(void)
     engine_speed_scan_config(); // 发动机转速扫描的配置
 #endif
 
-#if (BATTERY_SCAN_ENABLE || FUEL_CAPACITY_SCAN_ENABLE)
-    // adc_config();
+#if (FUEL_CAPACITY_SCAN_ENABLE)
+    adc_config();
 #endif
 
     instrument_info_init(); // 初始化仪表信息
@@ -67,8 +67,9 @@ void user_init(void)
     tmr2_config(); // 扫描脉冲(电平变化)的定时器
 
     beep_play(117); // 上电之后，让蜂鸣器鸣叫一声
-    delay_ms(1);    // 等待系统稳定
-                    // delay_ms(2000); // 等待系统稳定
+    ui_manager_init();
+    delay_ms(1); // 等待系统稳定
+                 // delay_ms(2000); // 等待系统稳定
 }
 
 void main(void)
@@ -93,6 +94,7 @@ void main(void)
     // USER_TO_DO 测试时使用
     // aip3368h_display_test();
     // aip3368h_display_mileage(123456, 0);
+    aip3368h_module_set_brightness(50);
 
     /* 系统主循环 */
     while (1)
@@ -110,33 +112,27 @@ void main(void)
 #if IO_KEY_ENABLE
         key_driver_scan(&io_key_para);
         io_key_handle(); // io按键处理函数
-        aip3368h_display_setting_item_handle();
 #endif
 
 #if SPEED_SCAN_ENABLE
         speed_scan(); // 检测时速
-        aip3368h_display_speed_handle();
 #endif
-
         mileage_scan(); // 检测大计里程和小计里程
 
 #if ENGINE_SPEED_SCAN_ENABLE
-        // engine_speed_scan(); // 检测发动机转速
-        // aip3368h_display_engine_speed_handle();
+        engine_speed_scan(); // 检测发动机转速
 #endif
 
 #if FUEL_CAPACITY_SCAN_ENABLE
-        // fuel_capacity_scan(); // 油量检测
-#endif
-
-#if BATTERY_SCAN_ENABLE
-        // battery_scan(); // 电池电量检测
+        fuel_capacity_scan(); // 油量检测
 #endif
 
 #endif //
 
+        // USER_TO_DO 需要改成 PWM 驱动
+        // PDM = ~PDM;
 
-        aip3368h_module_display();
+        ui_display_handle();
     }
 }
 

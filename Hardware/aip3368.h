@@ -22,4 +22,6 @@ void aip3368h_module_init(void);
 void aip3368h_module_display(void);
 // void aip3368h_module_clear(void);
 
+void aip3368h_module_set_brightness(u8 brightness);
+
 #endif

@@ -487,11 +487,6 @@
               <FilePath>..\..\User\fuel_capacity.c</FilePath>
             </File>
             <File>
-              <FileName>battery.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\battery.c</FilePath>
-            </File>
-            <File>
               <FileName>instrument.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\instrument.c</FilePath>
@@ -505,6 +500,11 @@
               <FileName>io_key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\io_key.c</FilePath>
+            </File>
+            <File>
+              <FileName>ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\ui.c</FilePath>
             </File>
           </Files>
         </Group>

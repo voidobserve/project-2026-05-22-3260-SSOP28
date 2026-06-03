@@ -103,104 +103,94 @@ void io_key_handle(void)
 	io_key_event = __io_key_get_event__(io_key_para.latest_key_val, io_key_para.latest_key_event);
 	io_key_para.latest_key_val = IO_KEY_ID_NONE;
 	io_key_para.latest_key_event = KEY_EVENT_NONE;
-
-	// USER_TO_DO 有按下按键，清空自动退出设置的计时
+ 
 	switch (io_key_event)
 	{
 	case KEY_EVENT_CLICK:
 #if USER_DEBUG_ENABLE
-		printf("click\n");
+		// printf("click\n");
 #endif
 
 		beep_play(117);
 
-		if (instrument.cur_sel_setting_item ==
-			SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE)
+		if (UI_STATE_NORMAL == ui_manager.state)
 		{
 			instrument.save_info.is_display_total_mileage =
 				!instrument.save_info.is_display_total_mileage;
-			aip3368h_display_mileage_refresh();
+			
+			instrument_info_save();
 		}
-		else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
-				 instrument.cur_sel_setting_item)
+		else if (UI_STATE_SETTING_DISTANCE_UNIT_TYPE ==
+				 ui_manager.state)
 		{
 			// 如果正在设置当前要显示的单位类型，km/h 或 mph
 
+			// 切换 单位类型
 			if (DISTANCE_UNIT_TYPE_METRIC ==
 				instrument.save_info.distance_unit_type)
 			{
-				instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_IMPERIAL;
-
-				aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
-				aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_IMPERIAL);
+				instrument.save_info.distance_unit_type =
+					DISTANCE_UNIT_TYPE_IMPERIAL;
 			}
 			else
 			{
-				instrument.save_info.distance_unit_type = DISTANCE_UNIT_TYPE_METRIC;
-				aip3368h_display_speed_unit_type(DISTANCE_UNIT_TYPE_METRIC);
-				aip3368h_display_mileage_unit_type(DISTANCE_UNIT_TYPE_METRIC);
+				instrument.save_info.distance_unit_type =
+					DISTANCE_UNIT_TYPE_METRIC;
 			}
+		}
+		else if (UI_STATE_SETTING_WHEEL_CIRCUMFERENCE ==
+				 ui_manager.state)
+		{
+			// 如果正在设置车轮周长
 
-			// 立即刷新显示，清空闪烁的计时
-			aip3368h_display_setting_item_time_clear();
+			instrument.save_info.whell_circumference += 5;
+			if (instrument.save_info.whell_circumference > 180)
+			{
+				instrument.save_info.whell_circumference = 50;
+			} 
 		}
 
-		// if (instrument.save_info.is_display_total_mileage)
-		// {
-		// 	instrument.save_info.is_display_total_mileage = 0;
-		// 	// aip3368h_display_mileage(
-		// 	// 	instrument.save_info.subtotal_mileage / 100,
-		// 	// 	0);
-		// }
-		// else
-		// {
-		// 	instrument.save_info.is_display_total_mileage = 1;
-		// 	// aip3368h_display_mileage(
-		// 	// 	instrument.save_info.total_mileage / 1000,
-		// 	// 	1);
-		// }
-
-		// instrument_info_save();
-
+		ui_display_refresh();
 		break;
 	case IO_KEY_EVENT_LONG:
 #if USER_DEBUG_ENABLE
-		printf("Long\n");
+		// printf("Long\n");
 #endif
 		beep_play(117);
 
-		if (SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE ==
-			instrument.cur_sel_setting_item)
+		if (UI_STATE_NORMAL == ui_manager.state)
 		{
 			// 如果正在显示里程
-
 			if (1 == instrument.save_info.is_display_total_mileage)
 			{
 				/*
 					如果显示的是 TOTAL 里程，切换到设置要显示的单位类型
 				*/
-				instrument.cur_sel_setting_item = SETTING_ITEM_DISTANCE_UNIT_TYPE;
-
-				// USER_TO_DO 立即刷新显示，清空控制闪烁的计时
+				ui_set_state(UI_STATE_SETTING_DISTANCE_UNIT_TYPE);
 			}
 			else
 			{
 				// 如果显示的是 TRIP 里程，清空它
-				instrument.save_info.subtotal_mileage = 0;
-				aip3368h_display_mileage_refresh();
+				instrument.save_info.subtotal_mileage = 0; 
 				instrument_info_save();
-			}
+			} 
 		}
-		else if (SETTING_ITEM_DISTANCE_UNIT_TYPE ==
-				 instrument.cur_sel_setting_item)
+		else if (UI_STATE_SETTING_DISTANCE_UNIT_TYPE ==
+				 ui_manager.state)
 		{
 			// 从 设置单位类型 -> 设置车轮周长
-			instrument.cur_sel_setting_item = SETTING_ITEM_WHELL_CIRCUMFERENCE;
-			aip3368h_display_speed_unit_type(
-				instrument.save_info.distance_unit_type);
-			aip3368h_display_mileage_unit_type(
-				instrument.save_info.distance_unit_type);
+			ui_manager.state = UI_STATE_SETTING_WHEEL_CIRCUMFERENCE; 
+			instrument_info_save(); // 退出单位类型设置后，保存
 		}
+		else if (UI_STATE_SETTING_WHEEL_CIRCUMFERENCE ==
+				 ui_manager.state)
+		{
+			// 从 设置车轮周长 -> 正常显示
+			ui_manager.state = UI_STATE_NORMAL; 
+			instrument_info_save(); // 退出 车轮周长设置 后，保存
+		}
+
+		ui_display_refresh();
 
 		break;
 

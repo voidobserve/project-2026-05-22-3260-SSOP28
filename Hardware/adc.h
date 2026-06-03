@@ -4,7 +4,7 @@
 #include "include.h"   // 使用芯片官方提供的头文件
 #include "my_config.h" // 包含自定义的头文件
 
-#if (BATTERY_SCAN_ENABLE || FUEL_CAPACITY_SCAN_ENABLE)
+#if (FUEL_CAPACITY_SCAN_ENABLE)
 
 // 定义adc检测引脚
 // ADC_PIN //
@@ -21,25 +21,22 @@ typedef u8 adc_channel_t;
 enum
 {
     ADC_CHANNEL_STATUS_NONE = 0,
-    ADC_CHANNEL_STATUS_SEL_BATTERY_BEGIN, // 选择了检测电池的通道，等待adc稳定
-    ADC_CHANNEL_STATUS_SEL_BATTERY_END,   // 选择了检测电池的通道，已经等待adc稳定
+    // ADC_CHANNEL_STATUS_SEL_BATTERY_BEGIN, // 选择了检测电池的通道，等待adc稳定
+    // ADC_CHANNEL_STATUS_SEL_BATTERY_END,   // 选择了检测电池的通道，已经等待adc稳定
 
     ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN, // 检测油量的通道
     ADC_CHANNEL_STATUS_SEL_FUEL_END,
 };
 typedef u8 adc_channel_status_sel_t;
 
-extern u16 adc_val;
-// extern bit adc_done_flag;
+extern u16 adc_val; 
 
-void adc_config(void);
-// void adc_sel_pin(u8 pin_index);
-u16 adc_single_convert(void);
-// u16 adc_getval(void); // adc采集+滤波
+void adc_config(void); 
+void adc_channel_set(adc_channel_t adc_channel);
 
-void adc_channel_switch_by_isr(void);
-// void adc_showval(void);
-// void adc_scan(void);
+u16 adc_single_convert(void); 
+
+void adc_channel_switch_by_isr(void); 
 
 #endif
 

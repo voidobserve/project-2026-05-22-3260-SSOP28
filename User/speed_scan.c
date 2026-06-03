@@ -128,8 +128,7 @@ void speed_scan_timer_50us_isr(void)
 void speed_scan(void)
 {
     volatile u32 cur_speed = 0;
-    volatile u32 tmp = 0;
-    // static u8 is_initiatlized = 0;
+    volatile u32 tmp = 0; 
 
     if (cur_speed_scan_time >= SPEED_SCAN_UPDATE_TIME || flag_is_speed_scan_over_time)
     {
@@ -137,12 +136,14 @@ void speed_scan(void)
             采集到的脉冲个数 / 一圈对应的脉冲个数 * 车轮一圈对应走过的距离（单位：mm），
             计算得到 采集的脉冲个数对应走过的距离（单位：mm）
         */
-        tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) *
+        // tmp = ((cur_speed_scan_pulse * SPEED_SCAN_MM_PER_TURN) *
+        //        SPEED_SCAN_PULSE_COMPENSATION /
+        //        SPEED_SCAN_PULSE_PER_TURN);
+
+        tmp = (((u32)cur_speed_scan_pulse *
+                instrument.save_info.whell_circumference * 10) *
                SPEED_SCAN_PULSE_COMPENSATION /
                SPEED_SCAN_PULSE_PER_TURN);
-
-        // 27,638 = (脉冲个数 * 1070) / 3;
-        //             77
 
         // printf("cur_speed_scan_pulse %lu\n", cur_speed_scan_pulse);
 
@@ -199,17 +200,7 @@ void speed_scan(void)
         {
             cur_speed = 199;
         }
-
-        // // USER_TO_DO 由于更新显示速度的时间很快，只能在这里加入稳定速度值的处理
-        // /**/
-        // if (is_initiatlized == 0)
-        // {
-        //     is_initiatlized = 1;
-        //     speed_scan_filter_init(cur_speed);
-        // }
-
-        // speed_scan_filter_add(cur_speed);
-        // cur_speed = speed_scan_filter_get_speed();
+  
         instrument.speed = cur_speed;
     }
 }
@@ -220,17 +211,47 @@ void speed_scan(void)
  */
 void aip3368h_display_speed_refresh_time_add(void)
 {
+    if (!(UI_STATE_NORMAL == ui_manager.state ||
+          UI_STATE_SETTING_DISTANCE_UNIT_TYPE == ui_manager.state))
+    {
+        // 不在 正常界面 ，或者不在 设置 要显示的单位类型界面，直接返回
+        aip3368h_display_speed_refresh_time_cnt = 0;
+        return;
+    }
+
     if (aip3368h_display_speed_refresh_time_cnt < ((u8)-1)) // 防止计数溢出
     {
         aip3368h_display_speed_refresh_time_cnt++;
     }
 }
 
+/**
+ * @brief 根据单位类型（公制 或 英制）来显示时速
+ *
+ * @param speed 公制单位下的速度值
+ */
+void aip3368h_display_speed_by_unit_type(u8 speed)
+{
+    if (DISTANCE_UNIT_TYPE_METRIC ==
+        instrument.save_info.distance_unit_type)
+    {
+        // 显示时速
+        aip3368h_display_speed(speed);
+    }
+    else if (DISTANCE_UNIT_TYPE_IMPERIAL ==
+             instrument.save_info.distance_unit_type)
+    {
+        // 1km/h == 0.621427mile/h
+        // 显示时速
+        aip3368h_display_speed((u32)speed * 621 / 1000);
+    }
+}
+
 void aip3368h_display_speed_handle(void)
 {
     static volatile u8 is_initialized = 0; // 是否初始化
-    static volatile u8 speed_of_lag = 0;   // 延迟显示的时速
-    volatile u8 cur_speed;                 //
+    // static volatile u8 speed_of_lag = 0;   // 延迟显示的时速
+    volatile u8 cur_speed; //
 
     // α越小越平滑但响应慢,α越大响应快但平滑差
 #define ALPHA 7 // 滤波系数，范围：0 ~ 10，推荐值 1 ~ 3
@@ -238,13 +259,21 @@ void aip3368h_display_speed_handle(void)
     u8 base_step;
     u8 speed_abs_diff;
 
+    if (!(UI_STATE_NORMAL == ui_manager.state ||
+          UI_STATE_SETTING_DISTANCE_UNIT_TYPE == ui_manager.state))
+    {
+        // 不在 正常界面 ，或者不在 设置 要显示的单位类型界面，直接返回
+        is_initialized = 0; //
+        return;
+    }
+
     if (0 == is_initialized)
     {
         is_initialized = 1;
 
-        speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
+        instrument.speed_of_lag = instrument.speed; // 初始化，直接获取当前最新的速度值
         filtered_speed = instrument.speed;
-        aip3368h_display_speed(speed_of_lag);
+        aip3368h_display_speed_by_unit_type(instrument.speed_of_lag);
         speed_filter_init(instrument.speed);
 
         // USER_TO_DO 测试时屏蔽，实际需要恢复
@@ -258,9 +287,9 @@ void aip3368h_display_speed_handle(void)
         aip3368h_display_speed_refresh_time_cnt = 0;
 
         // 如果当前显示的速度值和计算出来的速度值相差太大，需要进行快速逼近：
-        if (speed_of_lag > instrument.speed)
+        if (instrument.speed_of_lag > instrument.speed)
         {
-            speed_abs_diff = speed_of_lag - instrument.speed;
+            speed_abs_diff = instrument.speed_of_lag - instrument.speed;
             if (speed_abs_diff >= 10)
             {
                 // 根据速度插值，调节步长
@@ -277,20 +306,20 @@ void aip3368h_display_speed_handle(void)
                     base_step = 5;
                 }
 
-                speed_of_lag -= base_step;
+                instrument.speed_of_lag -= base_step;
 #if USER_DEBUG_ENABLE
-                // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+                // printf("instrument.speed_of_lag == %u\n", (u16)instrument.speed_of_lag);
 #endif
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                aip3368h_display_speed(speed_of_lag);
+                aip3368h_display_speed_by_unit_type(instrument.speed_of_lag);
                 return;
             }
         }
-        else if (speed_of_lag < instrument.speed)
+        else if (instrument.speed_of_lag < instrument.speed)
         {
-            speed_abs_diff = instrument.speed - speed_of_lag;
+            speed_abs_diff = instrument.speed - instrument.speed_of_lag;
             if (speed_abs_diff >= 10)
             {
                 // 根据速度插值，调节步长
@@ -307,14 +336,15 @@ void aip3368h_display_speed_handle(void)
                     base_step = 5;
                 }
 
-                speed_of_lag += base_step;
+                instrument.speed_of_lag += base_step;
 #if USER_DEBUG_ENABLE
-                // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
+                // printf("instrument.speed_of_lag == %u\n", (u16)instrument.speed_of_lag);
 #endif
 
                 speed_filter_init(instrument.speed);
                 filtered_speed = instrument.speed;
-                aip3368h_display_speed(speed_of_lag);
+
+                aip3368h_display_speed_by_unit_type(instrument.speed_of_lag);
                 return;
             }
         }
@@ -337,19 +367,19 @@ void aip3368h_display_speed_handle(void)
 
         cur_speed = filtered_speed;
 
-        if (speed_of_lag > cur_speed)
+        if (instrument.speed_of_lag > cur_speed)
         {
-            speed_of_lag--;
+            instrument.speed_of_lag--;
         }
-        else if (speed_of_lag < cur_speed)
+        else if (instrument.speed_of_lag < cur_speed)
         {
-            speed_of_lag++;
+            instrument.speed_of_lag++;
         }
 
 #if USER_DEBUG_ENABLE
         // printf("speed_of_lag == %u\n", (u16)speed_of_lag);
 #endif
-        aip3368h_display_speed(speed_of_lag);
+        aip3368h_display_speed_by_unit_type(instrument.speed_of_lag);
     }
 #endif
 }

@@ -7,12 +7,12 @@ volatile u32 distance;              // 存放每次扫描时走过的路程（�
 
 volatile u16 mileage_update_time_cnt; // 里程更新的时间计数,每隔一段时间更新一次当前里程（负责控制发送里程的周期）
 
+// 刷新显示的里程（TOTAL 或 TRIP），不包括单位
 void aip3368h_display_mileage_refresh(void)
 {
     // 刷新总里程
     if (instrument.save_info.is_display_total_mileage)
-    {
-
+    { 
         if (instrument.save_info.distance_unit_type ==
             DISTANCE_UNIT_TYPE_METRIC)
         {
@@ -63,7 +63,7 @@ void aip3368h_display_mileage_refresh(void)
 // 总里程扫描
 void mileage_scan(void)
 {
-    static u8 is_initialized = 0;
+    // static u8 is_initialized = 0;
 
     /*
         是否有里程数据需要保存的标志变量，
@@ -74,7 +74,7 @@ void mileage_scan(void)
     static volatile bit flag_is_any_mileage_save;
 
     // 每过1s，且里程有变化，就保存一次；这个里程变化的条件最好大于10m，否则会经常写入eeprom
-    if ((mileage_save_time_cnt >= 1000) && /* 1s后 */
+    if ((mileage_save_time_cnt >= (u16)5 * 1000) && /* xx ms后 */
         flag_is_any_mileage_save)          /* 里程有变化，需要保存 */
     {
         instrument_info_save();
@@ -106,7 +106,8 @@ void mileage_scan(void)
         {
             static u8 cnt = 0;
             cnt++;
-            if (cnt >= 10) // cnt >= 10，说明走过了10m
+            // if (cnt >= 10) // cnt >= 10，说明走过了10m
+            if (cnt >= 100) 
             {
                 cnt = 0;
                 flag_is_any_mileage_save = 1; // 表示需要把里程输入写入到flash
@@ -114,20 +115,42 @@ void mileage_scan(void)
         }
     }
 
-    if (0 == is_initialized || mileage_update_time_cnt >= MILEAGE_UPDATE_TIME_MS)
+    // if (0 == is_initialized || mileage_update_time_cnt >= MILEAGE_UPDATE_TIME_MS)
+    // {
+    //     // 每隔一段时间，发送大小里程，
+    //     // 因为最后大计里程在999999km,小计里程在999.9km之后，就不更新了，
+    //     // 要再刷新一次，才会发送1000000km和1000.0km的大小里程
+    //     mileage_update_time_cnt = 0;
+
+    //     if (0 == is_initialized)
+    //     {
+    //         aip3368h_display_mileage_unit_type(
+    //             instrument.save_info.distance_unit_type);
+    //         is_initialized = 1;
+    //     }
+
+    //     aip3368h_display_mileage_refresh();
+    // }
+}
+
+void aip3368h_display_mileage_handle(void)
+{
+    static u8 is_initialized = 0;
+
+    if (0 == is_initialized)
     {
-        // 每隔一段时间，发送大小里程，
-        // 因为最后大计里程在999999km,小计里程在999.9km之后，就不更新了，
-        // 要再刷新一次，才会发送1000000km和1000.0km的大小里程
-        mileage_update_time_cnt = 0;
+        is_initialized = 1;
 
-        if (0 == is_initialized)
-        {
-            aip3368h_display_mileage_unit_type(
-                instrument.save_info.distance_unit_type);
-            is_initialized = 1;
-        }
+        // 显示单位
+        aip3368h_display_mileage_unit_type(
+            instrument.save_info.distance_unit_type);
+        aip3368h_display_mileage_refresh();
+    }
 
+    if (mileage_update_time_cnt >= MILEAGE_UPDATE_TIME_MS)
+    {
+        // 每隔一段时间，更新里程
+        mileage_update_time_cnt = 0; 
         aip3368h_display_mileage_refresh();
     }
 }

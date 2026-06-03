@@ -124,7 +124,7 @@ void engine_speed_scan(void)
         }
 
 #if USER_DEBUG_ENABLE
-        printf("cur rpm %lu\n", rpm);
+        // printf("cur rpm %lu\n", rpm);
 #endif
 
         instrument.engine_speed = rpm; // 向全局变量存放发动机转速
@@ -173,8 +173,8 @@ void aip3368h_display_engine_speed_handle(void)
         engine_speed_level_of_lag = engine_speed_get_level();
 
         // USER_TO_DO 测试时屏蔽，实际要恢复
-        aip3368h_display_engine_speed_digit_scale(13);
-        aip3368h_display_x1000rpm_light(1);
+        // aip3368h_display_engine_speed_digit_scale(13);
+        // aip3368h_display_x1000rpm_light(1);
     }
 
     // 如果当前发动机转速与显示的发动机转速很接近，延长刷新时间（样机大约是2s）

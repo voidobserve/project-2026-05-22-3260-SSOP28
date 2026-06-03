@@ -643,10 +643,7 @@ void aip3368h_display_speed(u8 speed)
                 ~(0x01 << speed_segment_map[i][j].bit_offset);
         }
     }
-
-    // aip3368h_display_speed_km_icon(1);
-    // USER_TO_DO 显示 km/h 或者是 mile/h
-
+  
     // 判断 speed 的有效数据位
     tmp = speed;
     while (1)
@@ -1136,9 +1133,10 @@ void __aip3368h_display_boot_animation_in_speed__(void)
     // 每次切换显示数码管的时间间隔
     // #define BOOT_ANIMATION_IN_SPEED_SWITCH_SEG_PERIOD (500)
 
-    // USER_TO_DO 测试完成之后，需要将下面两个 u16 改成 u8 来节省程序空间
-    static const u16 period = 50;
-    static u16 step = 0;
+    // 测试完成之后，需要将下面两个 u16 改成 u8 来节省程序空间
+    static const u8 period = 50;
+    static u8 step = 0;
+
     static seg_index_t cur_seg = 0;  // 当前显示的数码管
     static seg_index_t last_seg = 0; // 上一次显示的数码管
     static u8 is_initialized = 0;
@@ -1200,9 +1198,9 @@ void __aip3368h_display_boot_animation_in_speed__(void)
 // 背光刻度条的开机动画
 void __aip3368h_display_boot_animation_in_back_light_scale_bar__(void)
 {
-    // USER_TO_DO 测试完成之后，需要将下面两个 u16 改成 u8 来节省程序空间
-    static const u16 period = 30;
-    static u16 step = 0;
+    // 测试完成之后，需要将下面两个 u16 改成 u8 来节省程序空间
+    static const u8 period = 30;
+    static u8 step = 0;
 
     static u16 period_cnt = 0;
     static u8 is_initialized = 0;
@@ -1572,6 +1570,8 @@ void aip3368h_display_err_handle(void)
     }
 }
 
+// ==============================================================================
+// ==============================================================================
 #if AIP3368H_DISPLAY_TEST_ENABLE
 
 /**

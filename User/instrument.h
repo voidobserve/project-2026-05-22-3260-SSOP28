@@ -30,6 +30,7 @@ enum
     DISTANCE_UNIT_TYPE_IMPERIAL, // 英制单位，时速用 mph ，里程用 mile
 };
 typedef u8 distance_unit_type_t; // 距离相关的单位类型
+ 
 
 // 定义存储在flash中的数据
 typedef struct
@@ -43,30 +44,29 @@ typedef struct
 
     u8 is_display_total_mileage;             // 0：显示总里程，1：显示短距离里程
     distance_unit_type_t distance_unit_type; // 要显示的 单位类型，km/h 或 mph
-
-    // USER_TO_DO 需要添加车轮的周长
-
+ 
+    u8 whell_circumference; // 车轮周长，单位：1 * 10 mm，数值范围：50 ~ 180
 
     u8 is_save_data_valid;
 } save_info_t;
 
-enum
-{
-    SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE = 0, // 切换显示的里程，TOTAL 或 TRIP
-    SETTING_ITEM_DISTANCE_UNIT_TYPE,           // 切换 要显示的单位类型，km/h 或 mph
-    SETTING_ITEM_WHELL_CIRCUMFERENCE,          // 车轮周长
-};
+// enum
+// {
+//     SETTING_ITEM_IS_DISPLAY_TOTAL_MILEAGE = 0, // 切换显示的里程，TOTAL 或 TRIP
+//     SETTING_ITEM_DISTANCE_UNIT_TYPE,           // 切换 要显示的单位类型，km/h 或 mph
+//     SETTING_ITEM_WHELL_CIRCUMFERENCE,          // 设置 车轮周长
+// };
 
 typedef struct
 {
     save_info_t save_info;
     u32 engine_speed; // 发动机的转速（单位：rpm）
+
     u8 speed;         // 时速(单位：km/h，使用英制单位时，需要进行转换)
+    u8 speed_of_lag;  // 最终要显示的时速
+ 
     u8 fuel;          // 油量(单位：百分比)
-
-    // USER_TO_DO
-    u8 cur_sel_setting_item; // 当前选中的设置项
-
+  
     // 标志位，是否处于低油量报警
     u8 flag_is_in_warning_of_low_fuel;
 
@@ -77,12 +77,6 @@ extern volatile instrument_t instrument;
 
 void instrument_info_init(void);
 void instrument_info_save(void);
-
-void aip3368h_display_setting_item_time_add(void);
-void aip3368h_display_setting_item_time_clear(void);
-void aip3368h_display_setting_item_exit_time_add(void);
-void aip3368h_display_setting_item_exit_time_clear(void);
-
-void aip3368h_display_setting_item_handle(void);
+ 
 
 #endif

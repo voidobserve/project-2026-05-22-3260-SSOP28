@@ -127,13 +127,13 @@ u8 fuel_capacity_convert_voltage_to_lev(u16 voltage)
     {
         ret = 4;
     }
-    // else if (voltage >= FUEL_LEVEL_5_VOLTAGE)
-    // {
-    //     ret = 5;
-    // }
-    else
+    else if (voltage >= FUEL_LEVEL_5_VOLTAGE)
     {
         ret = 5;
+    }
+    else
+    {
+        ret = 6;
     }
 
     return ret;
@@ -141,12 +141,14 @@ u8 fuel_capacity_convert_voltage_to_lev(u16 voltage)
 
 void fuel_capacity_scan(void)
 {
-    u16 fuel_adc_val;
-    u16 fuel_voltage;
+    u16 fuel_adc_val; // 油量检测脚采集的ad值
+    u16 fuel_voltage; // 油量检测脚采集的电压值
 
-    static u8 is_initialized = 0;    // 初始化
+    static u8 is_initialized = 0;  // 初始化
     static u8 fuel_lev_of_lag = 0; // 延迟显示的油量等级
     u8 cur_fuel_lev = 0;           // 当前实际获取到的油量等级
+
+    u8 fuel_lev_diff = 0;
 
     if (fuel_capacity_scan_time_cnt >= 200)
     {
@@ -174,11 +176,11 @@ void fuel_capacity_scan(void)
 
         if (fuel_lev_of_lag == 0)
         {
-            // 打开低油量报警 
+            // 打开低油量报警
             if (instrument.flag_is_in_warning_of_low_fuel == 0)
             {
                 // 如果之前没有进入低油量报警
-                // aip3368h_display_fuel_level(0); // 清空油量显示
+                aip3368h_display_fuel_level(0); // 清空油量显示
                 instrument.flag_is_in_warning_of_low_fuel = 1;
             }
         }
@@ -187,7 +189,7 @@ void fuel_capacity_scan(void)
             // 关闭低油量报警
             instrument.flag_is_in_warning_of_low_fuel = 0;
             // 正常显示油量
-            // aip3368h_display_fuel_level(fuel_lev_of_lag);
+            aip3368h_display_fuel_level(fuel_lev_of_lag);
         }
     }
     else
@@ -195,17 +197,40 @@ void fuel_capacity_scan(void)
         __fuel_voltage_samples_update__(fuel_voltage);
     }
 
-    if (fuel_lev_update_time_cnt < FUEL_UPDATE_TIME)
+    cur_fuel_lev = fuel_capacity_convert_voltage_to_lev(
+        __fuel_voltage_samples_get__());
+    if (cur_fuel_lev != fuel_lev_of_lag)
+    {
+        if (cur_fuel_lev > fuel_lev_of_lag)
+        {
+            fuel_lev_diff = cur_fuel_lev - fuel_lev_of_lag;
+        }
+        else
+        {
+            fuel_lev_diff = fuel_lev_of_lag - cur_fuel_lev;
+        }
+    }
+
+    printf("cue fuel vol == %u\n", __fuel_voltage_samples_get__());
+    printf("cur fuel lev == %u\n", (u16)cur_fuel_lev);
+
+    if ((fuel_lev_diff >= 2 &&
+         fuel_lev_update_time_cnt < FUEL_UPDATE_TIME) ||
+        (fuel_lev_diff == 1 &&
+         fuel_lev_update_time_cnt < FUEL_UPDATE_TIME_EXTEND))
     {
         // 没有到油量挡位更新时间，直接返回
         return;
     }
+
     fuel_lev_update_time_cnt = 0;
 
     // printf("fuel lev update\n");
 
-    cur_fuel_lev = fuel_capacity_convert_voltage_to_lev(
-        __fuel_voltage_samples_get__());
+    // if (cur_fuel_lev == 0)
+    // {
+
+    // }
 
     if (fuel_lev_of_lag < cur_fuel_lev)
     {
@@ -223,7 +248,7 @@ void fuel_capacity_scan(void)
         if (instrument.flag_is_in_warning_of_low_fuel == 0)
         {
             // 如果之前没有进入低油量报警
-            // aip3368h_display_fuel_level(0); // 清空油量显示
+            aip3368h_display_fuel_level(0); // 清空油量显示
             instrument.flag_is_in_warning_of_low_fuel = 1;
         }
     }
@@ -232,7 +257,7 @@ void fuel_capacity_scan(void)
         // 关闭低油量报警
         instrument.flag_is_in_warning_of_low_fuel = 0;
         // 正常显示油量
-        // aip3368h_display_fuel_level(fuel_lev_of_lag);
+        aip3368h_display_fuel_level(fuel_lev_of_lag);
     }
 }
 

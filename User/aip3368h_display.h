@@ -5,7 +5,7 @@
 #include "instrument.h"
 #include "typedef.h"
 
-#define AIP3368H_DISPLAY_TEST_ENABLE 1
+#define AIP3368H_DISPLAY_TEST_ENABLE 0
 
 // 用于建立指示灯和显存的映射关系：
 typedef struct

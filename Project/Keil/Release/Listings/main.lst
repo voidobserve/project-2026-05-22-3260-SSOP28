@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              06/02/2026 17:34:06 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              06/03/2026 18:44:12 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
@@ -62,15 +62,15 @@ line level    source
   51   1      #if SPEED_SCAN_ENABLE
   52   1          speed_scan_config(); // 时速扫描的配置
   53   1      #endif
-C51 COMPILER V9.60.7.0   MAIN                                                              06/02/2026 17:34:06 PAGE 2   
+C51 COMPILER V9.60.7.0   MAIN                                                              06/03/2026 18:44:12 PAGE 2   
 
   54   1      
   55   1      #if ENGINE_SPEED_SCAN_ENABLE
   56   1          engine_speed_scan_config(); // 发动机转速扫描的配置
   57   1      #endif
   58   1      
-  59   1      #if (BATTERY_SCAN_ENABLE || FUEL_CAPACITY_SCAN_ENABLE)
-  60   1          // adc_config();
+  59   1      #if (FUEL_CAPACITY_SCAN_ENABLE)
+  60   1          adc_config();
   61   1      #endif
   62   1      
   63   1          instrument_info_init(); // 初始化仪表信息
@@ -80,91 +80,87 @@ line level    source
   67   1          tmr2_config(); // 扫描脉冲(电平变化)的定时器
   68   1      
   69   1          beep_play(117); // 上电之后，让蜂鸣器鸣叫一声
-  70   1          delay_ms(1);    // 等待系统稳定
-  71   1                          // delay_ms(2000); // 等待系统稳定
-  72   1      }
-  73          
-  74          void main(void)
-  75          {
-  76   1          // 看门狗默认打开, 复位时间2s
-  77   1          system_init();
-  78   1      
-  79   1          // WDT_KEY = WDT_KEY_VAL(0xDD); //  关闭看门狗
-  80   1      
-  81   1          // 关闭HCK和HDA的调试功能
-  82   1          WDT_KEY = 0x55;  // 解除写保护
-  83   1          IO_MAP &= ~0x01; // 清除这个寄存器的值，实现关闭HCK和HDA引脚的调试功能（解除�
+  70   1          ui_manager_init();
+  71   1          delay_ms(1); // 等待系统稳定
+  72   1                       // delay_ms(2000); // 等待系统稳定
+  73   1      }
+  74          
+  75          void main(void)
+  76          {
+  77   1          // 看门狗默认打开, 复位时间2s
+  78   1          system_init();
+  79   1      
+  80   1          // WDT_KEY = WDT_KEY_VAL(0xDD); //  关闭看门狗
+  81   1      
+  82   1          // 关闭HCK和HDA的调试功能
+  83   1          WDT_KEY = 0x55;  // 解除写保护
+  84   1          IO_MAP &= ~0x01; // 清除这个寄存器的值，实现关闭HCK和HDA引脚的调试功能（解除�
              -��射）
-  84   1          WDT_KEY = 0xBB;
-  85   1      
-  86   1          /* 用户代码初始化接口 */
-  87   1          user_init();
-  88   1      
-  89   1          // USER_TO_DO
-  90   1          // 上电之后，需要先跑一遍开机动画，再继续主循环
-  91   1          // aip3368h_display_boot_animation_handle();
-  92   1      
-  93   1          // USER_TO_DO 测试时使用
-  94   1          // aip3368h_display_test();
-  95   1          // aip3368h_display_mileage(123456, 0);
-  96   1      
-  97   1          /* 系统主循环 */
-  98   1          while (1)
-  99   1          {
- 100   2              // printf("main circle\n");
- 101   2              // DEBUG_PIN = ~DEBUG_PIN;
- 102   2      
- 103   2      #if 1
- 104   2              WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
- 105   2      
- 106   2      #if PIN_LEVEL_SCAN_ENABLE
- 107   2              pin_level_scan();
- 108   2      #endif
- 109   2      
- 110   2      #if IO_KEY_ENABLE
- 111   2              key_driver_scan(&io_key_para);
- 112   2              io_key_handle(); // io按键处理函数
- 113   2              aip3368h_display_setting_item_handle();
- 114   2      #endif
-C51 COMPILER V9.60.7.0   MAIN                                                              06/02/2026 17:34:06 PAGE 3   
+  85   1          WDT_KEY = 0xBB;
+  86   1      
+  87   1          /* 用户代码初始化接口 */
+  88   1          user_init();
+  89   1      
+  90   1          // USER_TO_DO
+  91   1          // 上电之后，需要先跑一遍开机动画，再继续主循环
+  92   1          // aip3368h_display_boot_animation_handle();
+  93   1      
+  94   1          // USER_TO_DO 测试时使用
+  95   1          // aip3368h_display_test();
+  96   1          // aip3368h_display_mileage(123456, 0);
+  97   1          aip3368h_module_set_brightness(50);
+  98   1      
+  99   1          /* 系统主循环 */
+ 100   1          while (1)
+ 101   1          {
+ 102   2              // printf("main circle\n");
+ 103   2              // DEBUG_PIN = ~DEBUG_PIN;
+ 104   2      
+ 105   2      #if 1
+ 106   2              WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
+ 107   2      
+ 108   2      #if PIN_LEVEL_SCAN_ENABLE
+ 109   2              pin_level_scan();
+ 110   2      #endif
+ 111   2      
+ 112   2      #if IO_KEY_ENABLE
+ 113   2              key_driver_scan(&io_key_para);
+ 114   2              io_key_handle(); // io按键处理函数
+C51 COMPILER V9.60.7.0   MAIN                                                              06/03/2026 18:44:12 PAGE 3   
 
- 115   2      
- 116   2      #if SPEED_SCAN_ENABLE
- 117   2              speed_scan(); // 检测时速
- 118   2              aip3368h_display_speed_handle();
+ 115   2      #endif
+ 116   2      
+ 117   2      #if SPEED_SCAN_ENABLE
+ 118   2              speed_scan(); // 检测时速
  119   2      #endif
- 120   2      
- 121   2              mileage_scan(); // 检测大计里程和小计里程
- 122   2      
- 123   2      #if ENGINE_SPEED_SCAN_ENABLE
- 124   2              // engine_speed_scan(); // 检测发动机转速
- 125   2              // aip3368h_display_engine_speed_handle();
- 126   2      #endif
- 127   2      
- 128   2      #if FUEL_CAPACITY_SCAN_ENABLE
- 129   2              // fuel_capacity_scan(); // 油量检测
- 130   2      #endif
+ 120   2              mileage_scan(); // 检测大计里程和小计里程
+ 121   2      
+ 122   2      #if ENGINE_SPEED_SCAN_ENABLE
+ 123   2              engine_speed_scan(); // 检测发动机转速
+ 124   2      #endif
+ 125   2      
+ 126   2      #if FUEL_CAPACITY_SCAN_ENABLE
+ 127   2              fuel_capacity_scan(); // 油量检测
+ 128   2      #endif
+ 129   2      
+ 130   2      #endif //
  131   2      
- 132   2      #if BATTERY_SCAN_ENABLE
- 133   2              // battery_scan(); // 电池电量检测
- 134   2      #endif
- 135   2      
- 136   2      #endif //
- 137   2      
- 138   2      
- 139   2              aip3368h_module_display();
- 140   2          }
- 141   1      }
+ 132   2              // USER_TO_DO 需要改成 PWM 驱动
+ 133   2              // PDM = ~PDM;
+ 134   2      
+ 135   2              ui_display_handle();
+ 136   2          }
+ 137   1      }
+ 138          
+ 139          /**
+ 140           * @}
+ 141           */
  142          
- 143          /**
- 144           * @}
- 145           */
- 146          
- 147          /*************************** (C) COPYRIGHT 2022 HUGE-IC ***** END OF FILE *****/
+ 143          /*************************** (C) COPYRIGHT 2022 HUGE-IC ***** END OF FILE *****/
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    126    ----
+   CODE SIZE        =    137    ----
    CONSTANT SIZE    =     11    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

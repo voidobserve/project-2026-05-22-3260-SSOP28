@@ -121,15 +121,42 @@ void aip3368h_module_init(void)
     P0_MD0 |= GPIO_P03_MODE_SEL(0x01);
     FOUT_S03 = GPIO_FOUT_AF_FUNC;
     // PDM
+    // USER_TO_DO PDM 需要改成 PWM 驱动
     P0_MD0 &= ~GPIO_P00_MODE_SEL(0x03);
     P0_MD0 |= GPIO_P00_MODE_SEL(0x01);
-    FOUT_S00 = GPIO_FOUT_AF_FUNC;
+    FOUT_S00 = GPIO_FOUT_STMR0_PWMOUT; // 选择stmr0_pwmout
+
+#define STMR0_PEROID_VAL (SYSCLK / 1 / 1000 - 1) // 周期值=系统时钟/分频/频率 - 1
+    // STIMER0配置1kHz PWM
+    STMR0_PSC = STMR_PRESCALE_VAL(0x00);                        // 不分频
+    STMR0_PRH = STMR_PRD_VAL_H((STMR0_PEROID_VAL >> 8) & 0xFF); // 周期高八位寄存器
+    STMR0_PRL = STMR_PRD_VAL_L((STMR0_PEROID_VAL >> 0) & 0xFF); // 周期低八位寄存器
+    STMR0_CMPAH = STMR_CMPA_VAL_H(((0) >> 8) & 0xFF);           // 比较值
+    STMR0_CMPAL = STMR_CMPA_VAL_L(((0) >> 0) & 0xFF);           // 比较值
+
+    STMR_PWMVALA = STMR_0_PWMVALA(0x00); // PWM输出值
+    STMR_PWMEN |= STMR_0_PWM_EN(0x1);    // PWM输出使能
+    STMR_CNTMD |= STMR_0_CNT_MODE(0x1);  // 选择连续计数模式
+    STMR_LOADEN |= STMR_0_LOAD_EN(0x1);  // 自动装载使能
+    STMR_CNTCLR |= STMR_0_CNT_CLR(0x1);  // 计数清零
+    STMR_CNTEN |= STMR_0_CNT_EN(0x1);    // 计数使能
 
     DIO = 0;
     DCK = 0;
     LAT = 0;
-    PDM = 0;
+    // PDM = 0;
     aip3368h_module_send_data_to_all_dev(aip3368h_display_buff, AIP3368H_DEV_NUM);
+}
+
+void aip3368h_module_set_brightness(u8 brightness)
+{
+    // STMR_PWMVALA = STMR_0_PWMVALA(brightness);
+
+    u16 channel_duty = (u32)brightness * STMR0_PEROID_VAL / 100;
+
+    STMR0_CMPAH = STMR_CMPA_VAL_H(((channel_duty) >> 8) & 0xFF); // 比较值
+    STMR0_CMPAL = STMR_CMPA_VAL_L(((channel_duty) >> 0) & 0xFF); // 比较值
+    STMR_LOADEN |= STMR_0_LOAD_EN(0x1);                          // 自动装载使能
 }
 
 // void aip3368h_module_uninit(void)
