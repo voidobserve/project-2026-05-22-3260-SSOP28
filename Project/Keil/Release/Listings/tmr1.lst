@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TMR1                                                              06/03/2026 18:44:11 PAGE 1   
+C51 COMPILER V9.60.7.0   TMR1                                                              06/04/2026 17:27:33 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TMR1
@@ -62,7 +62,7 @@ line level    source
   50   1          // 周期中断
   51   1          if (TMR1_CONH & TMR_PRD_PND(0x1))
   52   1          {
-C51 COMPILER V9.60.7.0   TMR1                                                              06/03/2026 18:44:11 PAGE 2   
+C51 COMPILER V9.60.7.0   TMR1                                                              06/04/2026 17:27:33 PAGE 2   
 
   53   2              TMR1_CONH |= TMR_PRD_PND(0x1); // 清除pending
   54   2      
@@ -87,7 +87,7 @@ line level    source
   73   2              fuel_capacity_scan_time_add();
   74   2              fuel_lev_update_time_add();
   75   2      #endif
-  76   2       
+  76   2              photosensitive_scan_time_add();
   77   2      
   78   2              adc_channel_switch_by_isr();
   79   2              ui_timer_handle_isr();
@@ -108,15 +108,38 @@ line level    source
   94   2              // aip3368h_display_test_speed();
   95   2              // aip3368h_display_test_mileage();
   96   2              // aip3368h_display_test_fuel();
-  97   2          }
-  98   1      
-  99   1          // 退出中断设置IP，不可删除
- 100   1          __IRQnIPnPop(TMR1_IRQn);
- 101   1      }
+  97   2      
+  98   2              // {
+  99   2              //     static u16 cnt = 0;
+ 100   2              //     static u8 dir = 0;
+ 101   2              //     cnt++;
+ 102   2              //     if (cnt >= 500)
+ 103   2              //     {
+ 104   2              //         cnt = 0;
+ 105   2              //         dir = !dir;
+ 106   2      
+ 107   2              //         if (dir)
+ 108   2              //         {
+ 109   2              //             aip3368h_module_set_brightness(0);
+ 110   2                          
+ 111   2              //         }
+ 112   2              //         else
+ 113   2              //         {
+ 114   2              //             aip3368h_module_set_brightness(80);
+C51 COMPILER V9.60.7.0   TMR1                                                              06/04/2026 17:27:33 PAGE 3   
+
+ 115   2              //         }
+ 116   2              //     }
+ 117   2              // }
+ 118   2          }
+ 119   1      
+ 120   1          // 退出中断设置IP，不可删除
+ 121   1          __IRQnIPnPop(TMR1_IRQn);
+ 122   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    214    ----
+   CODE SIZE        =    217    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

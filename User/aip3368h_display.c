@@ -551,13 +551,15 @@ void aip3368h_display_gear(u8 level)
  */
 void __aip3368h_display_speed_seg__(u8 bit_x, seg_index_t seg, u8 is_enable)
 {
-    aip3368h_display_buff[speed_segment_map[bit_x][seg].buff_index] &=
-        ~(1 << speed_segment_map[bit_x][seg].bit_offset);
-
     if (is_enable)
     {
         aip3368h_display_buff[speed_segment_map[bit_x][seg].buff_index] |=
             (1 << speed_segment_map[bit_x][seg].bit_offset);
+    }
+    else
+    {
+        aip3368h_display_buff[speed_segment_map[bit_x][seg].buff_index] &=
+            ~(1 << speed_segment_map[bit_x][seg].bit_offset);
     }
 }
 
@@ -599,7 +601,7 @@ void __aip3368h_display_speed_bit_x__(u8 bit_x, u8 number)
 
 /**
  * @brief 清空数码管 第 x 位 显示的内容
- * 
+ *
  * @param bit_x 0 ~ 2，对应第 0 ~ 2 位数码管
  *
  */
@@ -643,7 +645,7 @@ void aip3368h_display_speed(u8 speed)
                 ~(0x01 << speed_segment_map[i][j].bit_offset);
         }
     }
-  
+
     // 判断 speed 的有效数据位
     tmp = speed;
     while (1)
@@ -1005,118 +1007,6 @@ void aip3368h_display_fuel_level(aip3368h_display_fuel_level_t level)
     // aip3368h_display_buff[10] |= 0x01 << 15; // 油量 第 0 格 指示灯（红）
 }
 
-/**
- * @brief 发送机转速滑动条的开机动画
- *
- */
-void __aip3368h_display_boot_animation_in_engine_speed_scale_bar__(void)
-{
-    static u16 animation_engine_speed_scale_bar_step = 0;
-    static u8 animation_engine_speed_scale_bar_phase = 0; // 0:渐渐递增，1:保持最高，2:渐渐递减
-    static u8 animation_engine_speed_scale_bar_level = 0;
-
-    // 动画分为三个阶段：
-    // 阶段1 : 从低到高递增
-    // 阶段2 (中间时段): 保持最高亮度显示一段时间
-    // 阶段3 (最后时段): 从高到低递减
-    animation_engine_speed_scale_bar_step++;
-
-    if (animation_engine_speed_scale_bar_phase == 0)
-    {
-        // 阶段1: 递增阶段
-        if (animation_engine_speed_scale_bar_step >= 150) // 每 xx ms变化一次
-        {
-            animation_engine_speed_scale_bar_step = 0;
-            animation_engine_speed_scale_bar_level++;
-
-            if (animation_engine_speed_scale_bar_level >= 12)
-            {
-                // animation_engine_speed_scale_bar_level = 12;
-                animation_engine_speed_scale_bar_phase = 1; // 进入保持阶段
-                animation_engine_speed_scale_bar_step = 0;
-            }
-
-            // aip3368h_display_engine_speed_scale_bar(animation_engine_speed_scale_bar_level);
-        }
-    }
-    else if (animation_engine_speed_scale_bar_phase == 1)
-    {
-        // 阶段2: 保持最高阶段
-        // 假设保持时间为 xx ms (可根据需要调整)
-        if (animation_engine_speed_scale_bar_step >= 200)
-        {
-            animation_engine_speed_scale_bar_step = 0;
-            animation_engine_speed_scale_bar_phase = 2; // 进入递减阶段
-        }
-        // 保持显示最高级别
-        // aip3368h_display_engine_speed_scale_bar(12);
-    }
-    else if (animation_engine_speed_scale_bar_phase == 2)
-    {
-        // 阶段3: 递减阶段
-        if (animation_engine_speed_scale_bar_step >= 150) // 每 xx ms变化一次
-        {
-            animation_engine_speed_scale_bar_step = 0;
-
-            if (animation_engine_speed_scale_bar_level > 0)
-            {
-                animation_engine_speed_scale_bar_level--;
-            }
-
-            // aip3368h_display_engine_speed_scale_bar(animation_engine_speed_scale_bar_level);
-        }
-    }
-}
-
-void __aip3368h_display_boot_animation_in_fuel_level__(void)
-{
-    static u16 animation_step = 0; // 控制动画的步长
-    static u8 animation_phase = 0; // 0:渐渐递增，1:保持最高，2:渐渐递减
-    static u8 level = 0;
-
-    animation_step++;
-    if (0 == animation_phase)
-    {
-        if (animation_step >= 300)
-        {
-            animation_step = 0;
-
-            if (level < AIP3368H_DISPLAY_FUEL_LEVEL_4)
-            {
-                level++;
-            }
-            else
-            {
-                animation_phase = 1;
-            }
-
-            // aip3368h_display_fuel_level(level);
-        }
-    }
-    else if (1 == animation_phase)
-    {
-        if (animation_step >= 400)
-        {
-            animation_step = 0;
-            animation_phase = 2;
-        }
-    }
-    else if (2 == animation_phase)
-    {
-        if (animation_step >= 300)
-        {
-            animation_step = 0;
-
-            if (level > 0)
-            {
-                level--;
-            }
-
-            // aip3368h_display_fuel_level(level);
-        }
-    }
-}
-
 void aip3368h_display_boot_animation_time_add(void)
 {
     if (aip3368h_display_obj.is_in_boot_animation == 1)
@@ -1130,9 +1020,6 @@ void aip3368h_display_boot_animation_time_add(void)
 // 时速的开机动画
 void __aip3368h_display_boot_animation_in_speed__(void)
 {
-    // 每次切换显示数码管的时间间隔
-    // #define BOOT_ANIMATION_IN_SPEED_SWITCH_SEG_PERIOD (500)
-
     // 测试完成之后，需要将下面两个 u16 改成 u8 来节省程序空间
     static const u8 period = 50;
     static u8 step = 0;
@@ -1284,7 +1171,7 @@ void __aip3368h_display_boot_animation_left_to_right__(void)
     {
         // 开机动画结束
         aip3368h_display_obj.boot_animation_phase =
-            BOOT_ANIMATION_PAHSE_END;
+            BOOT_ANIMATION_PHASE_HOLD_ON;
         return;
     }
 
@@ -1464,11 +1351,8 @@ void __aip3368h_display_boot_animation_left_to_right__(void)
 // 开机动画处理函数
 void aip3368h_display_boot_animation_handle(void)
 {
-    // memset(&aip3368h_display_obj, 0x00, sizeof(aip3368h_display_obj_t));
+    memset(&aip3368h_display_obj, 0x00, sizeof(aip3368h_display_obj_t));
     aip3368h_display_obj.is_in_boot_animation = 1;
-
-    // USER_TO_DO 测试时使用
-    // aip3368h_display_obj.boot_animation_phase = BOOT_ANIMATION_PHASE_LEFT_TO_RIGHT;
 
     while (aip3368h_display_obj.is_in_boot_animation)
     {
@@ -1487,6 +1371,18 @@ void aip3368h_display_boot_animation_handle(void)
         __aip3368h_display_boot_animation_in_back_light_scale_bar__();
         __aip3368h_display_boot_animation_left_to_right__();
 
+        if (BOOT_ANIMATION_PHASE_HOLD_ON ==
+            aip3368h_display_obj.boot_animation_phase)
+        {
+            static u16 hold_on_cnt = 0;
+            hold_on_cnt++;
+            if (hold_on_cnt >= 500)
+            {
+                hold_on_cnt = 0;
+                aip3368h_display_obj.boot_animation_phase = BOOT_ANIMATION_PAHSE_END;
+            }
+        }
+
         if (BOOT_ANIMATION_PAHSE_END ==
             aip3368h_display_obj.boot_animation_phase)
         {
@@ -1500,6 +1396,10 @@ void aip3368h_display_boot_animation_handle(void)
             aip3368h_display_gear_light(1);
 
             // USER_TO_DO 根据记忆，选择对应的单位和TOTAL/TRIP里程进行显示
+            aip3368h_display_speed_unit_type(
+                instrument.save_info.distance_unit_type);
+            aip3368h_display_mileage_unit_type(
+                instrument.save_info.distance_unit_type);
         }
 
         aip3368h_module_display();
@@ -1524,48 +1424,21 @@ void aip3368h_display_err_handle(void)
         aip3368h_display_err_handle_time_cnt = 0;
     }
 
-    // 发动机转速过高报警
-    // if (instrument.flag_is_engine_speed_warning_enable)
-    // {
-    //     // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
-    //     if ((aip3368h_display_buff[0] >> 1) & 0x01)
-    //     {
-    //         aip3368h_display_buff[0] &= ~(0x01 << 1);
-    //     }
-    //     else
-    //     {
-    //         aip3368h_display_buff[0] |= (0x01 << 1);
-    //     }
-    // }
-
-    // 低电量报警
-    // if (instrument.flag_is_in_warning_of_low_voltage)
-    // {
-    //     // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
-    //     if ((aip3368h_display_buff[2] >> 10) & 0x01)
-    //     {
-    //         aip3368h_display_buff[2] &= ~(0x01 << 10); // 电池电量低，第 1 格指示灯（红）
-    //         aip3368h_display_buff[2] &= ~(0x01 << 11); // 电池电量低，第 0 格指示灯（红）
-    //     }
-    //     else
-    //     {
-    //         aip3368h_display_buff[2] |= 0x01 << 10; // 电池电量低，第 1 格指示灯（红）
-    //         aip3368h_display_buff[2] |= 0x01 << 11; // 电池电量低，第 0 格指示灯（红）
-    //     }
-    // }
-
     // 低油量 报警
     if (instrument.flag_is_in_warning_of_low_fuel)
     {
-        // 直接操作显存，判断当前感叹号对应的指示灯是否点亮，进而让它闪烁
+        // 直接操作显存，判断指示灯是否点亮，进而让它闪烁
+        // 让第 0 格油量的指示灯和油量图标指示灯一起闪烁
 
-        if ((aip3368h_display_buff[2] >> 15) & 0x01)
+        if ((aip3368h_display_buff[10] >> 13) & 0x01)
         {
-            aip3368h_display_buff[2] &= ~(0x01 << 15); // 油量，第 0 格指示灯（红）
+            aip3368h_display_buff[10] &= ~(0x01 << 13); // 油量 图标 （红）
+            aip3368h_display_buff[10] &= ~(0x01 << 15); // 油量 第 0 格 指示灯（红）
         }
         else
         {
-            aip3368h_display_buff[2] |= (0x01 << 15); // 油量，第 0 格指示灯（红）
+            aip3368h_display_buff[10] |= 0x01 << 13; // 油量 图标 （红）
+            aip3368h_display_buff[10] |= 0x01 << 15; // 油量 第 0 格 指示灯（红）
         }
     }
 }

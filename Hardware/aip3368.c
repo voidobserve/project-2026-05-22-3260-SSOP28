@@ -121,7 +121,7 @@ void aip3368h_module_init(void)
     P0_MD0 |= GPIO_P03_MODE_SEL(0x01);
     FOUT_S03 = GPIO_FOUT_AF_FUNC;
     // PDM
-    // USER_TO_DO PDM 需要改成 PWM 驱动
+    // PDM 改成 PWM 驱动
     P0_MD0 &= ~GPIO_P00_MODE_SEL(0x03);
     P0_MD0 |= GPIO_P00_MODE_SEL(0x01);
     FOUT_S00 = GPIO_FOUT_STMR0_PWMOUT; // 选择stmr0_pwmout
@@ -144,15 +144,22 @@ void aip3368h_module_init(void)
     DIO = 0;
     DCK = 0;
     LAT = 0;
-    // PDM = 0;
+    // PDM = 0; // 由上电稳定之后设置亮度
     aip3368h_module_send_data_to_all_dev(aip3368h_display_buff, AIP3368H_DEV_NUM);
 }
 
+
+/**
+ * @brief 设置显示的亮度
+ * 
+ * @param brightness 亮度值 0 ~ 100 
+ *          数值越大，亮度越高
+ * 
+ */
 void aip3368h_module_set_brightness(u8 brightness)
 {
-    // STMR_PWMVALA = STMR_0_PWMVALA(brightness);
-
-    u16 channel_duty = (u32)brightness * STMR0_PEROID_VAL / 100;
+    // PDM脚是低电平使能，因此占空比越低，亮度越高
+    u16 channel_duty = (u32) (100 - brightness) * STMR0_PEROID_VAL / 100;
 
     STMR0_CMPAH = STMR_CMPA_VAL_H(((channel_duty) >> 8) & 0xFF); // 比较值
     STMR0_CMPAL = STMR_CMPA_VAL_L(((channel_duty) >> 0) & 0xFF); // 比较值

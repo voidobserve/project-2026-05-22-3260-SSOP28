@@ -23,8 +23,7 @@ void ui_timer_handle_isr(void)
 	aip3368h_display_speed_refresh_time_add();
 	// 递增 AIP3368H 显示 发动机转速 刷新时间计数
 	aip3368h_display_engine_speed_refresh_time_add();
-	// 控制设置界面对应的设置项目以一定周期进行闪烁
-	// aip3368h_display_setting_item_time_add();
+	aip3368h_display_err_handle_time_add();
 
 	if (ui_manager.state == UI_STATE_SETTING_DISTANCE_UNIT_TYPE ||
 		ui_manager.state == UI_STATE_SETTING_WHEEL_CIRCUMFERENCE)
@@ -162,12 +161,15 @@ void ui_display_handle(void)
 		ui_display_refresh();
 
 		// 自动退出设置界面后，保存相关数据
-		instrument_info_save(); 
+		instrument_info_save();
 	}
 
 	aip3368h_display_speed_handle();		// 显示时速
 	aip3368h_display_mileage_handle();		// 显示里程
 	aip3368h_display_engine_speed_handle(); // 显示发动机转速
+
+	aip3368h_display_err_handle();
+
 	aip3368h_module_display();
 }
 

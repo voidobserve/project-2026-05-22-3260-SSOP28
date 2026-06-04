@@ -7,7 +7,7 @@
 
 #define ARRAY_SIZE(arry) (sizeof(arry) / sizeof(arry[0]))
 
-#define USER_DEBUG_ENABLE 1
+#define USER_DEBUG_ENABLE 0
 #if USER_DEBUG_ENABLE
 #define DEBUG_PIN P04
 #endif
@@ -57,6 +57,7 @@
 #include "beep.h"
 
 #include "user_flash.h"
+#include "photosensitive.h"
 
 #include "aip3368.h"
 #include "aip3368h_display.h"

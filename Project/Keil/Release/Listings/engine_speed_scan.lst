@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/03/2026 18:44:13 PAGE 1   
+C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/04/2026 17:43:34 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE ENGINE_SPEED_SCAN
@@ -62,7 +62,7 @@ line level    source
   50   3              }
   51   2          }
   52   1      
-C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/03/2026 18:44:13 PAGE 2   
+C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/04/2026 17:43:34 PAGE 2   
 
   53   1          if (ENGINE_SPEED_SCAN_PIN) // 检测发动机转速的引脚
   54   1          {
@@ -97,8 +97,8 @@ line level    source
   81   1          if (cur_engine_speed_scan_ms >= ENGINE_SPEED_SCAN_UPDATE_TIME || flag_is_engine_speed_scan_over_time)
   82   1          {
   83   2      #if USER_DEBUG_ENABLE
-  84   2      // printf("cur_engine_speed_scan_ms:%lu\n", cur_engine_speed_scan_ms);
-  85   2      #endif
+              // printf("cur_engine_speed_scan_ms:%lu\n", cur_engine_speed_scan_ms);
+              #endif
   86   2              if (flag_is_engine_speed_scan_over_time)
   87   2              {
   88   3                  flag_is_engine_speed_scan_over_time = 0;
@@ -126,16 +126,16 @@ line level    source
  105   3                      1min转过的圈数　== 扫描时间内转过的圈数 / 扫描时间 * 1min
  106   3                  */
  107   3                  rpm = (u32)cur_engine_speed_scan_cnt *
-C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/03/2026 18:44:13 PAGE 3   
+C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/04/2026 17:43:34 PAGE 3   
 
  108   3                        ENGINE_SPEED_SCAN_A_PULSE_PER_TURNS *
  109   3                        (CONVER_ONE_MINUTE_TO_MS / ENGINE_SPEED_SCAN_COMPONSATION) /
  110   3                        cur_engine_speed_scan_ms;
  111   3              }
  112   2      #if USER_DEBUG_ENABLE
- 113   2      // 打印检测到的脉冲个数
- 114   2      // printf("cur engine speed pulse cnt:%lu\n",cur_engine_speed_scan_cnt);
- 115   2      #endif
+              // 打印检测到的脉冲个数
+              // printf("cur engine speed pulse cnt:%lu\n",cur_engine_speed_scan_cnt);
+              #endif
  116   2      
  117   2              cur_engine_speed_scan_cnt = 0;
  118   2              cur_engine_speed_scan_ms = 0;
@@ -147,8 +147,8 @@ line level    source
  124   3              }
  125   2      
  126   2      #if USER_DEBUG_ENABLE
- 127   2              // printf("cur rpm %lu\n", rpm);
- 128   2      #endif
+                      // printf("cur rpm %lu\n", rpm);
+              #endif
  129   2      
  130   2              instrument.engine_speed = rpm; // 向全局变量存放发动机转速
  131   2          }
@@ -190,7 +190,7 @@ line level    source
  167   1          u16 refresh_time_threshold; // 刷新间隔阈值
  168   1      
  169   1          if (is_initialized == 0)
-C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/03/2026 18:44:13 PAGE 4   
+C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/04/2026 17:43:34 PAGE 4   
 
  170   1          {
  171   2              is_initialized = 1;
@@ -198,54 +198,64 @@ line level    source
  173   2              engine_speed_level_of_lag = engine_speed_get_level();
  174   2      
  175   2              // USER_TO_DO 测试时屏蔽，实际要恢复
- 176   2              // aip3368h_display_engine_speed_digit_scale(13);
- 177   2              // aip3368h_display_x1000rpm_light(1);
+ 176   2              aip3368h_display_engine_speed_digit_scale(13);
+ 177   2              aip3368h_display_x1000rpm_light(1);
  178   2          }
  179   1      
  180   1          // 如果当前发动机转速与显示的发动机转速很接近，延长刷新时间（样机大约
              -是2s）
  181   1          cur_engine_speed_level = engine_speed_get_level();
- 182   1          level_diff =
- 183   1              (cur_engine_speed_level > engine_speed_level_of_lag) ? (cur_engine_speed_level - engine_speed_leve
-             -l_of_lag) : (engine_speed_level_of_lag - cur_engine_speed_level);
- 184   1      
- 185   1          refresh_time_threshold =
- 186   1              (level_diff <= 1) ? (AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME * 40) : AIP3368H_DISPLAY_ENGINE_SP
-             -EED_REFRESH_TIME;
- 187   1      
- 188   1          if (aip3368h_display_engine_speed_refresh_time_cnt >= refresh_time_threshold)
- 189   1          {
- 190   2              aip3368h_display_engine_speed_refresh_time_cnt = 0;
- 191   2              // cur_engine_speed_level = engine_speed_get_level();
- 192   2      
- 193   2              if (engine_speed_level_of_lag < cur_engine_speed_level)
- 194   2              {
- 195   3                  engine_speed_level_of_lag++;
- 196   3              }
- 197   2              else if (engine_speed_level_of_lag > cur_engine_speed_level)
- 198   2              {
- 199   3                  if (engine_speed_level_of_lag > 0)
- 200   3                  {
- 201   4                      engine_speed_level_of_lag--;
- 202   4                  }
- 203   3              }
- 204   2      
- 205   2              aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
- 206   2          }
- 207   1      }
- 208          
- 209          #endif // #if ENGINE_SPEED_SCAN_ENABLE
+ 182   1          if (cur_engine_speed_level == 0)
+ 183   1          {
+ 184   2              // 转速为0时，快速更新
+ 185   2              refresh_time_threshold = AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME;
+ 186   2          }
+ 187   1          else
+ 188   1          {
+ 189   2              level_diff =
+ 190   2                  (cur_engine_speed_level > engine_speed_level_of_lag) ? (cur_engine_speed_level - engine_speed_
+             -level_of_lag) : (engine_speed_level_of_lag - cur_engine_speed_level);
+ 191   2      
+ 192   2              refresh_time_threshold =
+ 193   2                  (level_diff <= 1) ? (AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME * 2) : AIP3368H_DISPLAY_ENGINE
+             -_SPEED_REFRESH_TIME;
+ 194   2          }
+ 195   1      
+ 196   1          if (aip3368h_display_engine_speed_refresh_time_cnt >= refresh_time_threshold)
+ 197   1          {
+ 198   2              aip3368h_display_engine_speed_refresh_time_cnt = 0;
+ 199   2              // cur_engine_speed_level = engine_speed_get_level();
+ 200   2      
+ 201   2              if (engine_speed_level_of_lag < cur_engine_speed_level)
+ 202   2              {
+ 203   3                  engine_speed_level_of_lag++;
+ 204   3              }
+ 205   2              else if (engine_speed_level_of_lag > cur_engine_speed_level)
+ 206   2              {
+ 207   3                  if (engine_speed_level_of_lag > 0)
+ 208   3                  {
+ 209   4                      engine_speed_level_of_lag--;
+ 210   4                  }
+ 211   3              }
+ 212   2      
+ 213   2              aip3368h_display_engine_speed_scale_bar(engine_speed_level_of_lag);
+ 214   2          }
+ 215   1      }
+ 216          
+ 217          #endif // #if ENGINE_SPEED_SCAN_ENABLE
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    492    ----
+   CODE SIZE        =    529    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =     21       5
+   XDATA SIZE       =     21       7
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      2    ----
 END OF MODULE INFORMATION.
+
+C51 COMPILER V9.60.7.0   ENGINE_SPEED_SCAN                                                 06/04/2026 17:43:34 PAGE 5   
 
 
 C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

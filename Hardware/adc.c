@@ -14,6 +14,9 @@ void adc_config(void)
     P0_MD0 |= GPIO_P01_MODE_SEL(0x3); // 模拟模式
 #endif
 
+    // 检测光敏电阻的引脚
+    P1_MD1 |= GPIO_P16_MODE_SEL(0x3); // 模拟模式
+
     ADC_CFG1 |= (0x0F << 3) | // ADC时钟分频为16分频，为系统时钟/16
                 (0x01 << 0);  // adc0中断使能
     ADC_CFG2 = 0xFF;          // 通道0采样时间配置为256个采样时钟周期
@@ -27,7 +30,7 @@ void adc_config(void)
     __EnableIRQ(ADC_IRQn);    // 使能ADC中断
     IE_EA = 1;                // 使能总中断
 
-    adc_channel_set(ADC_CHANNEL_FUEL);
+    // adc_channel_set(ADC_CHANNEL_FUEL);
 }
 
 // 设置adc通道
@@ -50,10 +53,18 @@ void adc_channel_set(adc_channel_t adc_channel)
         ADC_ACON1 |= (0x01 << 6) |         // 使能ADC内部参考信号
                      (0x03 << 3) |         // 关闭测试信号
                      (0x01 << 0);          // 内部参考电压选择 2.0 V
-        ADC_CHS0 |= ADC_ANALOG_CHAN(0x01); // P01通路
+        ADC_CHS0 |= ADC_ANALOG_CHAN(0x01); // P01 通路
         break;
-
 #endif
+
+    case ADC_CHANNEL_PHOTOSENSITIVE:
+        ADC_ACON1 &= ~((0x01 << 5) |       // 关闭ADC外部参考选择信号
+                       (0x07 << 0));       // 清空ADC内部参考电压的选择配置
+        ADC_ACON1 |= (0x01 << 6) |         // 使能ADC内部参考信号
+                     (0x03 << 3) |         // 关闭测试信号
+                     (0x03 << 0);          // 内部参考电压选择 3.0 V
+        ADC_CHS0 |= ADC_ANALOG_CHAN(0x0E); // P16 通路
+        break;
     }
 
     ADC_CFG0 |= ADC_CHAN0_EN(0x1) | // 使能通道0转换
@@ -107,14 +118,22 @@ void adc_channel_switch_by_isr(void)
     switch (adc_channel_status)
     {
     case ADC_CHANNEL_STATUS_NONE:
-    case ADC_CHANNEL_STATUS_SEL_FUEL_END: 
+    case ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_END:
+        adc_channel_set(ADC_CHANNEL_FUEL);
         adc_channel_status = ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN;
         break;
     case ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN:
         ADC_CFG0 |= ADC_CHAN0_TRG(0x1); // 触发ADC0转换
         adc_channel_status = ADC_CHANNEL_STATUS_SEL_FUEL_END;
         break;
-
+    case ADC_CHANNEL_STATUS_SEL_FUEL_END:
+        adc_channel_set(ADC_CHANNEL_PHOTOSENSITIVE);
+        adc_channel_status = ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_BEGIN;
+        break;
+    case ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_BEGIN:
+        ADC_CFG0 |= ADC_CHAN0_TRG(0x1); // 触发ADC0转换
+        adc_channel_status = ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_END;
+        break;
     default:
         break;
     }
@@ -141,6 +160,10 @@ void ADC_IRQHandler(void) interrupt ADC_IRQn
 
         case ADC_CHANNEL_STATUS_SEL_FUEL_END:
             fuel_capacity_adc_val_samples_update(adc_val);
+            break;
+
+        case ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_END:
+            photosensitive_data_put(adc_val);
             break;
         }
     }

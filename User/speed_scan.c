@@ -128,7 +128,7 @@ void speed_scan_timer_50us_isr(void)
 void speed_scan(void)
 {
     volatile u32 cur_speed = 0;
-    volatile u32 tmp = 0; 
+    volatile u32 tmp = 0;
 
     if (cur_speed_scan_time >= SPEED_SCAN_UPDATE_TIME || flag_is_speed_scan_over_time)
     {
@@ -200,7 +200,7 @@ void speed_scan(void)
         {
             cur_speed = 199;
         }
-  
+
         instrument.speed = cur_speed;
     }
 }
@@ -277,8 +277,8 @@ void aip3368h_display_speed_handle(void)
         speed_filter_init(instrument.speed);
 
         // USER_TO_DO 测试时屏蔽，实际需要恢复
-        // aip3368h_display_speed_unit_type(
-        //     instrument.save_info.distance_unit_type);
+        aip3368h_display_speed_unit_type(
+            instrument.save_info.distance_unit_type);
     }
 
 #if 1

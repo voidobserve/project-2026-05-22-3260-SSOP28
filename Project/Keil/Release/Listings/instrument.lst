@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/03/2026 18:44:13 PAGE 1   
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/04/2026 17:27:35 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE INSTRUMENT
@@ -27,8 +27,8 @@ line level    source
   16   1          {
   17   2              // 如果保存在flash中的数据有效
   18   2      #if USER_DEBUG_ENABLE
-  19   2          // printf("save data valid\n");
-  20   2      #endif
+                  // printf("save data valid\n");
+              #endif
   21   2      
   22   2              // instrument.save_info.total_mileage = save_info.total_mileage;
   23   2              // instrument.save_info.subtotal_mileage = save_info.subtotal_mileage;
@@ -40,8 +40,8 @@ line level    source
   29   1          {
   30   2              // 如果保存在flash中的数据无效，全局变量 instrument 中的元素 默认全部为0
   31   2      #if USER_DEBUG_ENABLE
-  32   2          // printf("save data invalid\n");
-  33   2      #endif
+                  // printf("save data invalid\n");
+              #endif
   34   2      
   35   2              instrument.save_info.is_display_total_mileage = 1;                   // 默认显示大计里程
   36   2              instrument.save_info.is_save_data_valid = USER_FLASH_DATA_VALID_VAL; // 表示数据有效
@@ -62,15 +62,15 @@ line level    source
              -次上电读出数据时，验证该标志位
   51   1          // 先擦除扇区再写入
   52   1          flash_erase_sector(FLASH_START_ADDR);
-C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/03/2026 18:44:13 PAGE 2   
+C51 COMPILER V9.60.7.0   INSTRUMENT                                                        06/04/2026 17:27:35 PAGE 2   
 
   53   1          flash_program(FLASH_START_ADDR,
   54   1                        (u8 *)&instrument.save_info,
   55   1                        sizeof(save_info_t));
   56   1      
   57   1      #if USER_DEBUG_ENABLE
-  58   1          // printf("instrument info save\n");
-  59   1      #endif
+                  // printf("instrument info save\n");
+              #endif
   60   1      
   61   1      #endif
   62   1      }

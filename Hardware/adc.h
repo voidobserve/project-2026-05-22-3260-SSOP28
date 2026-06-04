@@ -12,8 +12,11 @@ enum
 {
     ADC_CHANNEL_NONE = 0x00,
 
-    ADC_CHANNEL_BATTERY = 0x01, // 电池电量检测
+    // ADC_CHANNEL_BATTERY = 0x01, // 电池电量检测
     ADC_CHANNEL_FUEL,           // 检测油量
+    
+    // 光敏 photosensitive
+    ADC_CHANNEL_PHOTOSENSITIVE, 
 };
 typedef u8 adc_channel_t;
 
@@ -26,6 +29,9 @@ enum
 
     ADC_CHANNEL_STATUS_SEL_FUEL_BEGIN, // 检测油量的通道
     ADC_CHANNEL_STATUS_SEL_FUEL_END,
+
+    ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_BEGIN,
+    ADC_CHANNEL_STATUS_SEL_PHOTOSENSITIVE_END,
 };
 typedef u8 adc_channel_status_sel_t;
 

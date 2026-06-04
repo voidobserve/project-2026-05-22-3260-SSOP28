@@ -446,6 +446,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\Hardware\beep.c</FilePath>
             </File>
+            <File>
+              <FileName>photosensitive.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Hardware\photosensitive.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

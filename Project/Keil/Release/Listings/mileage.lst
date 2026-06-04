@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MILEAGE                                                           06/03/2026 18:44:13 PAGE 1   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           06/04/2026 17:27:35 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MILEAGE
@@ -62,7 +62,7 @@ line level    source
   48   2                       DISTANCE_UNIT_TYPE_IMPERIAL)
   49   2              {
   50   3                  // 使用 英制 单位
-C51 COMPILER V9.60.7.0   MILEAGE                                                           06/03/2026 18:44:13 PAGE 2   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           06/04/2026 17:27:35 PAGE 2   
 
   51   3                  // 1km == 0.621427mile
   52   3                  // 0.621427 mile * 1610 == 1000.49747 m
@@ -126,7 +126,7 @@ line level    source
  109   3                  // if (cnt >= 10) // cnt >= 10，说明走过了10m
  110   3                  if (cnt >= 100) 
  111   3                  {
-C51 COMPILER V9.60.7.0   MILEAGE                                                           06/03/2026 18:44:13 PAGE 3   
+C51 COMPILER V9.60.7.0   MILEAGE                                                           06/04/2026 17:27:35 PAGE 3   
 
  112   4                      cnt = 0;
  113   4                      flag_is_any_mileage_save = 1; // 表示需要把里程输入写入到flash

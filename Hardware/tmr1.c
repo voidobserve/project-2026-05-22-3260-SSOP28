@@ -73,7 +73,7 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         fuel_capacity_scan_time_add();
         fuel_lev_update_time_add();
 #endif
- 
+        photosensitive_scan_time_add();
 
         adc_channel_switch_by_isr();
         ui_timer_handle_isr();
@@ -94,6 +94,27 @@ void TIMR1_IRQHandler(void) interrupt TMR1_IRQn
         // aip3368h_display_test_speed();
         // aip3368h_display_test_mileage();
         // aip3368h_display_test_fuel();
+
+        // {
+        //     static u16 cnt = 0;
+        //     static u8 dir = 0;
+        //     cnt++;
+        //     if (cnt >= 500)
+        //     {
+        //         cnt = 0;
+        //         dir = !dir;
+
+        //         if (dir)
+        //         {
+        //             aip3368h_module_set_brightness(0);
+                    
+        //         }
+        //         else
+        //         {
+        //             aip3368h_module_set_brightness(80);
+        //         }
+        //     }
+        // }
     }
 
     // 退出中断设置IP，不可删除

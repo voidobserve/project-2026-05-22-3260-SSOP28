@@ -195,6 +195,15 @@ void fuel_capacity_scan(void)
     else
     {
         __fuel_voltage_samples_update__(fuel_voltage);
+
+        // // 测试时使用
+        // {
+        //     u8 i = 0;
+        //     for (i = 0; i < FUEL_VOLTAGE_SAMPLE_COUNT; i++)
+        //     {
+        //         printf("fuel buff[%bu] == %u\n", i, fuel_voltage_samples[i]);
+        //     }
+        // }
     }
 
     cur_fuel_lev = fuel_capacity_convert_voltage_to_lev(
@@ -211,8 +220,15 @@ void fuel_capacity_scan(void)
         }
     }
 
-    printf("cue fuel vol == %u\n", __fuel_voltage_samples_get__());
-    printf("cur fuel lev == %u\n", (u16)cur_fuel_lev);
+    // printf("cue fuel vol == %u\n", __fuel_voltage_samples_get__());
+    // printf("cur fuel lev == %u\n", (u16)cur_fuel_lev);
+
+    // if (cur_fuel_lev == 0 &&
+    //     fuel_lev_update_time_cnt >= FUEL_UPDATE_TIME)
+    // {
+    //     fuel_lev_of_lag = 0;
+    // }
+    // else
 
     if ((fuel_lev_diff >= 2 &&
          fuel_lev_update_time_cnt < FUEL_UPDATE_TIME) ||

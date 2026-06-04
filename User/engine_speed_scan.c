@@ -173,17 +173,25 @@ void aip3368h_display_engine_speed_handle(void)
         engine_speed_level_of_lag = engine_speed_get_level();
 
         // USER_TO_DO 测试时屏蔽，实际要恢复
-        // aip3368h_display_engine_speed_digit_scale(13);
-        // aip3368h_display_x1000rpm_light(1);
+        aip3368h_display_engine_speed_digit_scale(13);
+        aip3368h_display_x1000rpm_light(1);
     }
 
     // 如果当前发动机转速与显示的发动机转速很接近，延长刷新时间（样机大约是2s）
     cur_engine_speed_level = engine_speed_get_level();
-    level_diff =
-        (cur_engine_speed_level > engine_speed_level_of_lag) ? (cur_engine_speed_level - engine_speed_level_of_lag) : (engine_speed_level_of_lag - cur_engine_speed_level);
+    if (cur_engine_speed_level == 0)
+    {
+        // 转速为0时，快速更新
+        refresh_time_threshold = AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME;
+    }
+    else
+    {
+        level_diff =
+            (cur_engine_speed_level > engine_speed_level_of_lag) ? (cur_engine_speed_level - engine_speed_level_of_lag) : (engine_speed_level_of_lag - cur_engine_speed_level);
 
-    refresh_time_threshold =
-        (level_diff <= 1) ? (AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME * 40) : AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME;
+        refresh_time_threshold =
+            (level_diff <= 1) ? (AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME * 2) : AIP3368H_DISPLAY_ENGINE_SPEED_REFRESH_TIME;
+    }
 
     if (aip3368h_display_engine_speed_refresh_time_cnt >= refresh_time_threshold)
     {

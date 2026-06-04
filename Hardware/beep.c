@@ -31,7 +31,7 @@ void beep_handle_1ms_isr(void)
 		if (beep_time_cnt)
 		{
 			beep_time_cnt--;
-			BEEP_ON(); 
+			BEEP_ON();
 		}
 		else
 		{

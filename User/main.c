@@ -67,9 +67,10 @@ void user_init(void)
     tmr2_config(); // 扫描脉冲(电平变化)的定时器
 
     beep_play(117); // 上电之后，让蜂鸣器鸣叫一声
-    ui_manager_init();
-    delay_ms(1); // 等待系统稳定
-                 // delay_ms(2000); // 等待系统稳定
+    delay_ms(10);   // 等待系统稳定（主要是等adc采集完成一轮数据）
+
+    // 上电时立即更新一次亮度值，再跑开机动画
+    photosensitive_init();
 }
 
 void main(void)
@@ -89,12 +90,16 @@ void main(void)
 
     // USER_TO_DO
     // 上电之后，需要先跑一遍开机动画，再继续主循环
-    // aip3368h_display_boot_animation_handle();
+    aip3368h_display_boot_animation_handle();
+    /*
+       跑完开机动画之后，再初始化ui
+       初始化ui内部会强制刷新一些显示
+    */
+    ui_manager_init();
 
     // USER_TO_DO 测试时使用
     // aip3368h_display_test();
     // aip3368h_display_mileage(123456, 0);
-    aip3368h_module_set_brightness(50);
 
     /* 系统主循环 */
     while (1)
@@ -102,8 +107,9 @@ void main(void)
         // printf("main circle\n");
         // DEBUG_PIN = ~DEBUG_PIN;
 
-#if 1
         WDT_KEY = WDT_KEY_VAL(0xAA); // 喂狗并清除 wdt_pending
+
+#if 1
 
 #if PIN_LEVEL_SCAN_ENABLE
         pin_level_scan();
@@ -127,12 +133,10 @@ void main(void)
         fuel_capacity_scan(); // 油量检测
 #endif
 
-#endif //
-
-        // USER_TO_DO 需要改成 PWM 驱动
-        // PDM = ~PDM;
+        photosensitive_scan(); // 光敏检测 -> 调节亮度
 
         ui_display_handle();
+#endif
     }
 }
 
